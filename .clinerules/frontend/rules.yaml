@@ -1,0 +1,198 @@
+domain: vue3-frontend
+version: 1.0.0
+
+stack:
+  framework: "Vue 3 (Composition API)"
+  language: "TypeScript (strict)"
+  ui: ["Ant Design Vue", "TailwindCSS"]
+  router: "vue-router (history)"
+  state: ["Pinia (optional)"]
+  build: "Vite"
+  node:
+    engine: ">=20.19"
+    recommended: "22.x LTS"
+    notes:
+      - "Nếu gặp EBADENGINE -> nâng Node theo engine."
+
+conventions:
+  no_switch_stack:
+    - "Không đổi sang React."
+  ui_libraries:
+    allowed: ["ant-design-vue", "tailwindcss"]
+    forbidden:
+      - "element-plus"
+      - "naive-ui"
+      - "vuetify"
+      - "mui"
+      - "bootstrap-vue"
+  project_structure:
+    root: "src"
+    folders:
+      - "src/api"
+      - "src/components"
+      - "src/pages"
+      - "src/router"
+      - "src/stores"
+      - "src/styles"
+      - "src/utils"
+    notes:
+      - "Không tạo import deep kiểu ../../../ — dùng alias '@/'."
+  naming:
+    components_pages: "PascalCase (e.g., AdminLogin.vue)"
+    utils_api_files: "camelCase (e.g., authApi.ts, http.ts)"
+    routes: "kebab-case (e.g., /admin/dashboard)"
+  files:
+    extensions:
+      preferred: [".vue", ".ts"]
+      forbidden: [".tsx"]  # giữ toàn SFC Vue
+  env:
+    required:
+      - key: "VITE_API_BASE_URL"
+        example: "http://localhost:8000"
+    usage: "Dùng import.meta.env.VITE_API_BASE_URL"
+
+api_layer:
+  rule: "MỌI request HTTP phải đi qua src/api/* (không fetch trực tiếp trong components)."
+  http_wrapper:
+    path: "src/api/http.ts"
+    requirements:
+      - "Trả lỗi có message thân thiện; ném Error khi !res.ok"
+      - "Hỗ trợ withCredentials cho Sanctum"
+      - "Header 'Content-Type: application/json' mặc định"
+  modules:
+    - name: "authApi"
+      file: "src/api/authApi.ts"
+      endpoints:
+        - { name: "initCsrf", path: "/sanctum/csrf-cookie", method: "GET", withCredentials: true }
+        - { name: "login", path: "/api/login", method: "POST", withCredentials: true }
+        - { name: "verify2fa", path: "/api/2fa/verify", method: "POST", withCredentials: true }
+        - { name: "logout", path: "/api/logout", method: "POST", withCredentials: true }
+
+router:
+  file: "src/router/index.ts"
+  mode: "history"
+  guards:
+    requiresAuth_meta: true
+    roles_meta: true
+    behavior:
+      - "Nếu to.meta.requiresAuth && !user -> redirect /admin/login"
+      - "Nếu to.meta.roles và user.role không thuộc -> redirect /403"
+      - "Guard KHÔNG gọi API đồng bộ; chỉ dựa trên state/cookies có sẵn."
+  user_state_storage: "localStorage key: auth_user (JSON)"
+
+ui_theming:
+  ant_design:
+    theme_via: "ConfigProvider.theme.token"
+    forbidden:
+      - "Ghi đè CSS sâu (deep selectors / ::v-deep / patch class AntD)"
+  tailwind:
+    use_for: ["layout", "spacing", "responsive", "utilities"]
+    examples: ["flex", "grid", "gap-4", "p-6", "rounded-xl", "shadow"]
+    notes:
+      - "Không dùng Tailwind để ép màu sâu vào component AntD; dùng token."
+
+sfc_patterns:
+  controlled_input:
+    rule: "Bắt buộc dùng v-model:value hoặc value + @update:value."
+    example: "<Input v-model:value='state.email' />"
+  events:
+    use_camel_case: ["@click", "@change", "@finish"]
+  rendering:
+    conditional_example: "<Alert v-if='err' type='error' :message='err' show-icon />"
+  separation_of_concerns:
+    - "Logic xử lý ở <script setup> hoặc utils; template chỉ mô tả UI."
+
+auth_2fa:
+  backend: "Laravel Fortify + Sanctum (cookie-based)"
+  flow:
+    - "call authApi.initCsrf() trước khi login (cookie CSRF)."
+    - "POST /api/login -> nếu {requires2fa, challengeId} -> hiển thị ô TOTP."
+    - "POST /api/2fa/verify với challengeId, totp, rememberDevice."
+    - "Lưu user vào localStorage 'auth_user'; điều hướng."
+  totp:
+    length: 6
+    sanitize: "chỉ chữ số"
+  security:
+    - "Dùng withCredentials ở mọi call auth."
+    - "Không log password/totp/token."
+
+forms_tables:
+  framework: "Ant Design Vue"
+  form_rules:
+    - "Dùng <Form.Item rules=[{ required: true }]> cho field bắt buộc."
+  feedback: ["message.success", "message.error"]
+  tables:
+    - "Phân trang/lazy load khi dữ liệu lớn."
+
+performance:
+  dynamic_import_routes: true
+  tips:
+    - "Tách components con để tránh re-render."
+    - "Debounce cho input nặng/tìm kiếm."
+
+lint_format:
+  run_before_pr: ["npm run lint", "npm run lint:fix (khi cần)"]
+  rules_emphasis:
+    - "vue/jsx-uses-vars: error"
+    - "@typescript-eslint/consistent-type-imports: warn"
+    - "import/order: warn (alphabetize)"
+  dont:
+    - "Không eslint-disable trừ khi có lý do; phải comment."
+
+git_pr:
+  branch_naming:
+    pattern: "^(feat|fix|chore|refactor|docs|perf|test)/[a-z0-9-]+$"
+    examples:
+      - "feat/auth-totp-verify"
+      - "fix/login-double-submit"
+  conventional_commits:
+    pattern: "^(feat|fix|docs|style|refactor|perf|test|chore)(\\([\\w-]+\\))?: .+$"
+    examples:
+      - "feat(auth): add TOTP verify step"
+      - "fix(login): prevent double submit"
+  pr_limits:
+    max_loc_changes: 400
+    checklist:
+      - "Lint/format pass"
+      - "Ảnh chụp màn hình nếu thay đổi UI"
+      - "Không thêm package lạ"
+      - "Không chạm files ngoài scope"
+      - "Cập nhật README nếu thay đổi flow/quy ước"
+  screenshots_required_on_ui_change: true
+
+security_logging:
+  logging:
+    avoid: ["password", "totp", "token"]
+    user_feedback: ["message.success", "message.error"]
+  cors_csrf:
+    sanctum_cookie: true
+    csrf_required: true
+
+dark_mode_theming:
+  global_dark_mode: "optional"
+  config:
+    - "Có thể dùng theme.darkAlgorithm tại main.ts nếu cần."
+  constraint:
+    - "Ưu tiên token thay vì CSS override."
+
+new_page_route_flow:
+  steps:
+    - "Tạo file SFC tại src/pages/<FeatureName>.vue (PascalCase)."
+    - "Tạo/điều chỉnh API tại src/api/<featureApi>.ts."
+    - "Thêm route vào src/router/index.ts với meta phù hợp."
+    - "Dùng AntD cho form; Tailwind cho layout."
+    - "Test thủ công & chụp screenshot."
+    - "Tạo PR nhỏ, mô tả rõ."
+
+what_not_to_do:
+  - "Không chuyển sang React."
+  - "Không thêm UI kit khác ngoài AntD + Tailwind."
+  - "Không fetch trực tiếp trong component lớn."
+  - "Không override CSS sâu trong AntD."
+  - "Không commit dist/ hoặc lockfile thay đổi bất thường."
+
+faq:
+  ssr: "Không — đây là SPA."
+  theme_change: "Chỉ qua ConfigProvider.theme.token."
+  ebadengine: "Nâng Node >= 20.19 (khuyên 22 LTS)."
+  totp_input: "6 digits, lọc ký tự ngoài số trước khi gọi API."

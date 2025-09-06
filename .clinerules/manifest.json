@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0",
+  "modules": [
+    { "name": "backend",  "rules": "./backend/rules.yaml",  "readme": "./backend/README.md" },
+    { "name": "frontend", "rules": "./frontend/rules.yaml", "readme": "./frontend/README.md" }
+  ]
+}
