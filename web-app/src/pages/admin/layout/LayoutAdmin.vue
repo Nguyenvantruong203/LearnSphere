@@ -6,16 +6,9 @@
       
       <!-- Main Content -->
       <div class="flex-1 ml-64">
-        <!-- Header -->
-        <Header />
-        
         <!-- Content -->
-        <main class="py-4">
-          <!-- Authors Table -->
+        <main class="py-4">  
           <slot />
-
-          <!-- Projects Table -->
-          <!-- <ProjectsTable /> -->
         </main>
         
       </div>
@@ -25,5 +18,4 @@
 
 <script setup lang="ts">
 import Sidebar from '@/components/admin/layout/Sidebar.vue'
-import Header from '@/components/admin/layout/HeaderAdmin.vue'
 </script>

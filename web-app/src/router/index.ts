@@ -14,6 +14,8 @@ import GoogleCallback from '@/pages/customer/auth/GoogleCallback.vue'
 // --- Error Pages ---
 import NotFound from '@/pages/error/404.vue'
 import Forbidden from '@/pages/error/403.vue'
+import UserProfile from '@/pages/admin/profile/UserProfile.vue'
+import ListCourses from '@/pages/admin/course/ListCourses.vue'
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -81,6 +83,18 @@ export const routes: RouteRecordRaw[] = [
     name: 'AdminListUsers',
     component: ListUsers,
     meta: { layout: 'public', title: 'Admin List Users' },
+  },
+    {
+    path: '/admin/profile',
+    name: 'AdminUpdateProfile',
+    component: UserProfile,
+    meta: { layout: 'public', title: 'Admin Update Profile' },
+  },
+      {
+    path: '/admin/courses',
+    name: 'AdminUpdateCourses',
+    component: ListCourses,
+    meta: { layout: 'public', title: 'Admin Update Courses' },
   },
 
   // --- Error Routes ---

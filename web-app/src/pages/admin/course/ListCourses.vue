@@ -6,16 +6,17 @@
           <span class="text-gray-400">Pages</span>
         </a-breadcrumb-item>
         <a-breadcrumb-item>
-          <span class="text-gray-700 font-bold">ListUser</span>
+          <span class="text-gray-700 font-bold">List Course</span>
         </a-breadcrumb-item>
       </a-breadcrumb>
     </HeaderAdmin>
 
-    <UsersTable />
+    <CoursesTable /> //tạo ở components/admin/course/CoursesTable.vue
   </LayoutAdmin>
 </template>
 
 <script setup lang="ts">
 import LayoutAdmin from '../layout/LayoutAdmin.vue';
-import UsersTable from '@/components/admin/user/UsersTable.vue'
+import HeaderAdmin from '@/components/admin/layout/HeaderAdmin.vue';
+import CoursesTable from '@/components/admin/course/CoursesTable.vue';
 </script>

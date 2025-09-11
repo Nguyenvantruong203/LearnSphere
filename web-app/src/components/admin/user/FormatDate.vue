@@ -7,7 +7,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 interface Props {
-    date: string
+    date?: string
 }
 
 const props = defineProps<Props>()

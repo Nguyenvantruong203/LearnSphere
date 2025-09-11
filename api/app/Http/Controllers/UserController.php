@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -15,7 +16,7 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::query();
+        $query = User::query()->whereIn('role', ['student', 'instructor']);
 
         // Search
         if ($request->has('search')) {
@@ -129,5 +130,56 @@ class UserController extends Controller
         $user->delete();
 
         return response()->json(null, 204);
+    }
+
+    /**
+     * Update the authenticated user's profile information.
+     */
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:255',
+            'birth_date' => 'nullable|date_format:Y-m-d',
+            'gender' => ['nullable', 'string', Rule::in(['male', 'female', 'other'])],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $user->update($validator->validated());
+
+        return response()->json(['data' => $user]);
+    }
+
+    /**
+     * Update the authenticated user's avatar.
+     */
+    public function updateAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $user = $request->user();
+
+        if ($request->hasFile('avatar')) {
+            // Delete old avatar if it exists
+            if ($user->avatar_url) {
+                // The stored path might be just 'avatars/filename.png', not the full URL.
+                // We assume the value in `avatar_url` is the storage path.
+                Storage::disk('public')->delete($user->avatar_url);
+            }
+
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $user->avatar_url = $path; // Corrected to use the database column name
+            $user->save();
+        }
+
+        return response()->json(['data' => $user]);
     }
 }

@@ -38,11 +38,13 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Form, FormItem, Input, Button, notification, Alert } from 'ant-design-vue'
+import type { Rule } from 'ant-design-vue/es/form'
 import LayoutLoginAdmin from '@/pages/customer/layout/layoutLoginAdmin.vue'
 import { MailOutlined, LockOutlined } from '@ant-design/icons-vue';
-import { authApi } from '@/api/authApi';
+import { useAuthStore } from '@/stores/auth';
 
 const router = useRouter()
+const authStore = useAuthStore()
 const loading = ref(false)
 const error = ref('')
 
@@ -51,11 +53,11 @@ const formData = reactive({
     password: ''
 })
 
-const emailRules = [
+const emailRules: Rule[] = [
     { required: true, type: 'email', message: 'Vui lòng nhập email hợp lệ' }
 ]
 
-const passwordRules = [
+const passwordRules: Rule[] = [
     { required: true, message: 'Vui lòng nhập mật khẩu' }
 ]
 
@@ -63,38 +65,26 @@ const handleSubmit = async (values: any) => {
     loading.value = true
     error.value = ''
     try {
-        // Đảm bảo gửi đúng payload cho API
         const payload = { ...values, target: 'admin' };
-        const response = await authApi.login(payload)
+        const loggedInUser = await authStore.login(payload);
 
-        // Đọc đúng key từ response của API
-        const user = response.user;
-        const token = response.access_token;
-
-        if (!user || !token) {
-            throw new Error('Phản hồi từ API không hợp lệ.');
-        }
-
-        if (user.role !== 'admin') {
+        if (loggedInUser.role !== 'admin') {
+            await authStore.logout();
             throw new Error('Tài khoản không có quyền truy cập trang quản trị.');
         }
-
-        localStorage.setItem('auth_user', JSON.stringify(user))
-        localStorage.setItem('auth_token', token)
 
         notification.success({
             message: 'Đăng nhập thành công',
             description: 'Chào mừng quản trị viên!',
             duration: 2
-        })
+        });
 
-        // Chuyển hướng đến trang quản lý người dùng
-        router.push({ name: 'AdminListUsers' })
+        router.push({ name: 'AdminListUsers' });
 
     } catch (err: any) {
-        error.value = err.message || 'Email hoặc mật khẩu không chính xác.'
+        error.value = err.message || 'Email hoặc mật khẩu không chính xác.';
     } finally {
-        loading.value = false
+        loading.value = false;
     }
 }
 </script>

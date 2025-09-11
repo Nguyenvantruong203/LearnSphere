@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Authcontroller;
+use App\Http\Controllers\CourseController;
+use App\Http\Controllers\TopicController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -29,8 +31,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/users/{id}/approve', [AuthController::class, 'approveUser']);
 
+    // Profile routes
+    Route::post('/profile', [UserController::class, 'updateProfile']);
+    Route::post('/profile/avatar', [UserController::class, 'updateAvatar']);
+
     // User CRUD
     Route::apiResource('users', UserController::class);
+
+    // Course CRUD
+    Route::apiResource('courses', CourseController::class)->except(['update']);
+    Route::post('courses/{course}', [CourseController::class, 'update'])->name('courses.update');
+
+    // Topic CRUD
+    Route::apiResource('topics', TopicController::class);
 });
 
 // Đặt lại mật khẩu

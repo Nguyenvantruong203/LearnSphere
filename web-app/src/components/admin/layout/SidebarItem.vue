@@ -5,9 +5,9 @@
   >
     <div 
       class="w-8 h-8 rounded-xl flex items-center justify-center mr-3"
-      :class="active ? 'bg-primary text-white' : 'bg-white text-primary shadow-sm'"
+      :class="active ? 'bg-primary' : 'bg-white shadow-sm'"
     >
-      <component :is="icon" class="text-sm" />
+      <component :is="icon" class="text-sm" :class="active ? 'text-white' : 'text-primary'" />
     </div>
     <span 
       class="text-sm font-bold"

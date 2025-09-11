@@ -49,6 +49,15 @@ export const authApi = {
   },
 
   /**
+   * Fetches the currently authenticated user.
+   */
+  async getCurrentUser(): Promise<User> {
+    return await http('/api/user', {
+      method: 'GET'
+    })
+  },
+
+  /**
    * Get the redirect URL for Google login.
    */
   async redirectToGoogle(): Promise<{ url: string }> {

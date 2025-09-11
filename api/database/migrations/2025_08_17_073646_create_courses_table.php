@@ -11,13 +11,30 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('courses', function (Blueprint $table) {
-            $table->id();
-            $table->string('title');
-            $table->text('description')->nullable();
-            $table->boolean('is_paid')->default(false);
-            $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
-            $table->timestamps();
+        Schema::create('courses', function (Blueprint $t) {
+            $t->id();
+            $t->string('title');
+            $t->string('slug')->unique();
+            $t->string('thumbnail_url')->nullable();
+            $t->string('short_description', 255)->nullable();
+            $t->text('description')->nullable();
+
+            $t->enum('status', ['draft', 'published', 'archived'])->default('draft');
+            $t->enum('visibility', ['public', 'unlisted', 'private'])->default('public');
+            $t->timestamp('publish_at')->nullable();
+
+            $t->decimal('price', 12, 2)->default(0);
+            $t->char('currency', 3)->default('VND');
+
+            $t->enum('level', ['beginner', 'intermediate', 'advanced'])->default('beginner');
+            $t->string('language', 5)->default('vi');
+
+            $t->foreignId('created_by')->constrained('users')->cascadeOnDelete();
+            $t->timestamps();
+            $t->softDeletes();
+
+            $t->index(['status', 'visibility', 'publish_at']);
+            $t->fullText(['title', 'short_description', 'description']);
         });
     }
 

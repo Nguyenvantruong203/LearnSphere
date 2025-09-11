@@ -6,6 +6,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements MustVerifyEmail
@@ -52,6 +53,13 @@ class User extends Authenticatable implements MustVerifyEmail
     ];
 
     /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['avatar_url'];
+
+    /**
      * Mutator: luôn hash password khi set.
      */
     public function setPasswordAttribute($value)
@@ -77,6 +85,30 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isStudent(): bool
     {
         return $this->role === 'student';
+    }
+
+    /**
+     * Get the full URL to the user's avatar.
+     *
+     * @return string|null
+     */
+    public function getAvatarUrlAttribute()
+    {
+        // Lấy đường dẫn thô từ cột 'avatar_url' để tránh đệ quy vô hạn
+        $path = $this->attributes['avatar_url'] ?? null;
+
+        if ($path) {
+            // Nếu đã là một URL đầy đủ (ví dụ: từ Google), trả về luôn
+            if (str_starts_with($path, 'http')) {
+                return $path;
+            }
+            // Nếu là đường dẫn tương đối, tạo URL đầy đủ từ storage
+            // Sử dụng asset() helper để tránh lỗi linter "Undefined method 'url'"
+            return asset('storage/' . $path);
+        }
+
+        // Nếu không có avatar, trả về null
+        return null;
     }
 
     /**
