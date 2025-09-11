@@ -1,26 +1,16 @@
 <template>
     <div class="bg-white rounded-2xl shadow-sm p-6">
         <div class="mb-6 flex justify-between items-center">
-            <a-input-search 
-                placeholder="Tìm kiếm theo tiêu đề..." 
-                class="w-72" 
-                v-model:value="searchQuery"
-                @search="fetchCourses"
-            />
-            <a-button type="primary" @click="showAddModal">
-                <PlusOutlined /> Thêm khóa học
+            <a-input-search placeholder="Tìm kiếm theo tiêu đề..." class="w-72" v-model:value="searchQuery"
+                @search="fetchCourses" />
+            <a-button type="primary" class="flex justify-center items-center" @click="showAddModal">
+                <PlusOutlined /> <span>Thêm khóa học</span>
             </a-button>
         </div>
 
         <div class="table-container" style="height: 700px; overflow-y: auto;">
-            <a-table 
-                :columns="columns" 
-                :data-source="courses" 
-                :pagination="false" 
-                :loading="loading" 
-                class="courses-table"
-                row-key="id"
-            >
+            <a-table :columns="columns" :data-source="courses" :pagination="false" :loading="loading"
+                class="courses-table" row-key="id">
                 <template #bodyCell="{ column, record }">
                     <template v-if="column.key === 'thumbnail'">
                         <a-avatar :src="record.thumbnail_url" :size="40" shape="square" />
@@ -35,19 +25,16 @@
                     <template v-else-if="column.key === 'price'">
                         <span>{{ formatPrice(record.price, record.currency) }}</span>
                     </template>
-                     <template v-else-if="column.key === 'creator'">
+                    <template v-else-if="column.key === 'creator'">
                         <span>{{ record.creator?.name || 'N/A' }}</span>
                     </template>
                     <template v-else-if="column.key === 'action'">
-                        <a-button type="text" size="small" class="text-gray-500 font-bold" @click="showEditModal(record as Course)">
+                        <a-button type="text" size="small" class="text-gray-500 font-bold"
+                            @click="showEditModal(record as Course)">
                             <EditOutlined />
                         </a-button>
-                        <a-popconfirm
-                            title="Bạn có chắc muốn xóa khóa học này?"
-                            ok-text="Xóa"
-                            cancel-text="Hủy"
-                            @confirm="handleDelete(record.slug)"
-                        >
+                        <a-popconfirm title="Bạn có chắc muốn xóa khóa học này?" ok-text="Xóa" cancel-text="Hủy"
+                            @confirm="handleDelete(record.slug)">
                             <a-button type="text" size="small" danger>
                                 <DeleteOutlined />
                             </a-button>
@@ -59,14 +46,9 @@
 
         <!-- Pagination -->
         <div class="mt-6 flex justify-end">
-            <a-pagination 
-                v-model:current="pagination.current" 
-                v-model:pageSize="pagination.pageSize"
-                :total="pagination.total" 
-                :show-size-changer="true"
-                :page-size-options="['10', '20', '50']" 
-                @change="handlePageChange" 
-            />
+            <a-pagination v-model:current="pagination.current" v-model:pageSize="pagination.pageSize"
+                :total="pagination.total" :show-size-changer="true" :page-size-options="['10', '20', '50']"
+                @change="handlePageChange" />
         </div>
 
         <!-- Modals -->
@@ -100,6 +82,7 @@ const pagination = reactive({
 });
 
 const columns = [
+    { title: 'ID', dataIndex: 'id', key: 'id', width: 80 },
     { title: 'Ảnh bìa', key: 'thumbnail', width: '10%' },
     { title: 'Tiêu đề', dataIndex: 'title', key: 'title', width: '30%' },
     { title: 'Trạng thái', dataIndex: 'status', key: 'status', width: '15%' },

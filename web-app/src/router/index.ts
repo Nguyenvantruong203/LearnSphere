@@ -16,6 +16,7 @@ import NotFound from '@/pages/error/404.vue'
 import Forbidden from '@/pages/error/403.vue'
 import UserProfile from '@/pages/admin/profile/UserProfile.vue'
 import ListCourses from '@/pages/admin/course/ListCourses.vue'
+import ListTopics from '@/pages/admin/topic/ListTopics.vue'
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -31,7 +32,7 @@ export const routes: RouteRecordRaw[] = [
     path: '/',
     name: 'Homepage',
     component: Homepage,
-    meta: { layout: 'public', title: 'Homepage' },
+    meta: { layout: 'public', title: 'Trang chủ' },
   },
   {
     path: '/login',
@@ -84,17 +85,47 @@ export const routes: RouteRecordRaw[] = [
     component: ListUsers,
     meta: { layout: 'public', title: 'Admin List Users' },
   },
-    {
+  {
     path: '/admin/profile',
     name: 'AdminUpdateProfile',
     component: UserProfile,
     meta: { layout: 'public', title: 'Admin Update Profile' },
   },
+  {
+    path: '/admin',
+    meta: { layout: 'admin', requiresAuth: true, roles: ['admin'] },
+    children: [
       {
-    path: '/admin/courses',
-    name: 'AdminUpdateCourses',
-    component: ListCourses,
-    meta: { layout: 'public', title: 'Admin Update Courses' },
+        path: '',
+        name: 'admin-dashboard',
+        component: () => import('@/pages/admin/Dashboard.vue'),
+        meta: { title: 'Bảng điều khiển' },
+      },
+      {
+        path: 'users',
+        name: 'admin-users',
+        component: ListUsers,
+        meta: { title: 'Quản lý người dùng' },
+      },
+      {
+        path: 'profile',
+        name: 'admin-profile',
+        component: UserProfile,
+        meta: { title: 'Hồ sơ của tôi' },
+      },
+      {
+        path: 'courses',
+        name: 'admin-courses',
+        component: ListCourses,
+        meta: { title: 'Quản lý khóa học' },
+      },
+      {
+        path: 'topics',
+        name: 'admin-topics',
+        component: ListTopics,
+        meta: { title: 'Quản lý chủ đề' },
+      },
+    ],
   },
 
   // --- Error Routes ---

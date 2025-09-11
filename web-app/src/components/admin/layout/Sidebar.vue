@@ -46,21 +46,22 @@ import {
   ToolOutlined,
   UserOutlined,
   FileTextOutlined,
-  RocketOutlined
+  RocketOutlined,
+  PartitionOutlined,
+  BookOutlined
 } from '@ant-design/icons-vue'
 import SidebarItem from './SidebarItem.vue'
 
 const route = useRoute();
 
 const mainNavigation = [
-  { icon: HomeOutlined, label: 'Dashboard', path: '/admin/dashboard' },
-  { icon: BarChartOutlined, label: 'Users management', path: '/admin/listUsers' },
-  { icon: CreditCardOutlined, label: 'Billing', path: '/admin/billing' },
-  { icon: ToolOutlined, label: 'Courses', path: '/admin/courses' },
+  { icon: HomeOutlined, label: 'Dashboard', path: '/admin' },
+  { icon: BarChartOutlined, label: 'Users management', path: '/admin/users' },
+  { icon: BookOutlined, label: 'Courses', path: '/admin/courses' },
+  { icon: PartitionOutlined, label: 'Topics', path: '/admin/topics' },
 ];
 
 const accountPages = [
   { icon: UserOutlined, label: 'Profile', path: '/admin/profile' },
-  { icon: FileTextOutlined, label: 'Sign In', path: '/admin/login' },
 ];
 </script>
