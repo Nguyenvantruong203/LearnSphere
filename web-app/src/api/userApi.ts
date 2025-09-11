@@ -39,5 +39,24 @@ export const userApi = {
         method: 'DELETE',
         withCredentials: true,
     });
-  }
+  },
+
+  async updateProfile(data: { name: string }): Promise<{ data: User }> {
+    return await http('/api/profile', {
+      method: 'POST',
+      body: data,
+      withCredentials: true,
+    });
+  },
+
+  async updateAvatar(formData: FormData): Promise<{ data: User }> {
+    return await http('/api/profile/avatar', {
+      method: 'POST',
+      body: formData,
+      withCredentials: true,
+      // Xóa header Content-Type ở đây.
+      // Việc này cho phép hàm http và trình duyệt tự động xử lý
+      // và tạo ra header multipart/form-data đúng với boundary.
+    });
+  },
 }

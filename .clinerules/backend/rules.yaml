@@ -1,0 +1,335 @@
+domain: lms-backend
+version: 1.0.0
+
+about:
+  description: >
+    Quy tắc hành vi cho backend LMS. Bám sát Database Schema Documentation đã cung cấp.
+    README cho dev ở backend/README.md; file này là nguồn sự thật cho AI.
+  tech:
+    framework: "Laravel (Fortify + Sanctum)"
+    db: ["MySQL 8+"]
+    ids: "ID (CHAR(36))"
+    time: "UTC datetime"
+
+erd:
+  source: "./backend/erd.mmd"
+  sections:
+    - "Database Schema Documentation"
+    - "Quiz & Grading System"
+  file: "./backend/erd.mmd"          # đường dẫn tới file Mermaid bên dưới
+  format: "mermaid-erDiagram"
+
+enums:
+  Role: [student, instructor, admin]
+  QuestionType: [single, multi]
+  OrderStatus: [pending, paid, cancelled, refunded, failed]
+  TxStatus: [initiated, succeeded, failed, refunded]
+  CouponType: [percent, fixed]
+
+permissions:
+  student:
+    allow:
+      - "GET   /api/courses"
+      - "GET   /api/courses/:courseId"
+      - "GET   /api/quizzes/:quizId"
+      - "POST  /api/quizzes/:quizId/submit"
+      - "GET   /api/quizzes/:quizId/result (own)"
+      - "GET   /api/quizzes/:quizId/attempts (own)"
+  instructor:
+    allow:
+      - "POST  /api/quizzes"
+      - "POST  /api/questions"
+      - "PUT   /api/quizzes/:quizId"
+      - "GET   /api/quizzes/:quizId/attempts"
+      - "GET   /api/courses/:courseId/students"
+  admin:
+    allow: ["*"]
+
+invariants:  # Bất biến dữ liệu & nghiệp vụ
+  # USERS / ACCESS
+  - name: user_courses_pk
+    rule: "user_courses (user_id, course_id) là PK tổng hợp; không trùng."
+  - name: progress_pk
+    rule: "user_progress (user_id, course_id) là PK tổng hợp."
+
+  # COURSES / PRICING
+  - name: course_prices_validity
+    rule: "valid_from <= valid_to; price >= 0; is_active ∈ {0,1}."
+  - name: course_prices_one_active
+    rule: "Mỗi course_id có tối đa 1 bản ghi is_active=1 tại một thời điểm."
+
+  # QUIZ CONTENT
+  - name: question_type
+    rule: "questions.type ∈ {'single','multi'}."
+  - name: question_options_unique_keys
+    rule: "Mỗi questions.options[*].key là duy nhất trong một câu hỏi."
+  - name: correct_options_non_empty
+    rule: "questions.correct_options không rỗng; với 'single' phải có đúng 1 phần tử."
+  - name: correct_options_subset
+    rule: "Mọi phần tử trong correct_options ⊆ options[*].key."
+  - name: question_weight_positive
+    rule: "weight >= 0."
+  - name: attempts_monotonic
+    rule: "quiz_attempts.attempt_no tăng dần theo (user_id, quiz_id)."
+  - name: snapshot_unique
+    rule: "quiz_results UNIQUE(user_id, quiz_id) nếu bảng này được dùng."
+
+  # E-COMMERCE
+  - name: order_totals_consistency
+    rule: "final_price = total_price - discount_amount; không âm."
+  - name: coupon_usage_unique
+    rule: "coupon_usages UNIQUE(coupon_id, user_id, order_id)."
+  - name: transaction_amount_valid
+    rule: "transactions.amount > 0."
+  - name: order_status_flow
+    rule: "pending -> paid|failed|cancelled; paid -> refunded (optional)."
+
+business_rules:
+  quiz_scoring:
+    description: "Chấm điểm ngay khi submit. Không partial-credit mặc định."
+    single: "selected[0] == correct_options[0] => awarded = weight; else 0."
+    multi:  "Exact match: set(selected) == set(correct_options) => awarded = weight; else 0."
+    total:  "score = Σ points_awarded; max_score = Σ weight."
+    shuffle:
+      questions: "Bật nếu quizzes.shuffle_questions = true (FE xử lý)."
+      options:   "Bật nếu quizzes.shuffle_options = true (FE xử lý)."
+    attempts_limit: "Không cho submit nếu submitted_attempts >= quizzes.max_attempts."
+    timer: "Nếu duration_minutes is NULL => không ràng buộc thời gian ở backend."
+
+  access_granting:
+    on_paid_order: >
+      Khi một transactions.status = 'succeeded':
+      - Đánh dấu orders.status = 'paid' (nếu chưa).
+      - Tạo/Upsert user_courses (user_id, course_id) với enrolled_at=NOW().
+      - Không tạo bản ghi trùng (tôn trọng PK tổng hợp).
+    coupon_usage: "Tăng coupons.used_count khi ghi nhận coupon_usages."
+
+  progress_update:
+    quiz_submit_hook: "Sau khi submit quiz thành công có thể cập nhật user_progress theo quy tắc của course (không bắt buộc)."
+
+api:  # Hợp đồng tối thiểu cho AI
+  - name: GetQuiz
+    method: GET
+    path: /api/quizzes/:quizId
+    auth: required
+    responses:
+      200:
+        schema:
+          type: object
+          properties:
+            id: { type: string }
+            title: { type: string }
+            duration_minutes: { type: [integer, "null"] }
+            shuffle_questions: { type: boolean }
+            shuffle_options: { type: boolean }
+            max_attempts: { type: integer }
+            questions:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: { type: string }
+                  type: { enum: ["single","multi"] }
+                  text: { type: string }
+                  options:
+                    type: array
+                    items: { type: object, properties: { key: {type: string}, label: {type: string} }, required: [key,label] }
+                  correct_options: { type: array, items: { type: string } }  # chỉ trả nếu instructor/admin
+    permissions:
+      student: "được xem nhưng không trả correct_options"
+      instructor: "được xem đầy đủ"
+
+  - name: SubmitQuiz
+    method: POST
+    path: /api/quizzes/:quizId/submit
+    auth: required
+    idempotency:
+      header: "X-Idempotency-Key"
+      scope: "userId + quizId"
+    body_schema:
+      type: object
+      required: [answers]
+      properties:
+        answers:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [questionId, selected]
+            properties:
+              questionId: { type: string, format: uuid }
+              selected:
+                type: array
+                items: { type: string }   # keys A,B,C,...
+    validations:
+      - "Quiz tồn tại & thuộc topic hợp lệ."
+      - "Mỗi questionId thuộc quizId."
+      - "selected không rỗng; với type='single' => selected.length == 1."
+      - "selected ⊆ options.keys."
+      - "Số lần submit < quizzes.max_attempts."
+    effects:
+      - "Tạo quiz_attempts(status=submitted, attempt_no=max+1)."
+      - "Tạo quiz_attempt_answers cho từng câu."
+      - "(Optional) Upsert snapshot vào quiz_results."
+      - "Phát event quiz.attempt.submitted."
+    responses:
+      200:
+        example:
+          score: 7.0
+          maxScore: 10.0
+          details:
+            - questionId: "q1"
+              correct: true
+              awarded: 3.0
+              possible: 3.0
+            - questionId: "q2"
+              correct: false
+              awarded: 0.0
+              possible: 7.0
+      403: { code: QUIZ_ATTEMPT_LIMIT, message: "Đã vượt số lần cho phép." }
+      404: { code: QUIZ_NOT_FOUND }
+      400: { code: QUIZ_VALIDATION_FAILED }
+      409: { code: QUIZ_ALREADY_SUBMITTED, message: "Idempotency trùng." }
+
+  - name: ListAttempts
+    method: GET
+    path: /api/quizzes/:quizId/attempts
+    auth: required
+    query:
+      - { name: userId, type: string, required: false }  # instructor/admin có thể lọc theo user
+      - { name: page, type: integer, default: 1 }
+      - { name: pageSize, type: integer, default: 20 }
+    pagination:
+      style: "cursor|offset (tùy implementation)"
+      response_keys: ["items","total","page","pageSize"]
+
+  - name: CheckoutOrder
+    method: POST
+    path: /api/orders/checkout
+    auth: required
+    body_schema:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { type: object, required: [courseId], properties: { courseId: { type: string }, price: { type: number } } }
+        couponCode: { type: [string, "null"] }
+    validations:
+      - "Mỗi courseId tồn tại & cho phép bán."
+      - "Nếu couponCode có giá trị => kiểm tra còn hiệu lực & min_order_amount."
+    responses:
+      200:
+        schema:
+          type: object
+          properties:
+            orderId: { type: string }
+            finalPrice: { type: number }
+
+  - name: PaymentWebhook
+    method: POST
+    path: /api/payments/webhook/:provider
+    auth: none  # xác thực bằng chữ ký của provider
+    validations:
+      - "Xác thực chữ ký webhook."
+      - "Idempotent theo transaction_code."
+    effects:
+      - "Ghi transactions; nếu succeeded => set orders.status='paid' và cấp user_courses."
+      - "Phát event payment.transaction.succeeded."
+    responses:
+      200: { message: "ok" }
+
+  - name: EnrollManually
+    method: POST
+    path: /api/courses/:courseId/enroll/:userId
+    auth: required
+    required_role: admin
+    effects:
+      - "Upsert user_courses(user_id, course_id, enrolled_at=NOW())."
+
+security:
+  auth: "Sanctum (cookie-based) + CSRF"
+  cors:
+    allow_credentials: true
+  rate_limits:
+    "/api/quizzes/:quizId/submit": "30 req/min/user"
+    "/api/orders/checkout": "10 req/min/user"
+  pii_protection:
+    - "Không log password/totp/token."
+  validation:
+    sanitize_html: true
+    json_size_limits:
+      answers: "≤ 200KB"
+
+events:
+  - name: quiz.attempt.submitted
+    payload:
+      quizId: string
+      userId: string
+      attemptId: string
+      score: number
+      maxScore: number
+      submittedAt: datetime
+  - name: payment.transaction.succeeded
+    payload:
+      orderId: string
+      userId: string
+      provider: string
+      transactionId: string
+      amount: number
+  - name: user.enrolled
+    payload:
+      userId: string
+      courseId: string
+      enrolledAt: datetime
+
+errors:
+  QUIZ_NOT_FOUND: 404
+  QUESTION_NOT_FOUND: 404
+  QUIZ_VALIDATION_FAILED: 400
+  QUIZ_ATTEMPT_LIMIT: 403
+  QUIZ_ALREADY_SUBMITTED: 409
+  ORDER_NOT_FOUND: 404
+  PAYMENT_INVALID_SIGNATURE: 401
+  PERMISSION_DENIED: 403
+
+consistency_concurrency:
+  - "Bao tất cả thao tác submit quiz trong 1 transaction DB."
+  - "Khóa logic (advisory lock) theo (user_id, quiz_id) khi tính attempt_no."
+  - "Webhook thanh toán phải idempotent theo transaction_code."
+  - "Không cascade xóa quizzes nếu đã tồn tại quiz_attempts."
+
+observability:
+  logs:
+    - "quiz.submit.request"
+    - "quiz.submit.result"
+    - "payment.webhook.received"
+    - "payment.webhook.processed"
+  metrics:
+    - "quiz_submit_success_total"
+    - "quiz_submit_error_total"
+    - "payment_success_total"
+    - "payment_failed_total"
+
+tests:
+  examples:
+    - name: single_correct
+      given:
+        question: { type: single, weight: 2, correct_options: ["B"] }
+        selected: ["B"]
+      then:
+        awarded: 2
+        correct: true
+    - name: multi_missing_option
+      given:
+        question: { type: multi, weight: 5, correct_options: ["A","C"] }
+        selected: ["A"]
+      then:
+        awarded: 0
+        correct: false
+    - name: attempt_limit
+      given:
+        quiz.max_attempts: 1
+        user.submitted_attempts: 1
+      then:
+        error: QUIZ_ATTEMPT_LIMIT

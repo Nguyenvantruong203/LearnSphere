@@ -87,9 +87,11 @@ src/
 
 ### Ant Design Vue for:
 
-- **Forms** (required), Input, Button, Select, Modal, Table, Alert, Message/Notification
+- **Forms** (required), Input, Button, Select, Modal, Table, Alert, Notification
+- **Icons**: Use icons from `@ant-design/icons-vue` exclusively. Do not use other icon libraries (e.g., FontAwesome, Heroicons) to maintain consistency.
+- **Loading States**: `Skeleton` được ưu tiên để cải thiện trải nghiệm người dùng khi tải dữ liệu.
 - **Validation** in `Form.Item.rules`
-- **Async feedback**: `message.success/error`
+- **Async feedback**: `notification.success/error` (không dùng `message`)
 
 ### Tailwind for:
 
@@ -307,6 +309,7 @@ Don't disable rules with `eslint-disable` unless clear reason (must comment).
   ```typescript
   { path: '/admin/dashboard', component: () => import('@/pages/admin/Dashboard.vue') }
   ```
+- **Use Skeleton Loading**: Sử dụng `Skeleton` component để hiển thị placeholder cho nội dung khi tải dữ liệu lần đầu, giúp cải thiện cảm nhận về hiệu năng.
 - Avoid unnecessary re-renders: extract child components
 - Debounce for heavy search/typing
 
@@ -354,7 +357,7 @@ Don't disable rules with `eslint-disable` unless clear reason (must comment).
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
-import { Form, Input, Button, message } from 'ant-design-vue'
+import { Form, Input, Button, notification } from 'ant-design-vue'
 
 const form = reactive({
   title: ''
@@ -373,10 +376,10 @@ const handleSubmit = async () => {
   loading.value = true
   try {
     // await featureApi.create({ title: form.title.trim() })
-    message.success('Created!')
+    notification.success({ message: 'Created!' })
     form.title = ''
   } catch (e: any) {
-    message.error(e?.message ?? 'Action failed')
+    notification.error({ message: e?.message ?? 'Action failed' })
   } finally {
     loading.value = false
   }

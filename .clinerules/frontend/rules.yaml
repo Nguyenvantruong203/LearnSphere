@@ -25,6 +25,9 @@ conventions:
       - "vuetify"
       - "mui"
       - "bootstrap-vue"
+    icons:
+      from: "@ant-design/icons-vue"
+      rule: "Chỉ sử dụng icon từ thư viện này, không dùng thư viện icon khác."
   project_structure:
     root: "src"
     folders:
@@ -120,12 +123,16 @@ forms_tables:
   framework: "Ant Design Vue"
   form_rules:
     - "Dùng <Form.Item rules=[{ required: true }]> cho field bắt buộc."
-  feedback: ["message.success", "message.error"]
+  feedback:
+    - "notification.success"
+    - "notification.error"
+    - "Lưu ý: Không dùng message."
   tables:
     - "Phân trang/lazy load khi dữ liệu lớn."
 
 performance:
   dynamic_import_routes: true
+  skeleton_loading: "Sử dụng Skeleton component để hiển thị placeholder cho nội dung khi tải dữ liệu lần đầu, giúp cải thiện cảm nhận về hiệu năng."
   tips:
     - "Tách components con để tránh re-render."
     - "Debounce cho input nặng/tìm kiếm."
@@ -163,7 +170,10 @@ git_pr:
 security_logging:
   logging:
     avoid: ["password", "totp", "token"]
-    user_feedback: ["message.success", "message.error"]
+    user_feedback:
+    - "notification.success"
+    - "notification.error"
+    - "Lưu ý: Không dùng message."
   cors_csrf:
     sanctum_cookie: true
     csrf_required: true

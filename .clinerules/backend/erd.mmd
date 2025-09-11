@@ -126,16 +126,6 @@ erDiagram
     datetime access_expires_at
   }
 
-  course_prices {
-    string id PK
-    string course_id FK
-    decimal price
-    boolean is_active
-    datetime valid_from
-    datetime valid_to
-    string note
-  }
-
   %% ==== E-COMMERCE ====
   orders {
     string id PK

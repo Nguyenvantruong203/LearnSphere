@@ -7,17 +7,25 @@ import { useRouter } from 'vue-router'
 
 export const useAuthStore = defineStore('auth', () => {
   const router = useRouter()
-  const user = ref<User | null>(null)
+  const storedUser = localStorage.getItem('auth_user')
+  const user = ref<User | null>(storedUser ? JSON.parse(storedUser) : null)
   const token = ref<string | null>(localStorage.getItem('auth_token'))
 
   const isLoggedIn = computed(() => !!token.value && !!user.value)
 
   function setUser(newUser: User | null) {
-    user.value = newUser
     if (newUser) {
-      localStorage.setItem('auth_user', JSON.stringify(newUser))
+      // If user.value exists, merge properties to preserve reactivity.
+      // Otherwise, assign the new object.
+      if (user.value) {
+        Object.assign(user.value, newUser);
+      } else {
+        user.value = newUser;
+      }
+      localStorage.setItem('auth_user', JSON.stringify(user.value));
     } else {
-      localStorage.removeItem('auth_user')
+      user.value = null;
+      localStorage.removeItem('auth_user');
     }
   }
 
@@ -30,42 +38,54 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function init() {
+  async function currentUser() {
     if (token.value) {
       try {
-        const rawUser = localStorage.getItem('auth_user')
-        if (rawUser) {
-          setUser(JSON.parse(rawUser))
-        } else {
-          // Optionally, you could fetch user data from API here if you have an endpoint
-          // For now, we'll just clear the token if user data is missing
-          logout()
+        const freshUser = await authApi.getCurrentUser();
+        setUser(freshUser);
+      } catch (error: any) {
+        console.error('Failed to refresh user data:', error);
+        // Only log out if the error is an authentication error (e.g., 401)
+        // This prevents logging out on temporary network or server errors.
+        if (error.response && error.response.status === 401) {
+          console.warn('Token expired or invalid. Logging out.');
+          // We call the core logic of logout without a full page redirect
+          // to avoid disrupting the user if they are on a public page.
+          setUser(null);
+          setToken(null);
         }
-      } catch (error) {
-        console.error('Failed to initialize auth store:', error)
-        logout()
       }
     }
   }
 
-  async function login(payload: LoginPayload) {
+  async function login(payload: LoginPayload): Promise<User> {
     try {
       const response = await authApi.login(payload)
+      
+      if (!response.user || !response.access_token) {
+        throw new Error('Invalid API response during login.')
+      }
+
+      setToken(response.access_token)
       setUser(response.user)
-      setToken(response.token)
-      await router.push('/')
+      
+      return response.user
     } catch (error) {
       console.error('Login failed:', error)
+      // Clear state on failure
+      setToken(null)
+      setUser(null)
       throw error
     }
   }
 
   async function register(payload: RegisterPayload) {
     try {
-      const response = await authApi.register(payload)
-      setUser(response.user)
-      setToken(response.token)
-      await router.push('/')
+      // Registration in this flow doesn't log the user in directly.
+      // It sends a verification email.
+      await authApi.register(payload)
+      // Redirect to a page informing the user to check their email.
+      await router.push('/login?registered=true')
     } catch (error) {
       console.error('Registration failed:', error)
       throw error
@@ -74,17 +94,20 @@ export const useAuthStore = defineStore('auth', () => {
   async function logout() {
     if (token.value) {
       try {
-        await authApi.logout(token.value)
+        await authApi.logout() // API call doesn't need the token passed as it uses the cookie/header
       } catch (error) {
         console.error('API logout failed, logging out client-side anyway.', error)
       }
     }
     setUser(null)
     setToken(null)
+    // Ensure localStorage is cleared
+    localStorage.removeItem('auth_user')
+    localStorage.removeItem('auth_token')
     await router.push('/login')
   }
 
-  init()
+  currentUser()
 
   return {
     user,
@@ -92,6 +115,7 @@ export const useAuthStore = defineStore('auth', () => {
     isLoggedIn,
     login,
     register,
-    logout
+    logout,
+    setUser
   }
 })
