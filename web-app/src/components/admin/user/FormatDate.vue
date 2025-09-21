@@ -18,7 +18,6 @@ const formattedDate = computed(() => {
   try {
     const dateObj = new Date(props.date)
     
-    // Kiểm tra xem date có hợp lệ không
     if (isNaN(dateObj.getTime())) return props.date
     
     const day = dateObj.getDate().toString().padStart(2, '0')

@@ -67,7 +67,7 @@ export const authApi = {
   },
 
   async handleGoogleCallback(code: string): Promise<LoginResponse> {
-    return await http(`/api/auth/google/callback?code=${code}`, {
+    return await http(`/api/google/callback-login?code=${code}`, {
       method: 'GET'
     })
   }

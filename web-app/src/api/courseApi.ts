@@ -1,67 +1,66 @@
-import { http } from './http';
-import type { Course, CoursePayload } from '@/types/Course';
+import { http } from './http'
 
-export interface GetCoursesParams {
-    page?: number;
-    limit?: number;
-    search?: string;
+interface CourseApi {
+  getCourses(params: { page?: number; limit?: number; search?: string }): Promise<any>
+  createCourse(payload: any, thumbnailFile?: File | null): Promise<any>
+  getTopicsByCourse(courseId: number): Promise<any>
+  deleteCourse(courseId: number): Promise<void>
+  updateCourse(courseId: number, payload: any, thumbnailFile?: File | null): Promise<any>
 }
 
-export interface PaginatedCoursesResponse {
-    data: Course[];
-    current_page: number;
-    last_page: number;
-    per_page: number;
-    total: number;
-}
+export const courseApi: CourseApi = {
+  async getCourses(params?: { page?: number; per_page?: number; search?: string }) {
+    return await http('/api/admin/courses', {
+      method: 'GET',
+      params,
+    })
+  },
 
-const createCourseFormData = (payload: object, thumbnailFile?: File | null): FormData => {
-    const formData = new FormData();
+  async createCourse(payload: any, thumbnailFile?: File | null): Promise<any> {
+    const formData = new FormData()
     for (const key in payload) {
-        const value = (payload as any)[key];
-        if (value !== null && value !== undefined) {
-            formData.append(key, value);
-        }
+      if (Object.prototype.hasOwnProperty.call(payload, key)) {
+        formData.append(key, payload[key])
+      }
     }
     if (thumbnailFile) {
-        formData.append('thumbnail', thumbnailFile);
+      formData.append('thumbnail', thumbnailFile)
     }
-    return formData;
-};
+    return await http('/api/admin/courses', {
+      method: 'POST',
+      body: formData,
+    })
+  },
+  async getTopicsByCourse(courseId: number) {
+    const response = await http(`/api/admin/courses/${courseId}/topics`, {
+      method: 'GET',
+      params: { limit: 999 },
+    })
+    return response.data
+  },
+  async deleteCourse(courseId: number): Promise<void> {
+    await http(`/api/admin/courses/${courseId}`, {
+      method: 'DELETE',
+    })
+  },
+  async updateCourse(courseId: number, payload: any, thumbnailFile?: File | null): Promise<any> {
+    const formData = new FormData()
 
+    Object.entries(payload).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        formData.append(key, value as any)
+      }
+    })
 
-export const courseApi = {
-    async getCourses(params: GetCoursesParams): Promise<PaginatedCoursesResponse> {
-        const response = await http('/api/courses', {
-            method: 'GET',
-            params,
-        });
-        return response;
-    },
+    if (thumbnailFile) {
+      formData.append('thumbnail', thumbnailFile)
+    }
 
-    async createCourse(payload: CoursePayload, thumbnailFile?: File | null): Promise<Course> {
-        const formData = createCourseFormData(payload, thumbnailFile);
-        const response = await http('/api/courses', {
-            method: 'POST',
-            body: formData,
-        });
-        return response;
-    },
+    formData.append('_method', 'PUT')
 
-    async updateCourse(slug: string, payload: Partial<CoursePayload>, thumbnailFile?: File | null): Promise<Course> {
-        const formData = createCourseFormData(payload, thumbnailFile);
-        formData.append('_method', 'PUT'); // Giả lập phương thức PUT
-
-        const response = await http(`/api/courses/${slug}`, {
-            method: 'POST', // Luôn dùng POST cho update có file
-            body: formData,
-        });
-        return response;
-    },
-
-    async deleteCourse(slug: string): Promise<void> {
-        await http(`/api/courses/${slug}`, {
-            method: 'DELETE',
-        });
-    },
-};
+    return await http(`/api/admin/courses/${courseId}`, {
+      method: 'POST',
+      body: formData,
+    })
+  },
+}

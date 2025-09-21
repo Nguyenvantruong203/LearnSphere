@@ -20,14 +20,14 @@ export const userApi = {
             .map(([key, value]) => [key, String(value)])
     ).toString();
 
-    return await http(`/api/users?${query}`, {
+    return await http(`/api/admin/users?${query}`, {
       method: 'GET',
       withCredentials: true,
     })
   },
 
   async updateUser(id: number, data: Partial<User>): Promise<User> {
-    return await http(`/api/users/${id}`, {
+    return await http(`/api/admin/users/${id}`, {
         method: 'PUT',
         body: data,
         withCredentials: true,
@@ -35,14 +35,14 @@ export const userApi = {
   },
 
   async deleteUser(id: number): Promise<void> {
-    return await http(`/api/users/${id}`, {
+    return await http(`/api/admin/users/${id}`, {
         method: 'DELETE',
         withCredentials: true,
     });
   },
 
   async updateProfile(data: { name: string }): Promise<{ data: User }> {
-    return await http('/api/profile', {
+    return await http('/api/admin/profile', {
       method: 'POST',
       body: data,
       withCredentials: true,
@@ -50,7 +50,7 @@ export const userApi = {
   },
 
   async updateAvatar(formData: FormData): Promise<{ data: User }> {
-    return await http('/api/profile/avatar', {
+    return await http('/api/admin/profile/avatar', {
       method: 'POST',
       body: formData,
       withCredentials: true,

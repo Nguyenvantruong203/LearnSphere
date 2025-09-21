@@ -5,6 +5,7 @@ import router from './router'
 import Antd from 'ant-design-vue'
 import 'ant-design-vue/dist/reset.css'
 import './style.css'
+import 'cropperjs/dist/cropper.css'
 
 import { ConfigProvider, theme } from 'ant-design-vue'
 

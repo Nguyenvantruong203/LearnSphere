@@ -30,11 +30,11 @@ class Topic extends Model
         return $this->belongsTo(Course::class);
     }
 
-    // public function lessons()
-    // {
-    //     // Giữ thứ tự theo 'order' của lesson
-    //     return $this->hasMany(Lesson::class)->orderBy('order');
-    // }
+    public function lessons()
+    {
+        // Giữ thứ tự theo 'order' của lesson
+        return $this->hasMany(Lesson::class)->orderBy('order');
+    }
 
     /* =========================
      |  Scopes

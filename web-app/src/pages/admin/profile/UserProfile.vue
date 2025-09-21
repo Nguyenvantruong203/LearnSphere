@@ -98,7 +98,7 @@
                 </a-upload>
 
                 <a-button @click="triggerUpload" :loading="loadingAvatar"
-                  class="mx-auto bg-gradient-to-r from-blue-500 to-indigo-600 border-0 text-white hover:from-blue-600 hover:to-indigo-700 rounded-full px-6 shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center">
+                  class="bg-btn-admin border-0 text-white hover:from-blue-600 hover:to-indigo-700 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center">
                   <upload-outlined class="mr-2" /> <span>Change Avatar</span>
                 </a-button>
 
@@ -156,9 +156,9 @@
             </div>
 
             <!-- Action Buttons -->
-            <div class="flex flex-col sm:flex-row gap-4">
+            <div class="flex justify-end sm:flex-row gap-4">
               <a-button type="primary" html-type="submit" :loading="loading"
-                class="bg-gradient-to-r from-green-500 to-emerald-600 border-0 rounded-full px-4 h-12 text-base font-medium hover:from-green-600 hover:to-emerald-700 shadow-lg hover:shadow-xl transition-all duration-300 flex-1 sm:flex-initial flex justify-center items-center">
+                class="bg-btn-admin border-0 rounded-full text-base font-medium hover:bg-green-600 shadow-lg hover:shadow-xl transition-all duration-300 flex-1 sm:flex-initial flex justify-center items-center">
                 <template v-if="!loading">
                   <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -237,16 +237,6 @@ watchEffect(() => {
     initialLoading.value = true;
   }
 });
-
-const resetForm = () => {
-  formState.name = originalState.name;
-  formState.email = originalState.email;
-  formState.phone = originalState.phone;
-  formState.address = originalState.address;
-  formState.birth_date = originalState.birth_date;
-  formState.gender = originalState.gender;
-  notification.info({ message: 'Form has been reset to its initial state' });
-};
 
 const handleFinish = async (values: any) => {
   loading.value = true;

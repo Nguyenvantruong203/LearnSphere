@@ -4,103 +4,157 @@ namespace App\Http\Controllers;
 
 use App\Models\Topic;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Validator;
+use App\Models\Course;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class TopicController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function index(Request $request)
+    use AuthorizesRequests;
+
+    // GET /admin/courses/{course}/topics
+    public function index(Course $course, Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'course_id' => 'sometimes|required|exists:courses,id',
-            'search' => 'nullable|string|max:100',
-        ]);
+        $this->authorize('view', $course);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+        $q = $course->topics()->orderBy('order')->orderBy('id');
+
+        if ($request->filled('search')) {
+            $kw = (string) $request->string('search');
+            $q->where('title', 'like', "%{$kw}%");
         }
 
-        $query = Topic::query();
-
-        if ($request->has('course_id')) {
-            $query->forCourse($request->course_id);
-        }
-
-        $topics = $query->search($request->search)
-            ->ordered()
-            ->with('course:id,title')
-            ->paginate(15);
+        // Có thể không phân trang nếu ít
+        $topics = $q->paginate($request->integer('per_page', 20), ['id', 'title', 'order', 'course_id']);
 
         return response()->json($topics);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function store(Request $request)
+    // POST /admin/courses/{course}/topics
+
+    public function store(Request $request, Course $course)
     {
-        $validated = $request->validate([
-            'course_id' => 'required|exists:courses,id',
-            'title' => 'required|string|max:255',
-            'order' => 'nullable|integer|min:1',
+        $this->authorize('update', $course);
+
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'order' => ['nullable', 'integer', 'min:1'],
         ]);
 
-        $topic = Topic::create($validated);
+        // Nếu không truyền order thì auto max+1
+        if (!isset($data['order'])) {
+            $data['order'] = ($course->topics()->max('order') ?? 0) + 1;
+        } else {
+            $newOrder = $data['order'];
 
-        return response()->json($topic, 201);
+            // Kiểm tra trùng
+            $exists = $course->topics()->where('order', $newOrder)->exists();
+            if ($exists) {
+                return response()->json([
+                    'message' => 'Thứ tự đã tồn tại trong khóa học này.',
+                    'errors' => ['order' => ['Thứ tự đã tồn tại trong khóa học này.']]
+                ], 422);
+            }
+
+            // Nếu không trùng thì dịch các topic sau xuống
+            $course->topics()
+                ->where('order', '>=', $newOrder)
+                ->increment('order');
+        }
+
+        $topic = $course->topics()->create($data);
+
+        return response()->json(['message' => 'created', 'data' => $topic], 201);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Topic  $topic
-     * @return \Illuminate\Http\JsonResponse
-     */
+
+    // GET /admin/topics/{topic}  (shallow show)
     public function show(Topic $topic)
     {
-        return response()->json($topic->load('course'));
+        $this->authorize('view', $topic->course);
+
+        $topic->loadCount('lessons');
+
+        return response()->json(['data' => $topic]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Topic  $topic
-     * @return \Illuminate\Http\JsonResponse
-     */
+    // PUT /admin/courses/{course}/topics/{topic}
     public function update(Request $request, Topic $topic)
     {
-        $validated = $request->validate([
-            'course_id' => ['sometimes', 'required', Rule::exists('courses', 'id')],
-            'title' => 'sometimes|required|string|max:255',
-            'order' => 'sometimes|nullable|integer|min:1',
+        $this->authorize('update', $topic->course);
+
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'order' => ['required', 'integer', 'min:1'],
         ]);
 
-        $topic->update($validated);
+        $oldOrder = $topic->order;
+        $newOrder = $data['order'];
 
-        return response()->json($topic);
+        DB::transaction(function () use ($topic, $oldOrder, $newOrder, $data) {
+            if ($newOrder != $oldOrder) {
+                $courseTopics = $topic->course->topics();
+
+                // Check trùng (ngoài chính nó)
+                $exists = $courseTopics
+                    ->where('id', '<>', $topic->id)
+                    ->where('order', $newOrder)
+                    ->exists();
+
+                if ($exists) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'order' => ['Thứ tự đã tồn tại trong khóa học này.']
+                    ]);
+                }
+
+                // Tạm set order = 0 để tránh unique conflict
+                $topic->update(['order' => 0]);
+
+                if ($newOrder < $oldOrder) {
+                    // Chuyển lên trước → dịch xuống
+                    $courseTopics
+                        ->whereBetween('order', [$newOrder, $oldOrder - 1])
+                        ->increment('order');
+                } else {
+                    // Chuyển xuống sau → dịch lên
+                    $courseTopics
+                        ->whereBetween('order', [$oldOrder + 1, $newOrder])
+                        ->decrement('order');
+                }
+
+                // Set về newOrder
+                $topic->update([
+                    'title' => $data['title'],
+                    'order' => $newOrder,
+                ]);
+            } else {
+                // Chỉ update title
+                $topic->update([
+                    'title' => $data['title'],
+                    'order' => $oldOrder,
+                ]);
+            }
+        });
+
+        return response()->json(['message' => 'updated', 'data' => $topic]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Topic  $topic
-     * @return \Illuminate\Http\JsonResponse
-     */
+    // DELETE /admin/topics/{topic}
     public function destroy(Topic $topic)
     {
-        // TODO: Add logic to check if topic has lessons/quizzes before deleting
-        $topic->delete();
+        $this->authorize('delete', $topic->course);
 
-        return response()->json(null, 204);
+        DB::transaction(function () use ($topic) {
+            $topic->load('lessons');
+            foreach ($topic->lessons as $lesson) {
+                if (!empty($lesson->video_path)) {
+                    Storage::disk('public')->delete($lesson->video_path);
+                }
+            }
+            $topic->delete();
+        });
+
+        return response()->json(['message' => 'deleted']);
     }
 }

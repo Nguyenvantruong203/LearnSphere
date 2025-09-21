@@ -17,7 +17,7 @@ return new class extends Migration
             $t->string('title');
             $t->unsignedInteger('order')->default(1);
             $t->timestamps();
-            $t->softDeletes(); // khôi phục 
+            $t->softDeletes(); // khôi phục
 
             $t->unique(['course_id', 'title']);
             $t->index(['course_id', 'order']);

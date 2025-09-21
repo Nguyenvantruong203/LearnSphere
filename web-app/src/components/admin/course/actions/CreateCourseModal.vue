@@ -1,11 +1,11 @@
 <template>
     <a-modal
         title="Thêm khóa học mới"
-        :visible="visible"
+        :open="open"
         :confirm-loading="loading"
         ok-text="Tạo"
         cancel-text="Hủy"
-        @ok="handleOk"
+        @ok="handleFinish"
         @cancel="handleCancel"
         width="800px"
     >
@@ -82,10 +82,10 @@ import { PlusOutlined } from '@ant-design/icons-vue';
 import type { UploadChangeParam, UploadFile } from 'ant-design-vue';
 
 interface Props {
-    visible: boolean;
+    open: boolean;
 }
 const props = defineProps<Props>();
-const emit = defineEmits(['update:visible', 'finish']);
+const emit = defineEmits(['update:open', 'finish']);
 
 const formRef = ref();
 const loading = ref(false);
@@ -149,7 +149,7 @@ const handleThumbnailChange = ({ fileList: newFileList }: UploadChangeParam) => 
     }
 };
 
-const handleOk = async () => {
+const handleFinish = async () => {
     try {
         await formRef.value.validate();
         loading.value = true;
@@ -169,6 +169,6 @@ const handleCancel = () => {
     Object.assign(formState, initialFormState);
     thumbnailFile.value = null;
     fileList.value = [];
-    emit('update:visible', false);
+    emit('update:open', false);
 };
 </script>

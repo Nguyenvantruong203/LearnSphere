@@ -1,6 +1,6 @@
 <template>
   <div class="p-14 w-full text-base">
-    <Form layout="vertical" :model="formData" :rules="rules" @finish="handleSubmit">
+    <Form layout="vertical" :model="formData" :rules="rules" @finish="handleFinish">
       <Alert v-if="error" :message="error" type="error" show-icon class="mb-4" />
 
       <!-- Fullname -->
@@ -78,7 +78,7 @@ const rules = {
   password_confirmation: [{ required: true, validator: validatePasswordConfirmation }]
 }
 
-const handleSubmit = async () => {
+const handleFinish = async () => {
   loading.value = true
   error.value = null
   try {

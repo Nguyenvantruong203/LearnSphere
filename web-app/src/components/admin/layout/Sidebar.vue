@@ -58,8 +58,7 @@ const mainNavigation = [
   { icon: HomeOutlined, label: 'Dashboard', path: '/admin' },
   { icon: BarChartOutlined, label: 'Users management', path: '/admin/users' },
   { icon: BookOutlined, label: 'Courses', path: '/admin/courses' },
-  { icon: PartitionOutlined, label: 'Topics', path: '/admin/topics' },
-];
+];  
 
 const accountPages = [
   { icon: UserOutlined, label: 'Profile', path: '/admin/profile' },

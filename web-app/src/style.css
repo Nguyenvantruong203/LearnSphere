@@ -103,3 +103,6 @@ button:focus-visible {
 .bg-admin {
   background-color: #F8F9FA;
 }
+.bg-btn-admin {
+  background-color: #4fd1c5;
+}

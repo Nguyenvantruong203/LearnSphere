@@ -16,7 +16,6 @@ import NotFound from '@/pages/error/404.vue'
 import Forbidden from '@/pages/error/403.vue'
 import UserProfile from '@/pages/admin/profile/UserProfile.vue'
 import ListCourses from '@/pages/admin/course/ListCourses.vue'
-import ListTopics from '@/pages/admin/topic/ListTopics.vue'
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -41,7 +40,7 @@ export const routes: RouteRecordRaw[] = [
     meta: { layout: 'public', title: 'Login' },
   },
   {
-    path: '/auth/google/callback',
+    path: '/google/callback-login',
     name: 'GoogleCallback',
     component: GoogleCallback,
     meta: { layout: 'public', title: 'Authenticating...' },
@@ -80,21 +79,21 @@ export const routes: RouteRecordRaw[] = [
     meta: { layout: 'public', title: 'Admin Login' },
   },
   {
-    path: '/admin/listUsers',
-    name: 'AdminListUsers',
-    component: ListUsers,
-    meta: { layout: 'public', title: 'Admin List Users' },
-  },
-  {
-    path: '/admin/profile',
-    name: 'AdminUpdateProfile',
-    component: UserProfile,
-    meta: { layout: 'public', title: 'Admin Update Profile' },
-  },
-  {
     path: '/admin',
     meta: { layout: 'admin', requiresAuth: true, roles: ['admin'] },
     children: [
+      {
+        path: '/listUsers',
+        name: 'AdminListUsers',
+        component: ListUsers,
+        meta: { layout: 'public', title: 'Admin List Users' },
+      },
+      {
+        path: '/profile',
+        name: 'AdminUpdateProfile',
+        component: UserProfile,
+        meta: { layout: 'public', title: 'Admin Update Profile' },
+      },
       {
         path: '',
         name: 'admin-dashboard',
@@ -118,12 +117,6 @@ export const routes: RouteRecordRaw[] = [
         name: 'admin-courses',
         component: ListCourses,
         meta: { title: 'Quản lý khóa học' },
-      },
-      {
-        path: 'topics',
-        name: 'admin-topics',
-        component: ListTopics,
-        meta: { title: 'Quản lý chủ đề' },
       },
     ],
   },
@@ -180,8 +173,6 @@ router.beforeEach((to, from, next) => {
   if (isAuthenticated && (to.name === 'CustomerLogin' || to.name === 'AdminLogin')) {
     return next({ name: 'Homepage' })
   }
-
-  // If all checks pass, proceed
   next()
 })
 

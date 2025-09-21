@@ -66,10 +66,10 @@ class Course extends Model
      * Route Model Binding sử dụng slug (tiện SEO/URL).
      * Bỏ đi nếu anh vẫn muốn dùng id.
      */
-    public function getRouteKeyName(): string
-    {
-        return 'slug';
-    }
+    // public function getRouteKeyName(): string
+    // {
+    //     return 'slug';
+    // }
 
     /**
      * Tạo slug khi tạo mới (nếu chưa set).
@@ -103,10 +103,10 @@ class Course extends Model
      |  Relationships
      |=========================*/
 
-    // public function topics()
-    // {
-    //     return $this->hasMany(Topic::class)->orderBy('order');
-    // }
+    public function topics()
+    {
+        return $this->hasMany(Topic::class)->orderBy('order');
+    }
 
     // Tiện truy vấn tất cả lessons qua topics
     // public function lessons()

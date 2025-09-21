@@ -4,138 +4,120 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class CourseController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Display a listing of the resource.
      *
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
+    // GET /admin/courses
     public function index(Request $request)
     {
-        $courses = Course::query()
-            ->with('creator:id,name') // Lấy thông tin người tạo
-            ->search($request->query('search'))
-            ->latest()
-            ->paginate($request->query('limit', 15));
+        $this->authorize('viewAny', Course::class);
+
+        $q = Course::query()->orderBy('title');
+
+        if ($request->filled('search')) {
+            $kw = (string) $request->string('search');
+            $q->where('title', 'like', "%{$kw}%");
+        }
+
+        // Phân trang đồng bộ per_page
+        $courses = $q->paginate($request->integer('per_page', 10));
 
         return response()->json($courses);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
+    // POST /admin/courses
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'title' => 'required|string|max:255',
-            'short_description' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validate image
-            'status' => ['sometimes', Rule::in(['draft', 'published', 'archived'])],
-            'visibility' => ['sometimes', Rule::in(['public', 'unlisted', 'private'])],
-            'publish_at' => 'nullable|date',
-            'price' => 'sometimes|numeric|min:0',
-            'level' => ['sometimes', Rule::in(['beginner', 'intermediate', 'advanced'])],
-            'language' => 'sometimes|string|max:5',
+        $this->authorize('create', Course::class);
+        $data = $request->validate([
+            'title'              => ['required', 'string', 'max:255'],
+            'short_description'  => ['nullable', 'string'],
+            'description'        => ['nullable', 'string'],
+            'price'              => ['nullable', 'numeric', 'min:0'],
+            'status'             => ['nullable', 'in:draft,published,archived'],
+            'visibility'         => ['nullable', 'in:public,private'],
+            'level'              => ['nullable', 'in:beginner,intermediate,advanced'],
+            'language'           => ['nullable', 'string', 'max:10'],
+            'currency'           => ['nullable', 'string', 'max:10'],
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
+        $course = Course::create([
+            'created_by' => $request->user()->id,
+            ...$data
+        ]);
 
-        $validatedData = $validator->validated();
-        $validatedData['created_by'] = Auth::id();
-
-        if ($request->hasFile('thumbnail')) {
-            $path = $request->file('thumbnail')->store('public/thumbnails');
-            $validatedData['thumbnail_url'] = Storage::url($path);
-        }
-
-        $course = Course::create($validatedData);
-
-        return response()->json($course, 201);
+        return response()->json(['message' => 'created', 'data' => $course], 201);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param \App\Models\Course $course
-     * @return \Illuminate\Http\JsonResponse
-     */
+    // GET /admin/courses/{course}
     public function show(Course $course)
     {
-        // Tải thêm các quan hệ nếu cần
-        $course->load('creator:id,name');
-        return response()->json($course);
+        $this->authorize('view', $course);
+
+        // Có thể trả kèm counts
+        $course->loadCount('topics');
+
+        return response()->json(['data' => $course]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\Course $course
-     * @return \Illuminate\Http\JsonResponse
-     */
+    // PATCH /admin/courses/{course}
     public function update(Request $request, Course $course)
     {
-        // Laravel không xử lý tốt multipart/form-data với PUT.
-        // Frontend sẽ gửi POST với _method="PUT" nhưng để đơn giản, ta có thể tạo 1 route POST riêng.
-        // Ở đây, ta sẽ giả định frontend có thể gửi POST đến route update.
-        $validator = Validator::make($request->all(), [
-            'title' => 'sometimes|required|string|max:255',
-            'short_description' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'status' => ['sometimes', Rule::in(['draft', 'published', 'archived'])],
-            'visibility' => ['sometimes', Rule::in(['public', 'unlisted', 'private'])],
-            'publish_at' => 'nullable|date',
-            'price' => 'sometimes|numeric|min:0',
-            'level' => ['sometimes', Rule::in(['beginner', 'intermediate', 'advanced'])],
-            'language' => 'sometimes|string|max:5',
+        $this->authorize('update', $course);
+
+        $data = $request->validate([
+            'title'              => ['required', 'string', 'max:255'],
+            'short_description'  => ['nullable', 'string'],
+            'description'        => ['nullable', 'string'],
+            'price'              => ['nullable', 'numeric', 'min:0'],
+            'status'             => ['nullable', 'in:draft,published,archived'],
+            'visibility'         => ['nullable', 'in:public,private'],
+            'level'              => ['nullable', 'in:beginner,intermediate,advanced'],
+            'language'           => ['nullable', 'string', 'max:10'],
+            'currency'           => ['nullable', 'string', 'max:10'],
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        $validatedData = $validator->validated();
-
+        // Nếu có file thumbnail
         if ($request->hasFile('thumbnail')) {
-            // Xóa ảnh cũ nếu có
-            if ($course->thumbnail_url) {
-                $oldPath = str_replace('/storage', 'public', $course->thumbnail_url);
-                Storage::delete($oldPath);
-            }
-            // Lưu ảnh mới
-            $path = $request->file('thumbnail')->store('public/thumbnails');
-            $validatedData['thumbnail_url'] = Storage::url($path);
+            $path = $request->file('thumbnail')->store('thumbnails', 'public');
+            $data['thumbnail_url'] = '/storage/' . $path;
         }
 
-        $course->update($validatedData);
+        $course->update($data);
 
-        return response()->json($course);
+        return response()->json([
+            'message' => 'updated',
+            'data' => $course
+        ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param \App\Models\Course $course
-     * @return \Illuminate\Http\JsonResponse
-     */
+    // DELETE /admin/courses/{course}
     public function destroy(Course $course)
     {
-        $course->delete();
+        $this->authorize('delete', $course);
 
-        return response()->json(null, 204);
+        DB::transaction(function () use ($course) {
+            $course->load(['topics.lessons']);
+            foreach ($course->topics as $topic) {
+                foreach ($topic->lessons as $lesson) {
+                    if (!empty($lesson->video_path)) {
+                        Storage::disk('public')->delete($lesson->video_path);
+                    }
+                }
+            }
+            $course->delete();
+        });
+
+        return response()->json(['message' => 'deleted']);
     }
 }

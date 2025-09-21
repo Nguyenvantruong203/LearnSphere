@@ -2,7 +2,7 @@
     <LayoutLoginAdmin title="Welcome Back" subtitle="Sign in with Admin account!"
         footer-text="Admin accounts are provided by the system administrator!" footer-link-text="Contact support"
         :show-footer="true">
-        <Form layout="vertical" :model="formData" @finish="handleSubmit" class="space-y-6">
+        <Form layout="vertical" :model="formData" @finish="handleFinish" class="space-y-6">
             <Alert v-if="error" :message="error" type="error" show-icon class="mb-6" />
 
             <!-- Email Field -->
@@ -61,7 +61,7 @@ const passwordRules: Rule[] = [
     { required: true, message: 'Vui lòng nhập mật khẩu' }
 ]
 
-const handleSubmit = async (values: any) => {
+const handleFinish = async (values: any) => {
     loading.value = true
     error.value = ''
     try {

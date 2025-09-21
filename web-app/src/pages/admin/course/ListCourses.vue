@@ -11,7 +11,7 @@
       </a-breadcrumb>
     </HeaderAdmin>
 
-    <CoursesTable /> //tạo ở components/admin/course/CoursesTable.vue
+    <CoursesTable />
   </LayoutAdmin>
 </template>
 

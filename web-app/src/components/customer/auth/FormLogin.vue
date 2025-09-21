@@ -1,6 +1,6 @@
 <template>
   <div class="p-14 w-full text-base">
-    <Form layout="vertical" :model="formData" @finish="handleSubmit" class="space-y-1">
+    <Form layout="vertical" :model="formData" @finish="handleFinish" class="space-y-1">
       <Alert v-if="error" :message="error" type="error" show-icon class="mb-4" />
 
       <!-- Email -->
@@ -57,7 +57,7 @@ const formData = reactive({
 const loading = ref(false)
 const error = ref<string | null>(null)
 
-const handleSubmit = async () => {
+const handleFinish = async () => {
   loading.value = true
   error.value = null
   try {

@@ -23,8 +23,8 @@ class UserController extends Controller
             $searchTerm = $request->input('search');
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('name', 'like', "%{$searchTerm}%")
-                  ->orWhere('email', 'like', "%{$searchTerm}%")
-                  ->orWhere('username', 'like', "%{$searchTerm}%");
+                    ->orWhere('email', 'like', "%{$searchTerm}%")
+                    ->orWhere('username', 'like', "%{$searchTerm}%");
             });
         }
 
@@ -90,12 +90,12 @@ class UserController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|required|string|max:255',
-            'email' => ['sometimes','required','string','email','max:255', Rule::unique('users')->ignore($user->id)],
-            'username' => ['nullable','string','max:50', Rule::unique('users')->ignore($user->id)],
+            'email' => ['sometimes', 'required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'username' => ['nullable', 'string', 'max:50', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:8',
-            'phone' => ['nullable','string','max:20', Rule::unique('users')->ignore($user->id)],
-            'role' => ['sometimes','required', Rule::in(['student', 'instructor', 'admin'])],
-            'status' => ['sometimes','required', Rule::in(['pending', 'approved', 'rejected'])],
+            'phone' => ['nullable', 'string', 'max:20', Rule::unique('users')->ignore($user->id)],
+            'role' => ['sometimes', 'required', Rule::in(['student', 'instructor', 'admin'])],
+            'status' => ['sometimes', 'required', Rule::in(['pending', 'approved', 'rejected'])],
             'birth_date' => 'nullable|date',
             'gender' => ['nullable', Rule::in(['male', 'female', 'other'])],
             'address' => 'nullable|string|max:255',

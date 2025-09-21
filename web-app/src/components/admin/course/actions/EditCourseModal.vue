@@ -1,15 +1,15 @@
 <template>
     <a-modal
         title="Chỉnh sửa khóa học"
-        :visible="visible"
+        :open="open"
         :confirm-loading="loading"
         ok-text="Cập nhật"
         cancel-text="Hủy"
-        @ok="handleOk"
+        @ok="handleFinish"
         @cancel="handleCancel"
         width="800px"
     >
-        <a-form v-if="formState" ref="formRef" :model="formState" :rules="rules" layout="vertical">
+        <a-form :key="formKey" v-if="formState" ref="formRef" :model="formState" :rules="rules" layout="vertical">
             <a-form-item label="Ảnh bìa" name="thumbnail">
                 <a-upload
                     v-model:file-list="fileList"
@@ -74,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, reactive, watch, nextTick } from 'vue';
 import { courseApi } from '@/api/courseApi';
 import type { Course, CoursePayload } from '@/types/Course';
 import { notification } from 'ant-design-vue';
@@ -83,15 +83,15 @@ import { PlusOutlined } from '@ant-design/icons-vue';
 import type { UploadChangeParam, UploadFile } from 'ant-design-vue';
 
 interface Props {
-    visible: boolean;
-    course: Course | null;
+  open: boolean;
+  course: Course | null;
 }
 const props = defineProps<Props>();
-const emit = defineEmits(['update:visible', 'finish']);
+const emit = defineEmits(['update:open', 'finish']);
 
 const formRef = ref();
 const loading = ref(false);
-const formState = ref<Partial<CoursePayload> | null>(null);
+const formKey = ref<string | number | undefined>(undefined);
 const thumbnailFile = ref<File | null>(null);
 const fileList = ref<UploadFile[]>([]);
 
@@ -123,69 +123,113 @@ const handlePreview = async (file: UploadFile) => {
   previewTitle.value = file.name || (file.url ? file.url.substring(file.url.lastIndexOf('/') + 1) : '');
 };
 
-watch(() => props.course, (newCourse) => {
-    if (newCourse) {
-        formState.value = {
-            title: newCourse.title,
-            short_description: newCourse.short_description,
-            description: newCourse.description,
-            price: newCourse.price,
-            status: newCourse.status,
-            visibility: newCourse.visibility,
-            level: newCourse.level,
-            language: newCourse.language,
-        };
-        // Hiển thị ảnh hiện tại
-        if (newCourse.thumbnail_url) {
-            fileList.value = [{
-                uid: '-1',
-                name: 'thumbnail.png',
-                status: 'done',
-                url: newCourse.thumbnail_url,
-            }];
-        } else {
-            fileList.value = [];
-        }
+// Initial form shape (same as CreateCourseModal)
+const initialFormState: CoursePayload = {
+  title: '',
+  short_description: '',
+  description: '',
+  price: 0,
+  status: 'draft',
+  visibility: 'public',
+  level: 'beginner',
+  language: 'vi',
+  currency: 'VND',
+  created_by: 0,
+};
+
+const formState = reactive({ ...initialFormState });
+
+ // Sync form when modal opens or course prop changes
+watch([() => props.open, () => props.course], async ([open, newCourse]) => {
+  if (open && newCourse) {
+    // set form key so the form remounts when editing a different course while open
+    // use a string key with timestamp to force remount even if same id/reference
+    formKey.value = `${newCourse.id}-${Date.now()}`;
+
+    // set fields into the reactive formState (preserve reactivity)
+    Object.assign(formState, {
+      title: newCourse.title ?? '',
+      short_description: newCourse.short_description ?? '',
+      description: newCourse.description ?? '',
+      price: newCourse.price ?? 0,
+      status: newCourse.status ?? 'draft',
+      visibility: newCourse.visibility ?? 'public',
+      level: newCourse.level ?? 'beginner',
+      language: newCourse.language ?? 'vi',
+      currency: (newCourse as any).currency ?? 'VND',
+    });
+
+    // show existing thumbnail
+    if (newCourse.thumbnail_url) {
+      fileList.value = [{
+        uid: '-1',
+        name: 'thumbnail.png',
+        status: 'done',
+        url: newCourse.thumbnail_url,
+      }];
     } else {
-        formState.value = null;
-        fileList.value = [];
+      fileList.value = [];
     }
-    thumbnailFile.value = null; // Reset file mới mỗi khi mở modal
+
+    // allow DOM to update then sync AntD form fields and reset validation state
+    await nextTick();
+    // ensure AntD form internal fields are updated when props.course changes
+    formRef.value?.setFieldsValue(formState as any);
+    formRef.value?.resetFields();
+  } else if (!open) {
+    // clear form when modal closed
+    formKey.value = undefined;
+    Object.assign(formState, initialFormState);
+    fileList.value = [];
+  }
+
+  thumbnailFile.value = null;
 }, { immediate: true });
 
-
 const rules: Record<string, Rule[]> = {
-    title: [{ required: true, message: 'Vui lòng nhập tiêu đề!' }],
-    price: [{ required: true, type: 'number', min: 0, message: 'Giá phải là một số không âm!' }],
+  title: [{ required: true, message: 'Vui lòng nhập tiêu đề!' }],
+  price: [{ required: true, message: 'Giá phải là một số không âm!' }],
 };
 
 const handleThumbnailChange = ({ fileList: newFileList }: UploadChangeParam) => {
-    fileList.value = newFileList;
-    if (newFileList.length > 0 && newFileList[0].originFileObj) {
-        thumbnailFile.value = newFileList[0].originFileObj as File;
-    } else {
-        thumbnailFile.value = null;
-    }
+  fileList.value = newFileList;
+  if (newFileList.length > 0 && newFileList[0].originFileObj) {
+    thumbnailFile.value = newFileList[0].originFileObj as File;
+  } else {
+    thumbnailFile.value = null;
+  }
 };
 
-const handleOk = async () => {
-    if (!props.course || !formState.value) return;
+const handleFinish = async () => {
+  if (!props.course) return;
 
-    try {
-        await formRef.value.validate();
-        loading.value = true;
-        await courseApi.updateCourse(props.course.slug, formState.value, thumbnailFile.value);
-        notification.success({ message: 'Cập nhật khóa học thành công!' });
-        emit('finish');
-        handleCancel();
-    } catch (error: any) {
-        notification.error({ message: error.message || 'Cập nhật khóa học thất bại.' });
-    } finally {
-        loading.value = false;
+  try {
+    await formRef.value.validate();
+    loading.value = true;
+
+    if (!props.course.slug) {
+      notification.error({ message: 'Không tìm thấy slug khóa học.' });
+      return;
     }
+
+    // pass reactive object (formState) directly
+    await courseApi.updateCourse(props.course.id, formState as CoursePayload, thumbnailFile.value ?? null);
+    notification.success({ message: 'Cập nhật khóa học thành công!' });
+    emit('finish');
+    handleCancel();
+  } catch (error: any) {
+    notification.error({ message: error?.message || 'Cập nhật khóa học thất bại.' });
+  } finally {
+    loading.value = false;
+  }
 };
 
-const handleCancel = () => {
-    emit('update:visible', false);
+const handleCancel = async () => {
+  formRef.value?.resetFields();
+  formKey.value = undefined;
+  Object.assign(formState, initialFormState);
+  thumbnailFile.value = null;
+  fileList.value = [];
+  emit('update:open', false);
 };
 </script>
