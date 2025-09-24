@@ -15,11 +15,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('quiz_id')->constrained('quizzes')->cascadeOnDelete();
+            $table->unsignedInteger('attempt_number')->default(1);
             $table->float('score')->default(0);
-            $table->timestamp('submitted_at')->nullable();
+            $table->timestamp('submitted_at')->useCurrent();
             $table->timestamps();
 
-            $table->unique(['user_id', 'quiz_id']);
+            $table->index(['user_id', 'quiz_id', 'attempt_number']);
         });
     }
 

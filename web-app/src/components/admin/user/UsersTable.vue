@@ -126,24 +126,25 @@ const columns = [
 ]
 
 const fetchUsers = async () => {
-    loading.value = true
-    error.value = null
-    try {
-        const params: GetUsersParams = {
-            page: pagination.current,
-            per_page: pagination.pageSize,
-            search: searchQuery.value || undefined,
-        };
-        const response = await userApi.getUsers(params)
-        users.value = response.data
-        pagination.total = response.total
-    } catch (e: any) {
-        error.value = e.message || 'Failed to fetch users.'
-        notification.error({ message: error.value })
-    } finally {
-        loading.value = false
-    }
+  loading.value = true
+  error.value = null
+  try {
+    const params: GetUsersParams = {
+      page: pagination.current,
+      per_page: pagination.pageSize,
+      search: searchQuery.value || undefined,
+    };
+    const response = await userApi.getUsers(params)
+
+    users.value = response.data
+  } catch (e: any) {
+    error.value = e.message || 'Failed to fetch users.'
+    notification.error({ message: error.value })
+  } finally {
+    loading.value = false
+  }
 }
+
 
 const handlePageChange = (page: number, pageSize: number) => {
     pagination.current = page;

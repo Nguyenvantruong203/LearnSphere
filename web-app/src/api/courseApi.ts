@@ -1,49 +1,54 @@
-import { http } from './http'
+import { http } from '@/helpers/http'
+import type { Course, CoursePayload, GetCoursesParams, PaginationCourse } from '@/types/Course'
+import type { Topic } from '@/types/Topic'
 
-interface CourseApi {
-  getCourses(params: { page?: number; limit?: number; search?: string }): Promise<any>
-  createCourse(payload: any, thumbnailFile?: File | null): Promise<any>
-  getTopicsByCourse(courseId: number): Promise<any>
-  deleteCourse(courseId: number): Promise<void>
-  updateCourse(courseId: number, payload: any, thumbnailFile?: File | null): Promise<any>
-}
-
-export const courseApi: CourseApi = {
-  async getCourses(params?: { page?: number; per_page?: number; search?: string }) {
+export const courseApi = {
+  async getCourses(params: GetCoursesParams): Promise<PaginationCourse<Course>> {
     return await http('/api/admin/courses', {
       method: 'GET',
-      params,
+      params
     })
   },
 
-  async createCourse(payload: any, thumbnailFile?: File | null): Promise<any> {
+  async createCourse(payload: CoursePayload, thumbnailFile?: File | null): Promise<Course> {
     const formData = new FormData()
     for (const key in payload) {
       if (Object.prototype.hasOwnProperty.call(payload, key)) {
-        formData.append(key, payload[key])
+        const value = payload[key as keyof CoursePayload]
+        if (value !== undefined && value !== null) {
+          formData.append(key, value as string)
+        }
       }
     }
     if (thumbnailFile) {
       formData.append('thumbnail', thumbnailFile)
     }
-    return await http('/api/admin/courses', {
+    const response = await http('/api/admin/courses', {
       method: 'POST',
-      body: formData,
-    })
-  },
-  async getTopicsByCourse(courseId: number) {
-    const response = await http(`/api/admin/courses/${courseId}/topics`, {
-      method: 'GET',
-      params: { limit: 999 },
+      body: formData
     })
     return response.data
   },
+
+  async getTopicsByCourse(courseId: number): Promise<Topic[]> {
+    const response = await http(`/api/admin/courses/${courseId}/topics`, {
+      method: 'GET',
+      params: { limit: 999 }
+    })
+    return response.data
+  },
+
   async deleteCourse(courseId: number): Promise<void> {
     await http(`/api/admin/courses/${courseId}`, {
-      method: 'DELETE',
+      method: 'DELETE'
     })
   },
-  async updateCourse(courseId: number, payload: any, thumbnailFile?: File | null): Promise<any> {
+
+  async updateCourse(
+    courseId: number,
+    payload: Partial<CoursePayload>,
+    thumbnailFile?: File | null
+  ): Promise<Course> {
     const formData = new FormData()
 
     Object.entries(payload).forEach(([key, value]) => {
@@ -58,9 +63,10 @@ export const courseApi: CourseApi = {
 
     formData.append('_method', 'PUT')
 
-    return await http(`/api/admin/courses/${courseId}`, {
-      method: 'POST',
-      body: formData,
+    const response = await http(`/api/admin/courses/${courseId}`, {
+      method: 'POST', // Using POST for FormData with _method
+      body: formData
     })
-  },
+    return response.data
+  }
 }

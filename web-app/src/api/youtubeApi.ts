@@ -1,4 +1,4 @@
-import { http } from './http'
+import { http } from '@/helpers/http'
 
 export const youtubeApi = {
 async getStatus() {

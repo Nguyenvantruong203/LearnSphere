@@ -79,7 +79,7 @@ const handleFinish = async (values: any) => {
             duration: 2
         });
 
-        router.push({ name: 'AdminListUsers' });
+        router.push({ name: 'admin-users' });
 
     } catch (err: any) {
         error.value = err.message || 'Email hoặc mật khẩu không chính xác.';

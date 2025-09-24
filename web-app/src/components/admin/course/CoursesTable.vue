@@ -25,7 +25,7 @@
                 childrenColumnName: 'children',
                 expandRowByClick: false,
                 defaultExpandAllRows: false
-              }" @expand="(expanded, record) => onExpandTopic(expanded, record, course.id)" />
+              }" @expand="(expanded, record) => onExpand(expanded, record, course.id)" />
 
           </a-collapse-panel>
         </a-collapse>
@@ -48,6 +48,12 @@
       :course-id="createLesson.courseId" :youtube-connected="youtubeConnected" @finish="onCreatedLesson" />
 
     <EditLessonModal v-model:open="editLesson.open" :lesson="editLesson.lesson" @finish="onEditedLesson" />
+    <CreateQuizModal v-model:open="createQuiz.open" :lesson-id="createQuiz.lessonId" :topic-id="createQuiz.topicId"
+      :scope="createQuiz.scope" @finish="onCreatedQuiz" />
+    <EditQuizModal v-model:open="editQuiz.open" :quiz="editQuiz.quiz" @finish="onEditedQuiz" />
+    <QuizDrawer v-model:open="quizDrawer.open" :quiz="quizDrawer.quiz" />
+
+
   </div>
 </template>
 
@@ -65,10 +71,15 @@ import EditCourseModal from '@/components/admin/course/actions/EditCourseModal.v
 import CreateTopicModal from '@/components/admin/topic/actions/CreateTopicModal.vue'
 import CreateLessonModal from '@/components/admin/lesson/actions/CreateLessonModal.vue'
 import EditTopicModal from '@/components/admin/topic/actions/EditTopicModal.vue'
+import EditLessonModal from '@/components/admin/lesson/actions/EditLessonModal.vue'
+import CreateQuizModal from '@/components/admin/quiz/actions/CreateQuizModal.vue'
+import EditQuizModal from '@/components/admin/quiz/actions/EditQuizModal.vue'
+import QuizDrawer from '@/components/admin/quiz/QuizDrawer.vue'
 
 import type { Topic } from '@/types/Topic'
 import type { Course } from '@/types/Course'
 import { youtubeApi } from '@/api/youtubeApi'
+import { quizApi } from '@/api/quizApi'
 
 interface TopicNode extends Topic {
   key: string;
@@ -80,8 +91,9 @@ interface TopicNode extends Topic {
 
 type TreeNode =
   | TopicNode
-  | { key: string; type: "lesson"; lesson_id: number; title: string; order: number; content?: string | null }
-  | { key: string; type: "loading"; title: string; order: number; lesson_id: number }
+  | { key: string; type: "lesson"; lesson_id: number; title: string; order: number; content?: string | null; children?: TreeNode[] }
+  | { key: string; type: "quiz"; quiz_id: number; title: string; duration_minutes: number; order?: number; lesson_id?: number }
+  | { key: string; type: "loading"; title: string; order: number; lesson_id?: number }
 
 const courses = ref<Course[]>([])
 const pagination = reactive({
@@ -142,16 +154,46 @@ const columns = [
     customRender: ({ record }: any) => {
       if (record.type === 'topic') return h(Tag, {}, () => 'Topic')
       if (record.type === 'lesson') return h(Tag, { color: 'blue' }, () => 'Lesson')
+      if (record.type === 'quiz') return h(Tag, { color: 'green' }, () => 'Quiz')
       if (record.type === 'loading') return h(Tag, { color: 'orange' }, () => 'Loading')
       return null
     }
   },
-  { title: 'Tiêu đề', dataIndex: 'title', key: 'title' },
-  { title: 'Thứ tự', dataIndex: 'order', key: 'order', width: 100 },
+  {
+    title: 'Tiêu đề',
+    key: 'title',
+    customRender: ({ record }: any) => {
+      if (record.type === 'quiz') {
+        return h(
+          'a',
+          {
+            style: {
+              textDecoration: 'underline', // gạch chân
+              cursor: 'pointer',
+              color: '#1677ff' // màu link giống theme
+            },
+            onClick: () => openQuizDrawer(record),
+          },
+          record.title
+        )
+      }
+      return record.title
+    }
+  },
+  {
+    title: 'Thứ tự / Thời lượng',
+    key: 'order',
+    width: 160,
+    customRender: ({ record }: any) => {
+      if (record.type === 'lesson') return record.order
+      if (record.type === 'quiz') return `${record.duration_minutes ?? 0} phút`
+      return record.order
+    }
+  },
   {
     title: 'Hành động',
     key: 'action',
-    width: 260,
+    width: 320,
     customRender: ({ record }: any) => {
       if (record.type === 'topic') {
         return h(Space, {}, () => [
@@ -159,20 +201,34 @@ const columns = [
             type: 'link',
             onClick: () => openCreateLesson(record.id, Number(activeCourseKeys.value[0]))
           }, () => '+ Lesson'),
+          h(Button, {
+            type: 'link',
+            onClick: () => openCreateQuiz(record)
+          }, () => '+ Quiz'),
           h(Button, { type: 'link', onClick: () => openEditTopic(record) }, () => 'Sửa'),
           h(Popconfirm,
-            {
-              title: 'Xoá topic này?',
-              onConfirm: () => removeTopic(record),
-            },
+            { title: 'Xoá topic này?', onConfirm: () => removeTopic(record) },
             { default: () => h(Button, { type: 'link', danger: true }, () => 'Xoá') }
           )
         ])
-      } else if (record.type === 'lesson') {
+      }
+      if (record.type === 'lesson') {
         return h(Space, {}, () => [
+          h(Button, {
+            type: 'link',
+            onClick: () => openCreateQuiz(record)
+          }, () => '+ Quiz'),
           h(Button, { type: 'link', onClick: () => openEditLesson(record) }, () => 'Sửa'),
           h(Popconfirm,
             { title: 'Xoá bài học này?', onConfirm: () => removeLesson(record) },
+            { default: () => h(Button, { type: 'link', danger: true }, () => 'Xoá') })
+        ])
+      }
+      if (record.type === 'quiz') {
+        return h(Space, {}, () => [
+          h(Button, { type: 'link', onClick: () => openEditQuiz(record) }, () => 'Sửa'),
+          h(Popconfirm,
+            { title: 'Xoá quiz này?', onConfirm: () => removeQuiz(record) },
             { default: () => h(Button, { type: 'link', danger: true }, () => 'Xoá') })
         ])
       }
@@ -180,6 +236,12 @@ const columns = [
     }
   }
 ]
+const quizDrawer = ref<{ open: boolean; quiz: any | null }>({ open: false, quiz: null })
+
+const openQuizDrawer = (quizRow: any) => {
+  quizDrawer.value = { open: true, quiz: quizRow }
+}
+
 // ====== Lifecycle ======
 onMounted(async () => {
   const savedCourseId = localStorage.getItem('activeCourseId')
@@ -238,7 +300,6 @@ const fetchTopics = async (courseId: number) => {
         ...t,
         key: `topic-${t.id}`,
         type: "topic" as const,
-        // QUAN TRỌNG: children phải là array có ít nhất 1 phần tử
         children: [{
           key: `loading-${t.id}`,
           type: 'loading' as const,
@@ -261,79 +322,102 @@ const fetchTopics = async (courseId: number) => {
   }
 }
 
-const fetchLesson = async (courseId: number, topicId: number) => {
+// ====== FIXED: Fetch lessons and quizzes together ======
+const fetchTopicContent = async (courseId: number, topicId: number) => {
   try {
-    const res = await lessonApi.getLessons({ topicId, page: 1, limit: 50 })
-    const rows = Array.isArray(res.data) ? res.data : res
 
-    const lessons = (rows ?? []).map((ls: any) => ({
-      key: `lesson-${ls.id}`,
-      type: 'lesson' as const,
-      lesson_id: ls.id,
-      title: ls.title,
-      order: ls.order,
-      content: ls.content ?? null
+    // Fetch lessons
+    const lessonRes = await lessonApi.getLessons({ topicId, page: 1, limit: 50 })
+    const lessonRows = Array.isArray(lessonRes.data) ? lessonRes.data : lessonRes
+
+    // Fetch quizzes for this topic
+    const quizRes = await quizApi.getQuizzesByTopic(topicId)
+    const allQuizzes = Array.isArray(quizRes.data) ? quizRes.data : (quizRes || [])
+
+    // Separate topic-level quizzes and lesson-level quizzes
+    const topicQuizzes = allQuizzes.filter((q: any) => !q.lesson_id)
+    const lessonQuizzesMap = new Map<number, any[]>()
+
+    allQuizzes.filter((q: any) => q.lesson_id).forEach((q: any) => {
+      if (!lessonQuizzesMap.has(q.lesson_id)) {
+        lessonQuizzesMap.set(q.lesson_id, [])
+      }
+      lessonQuizzesMap.get(q.lesson_id)!.push(q)
+    })
+
+    // Create lesson nodes with their quizzes
+    const lessons = (lessonRows ?? []).map((ls: any) => {
+      const lessonQuizzes = lessonQuizzesMap.get(ls.id) || []
+      const quizNodes = lessonQuizzes.map((q: any) => ({
+        ...q, // Spread all properties from the quiz object
+        key: `quiz-${q.id}`,
+        type: 'quiz' as const,
+        quiz_id: q.id,
+      }))
+
+      return {
+        key: `lesson-${ls.id}`,
+        type: 'lesson' as const,
+        lesson_id: ls.id,
+        title: ls.title,
+        order: ls.order,
+        content: ls.content ?? null,
+        children: quizNodes.length > 0 ? quizNodes : undefined, // Set to undefined if no quizzes
+      }
+    })
+
+    // Create topic-level quiz nodes
+    const topicQuizNodes = topicQuizzes.map((q: any) => ({
+      ...q, // Spread all properties from the quiz object
+      key: `quiz-${q.id}`,
+      type: 'quiz' as const,
+      quiz_id: q.id,
     }))
 
+    // Update the tree
     const currentCourseTree = treeByCourse[courseId] || []
     const topicIndex = currentCourseTree.findIndex(node =>
       node.type === 'topic' && node.id === topicId
     )
+
     if (topicIndex !== -1) {
+      const topicNode = currentCourseTree[topicIndex]
+
+      // Combine topic quizzes and lessons (with their quizzes)
+      const allChildren = [...topicQuizNodes, ...lessons]
+
       const updatedTopic = {
-        ...currentCourseTree[topicIndex],
-        children: lessons,
-        loaded: true
+        ...topicNode,
+        children: allChildren.length > 0 ? allChildren : undefined,
+        loaded: true,
       }
+
       const newTree = [...currentCourseTree]
       newTree[topicIndex] = updatedTopic
       treeByCourse[courseId] = newTree
+
+      console.log('✅ Updated topic tree:', updatedTopic)
       await nextTick()
-    } else {
-      console.error('❌ Topic not found in tree:', topicId)
     }
-
   } catch (err) {
-    console.error('❌ fetchLesson failed with error:', err)
-
-    const currentCourseTree = treeByCourse[courseId] || []
-    const topicIndex = currentCourseTree.findIndex(node =>
-      node.type === 'topic' && node.id === topicId
-    )
-
-    if (topicIndex !== -1) {
-      const updatedTopic = {
-        ...currentCourseTree[topicIndex],
-        children: [], // Empty array
-        loaded: true
-      }
-
-      const newTree = [...currentCourseTree]
-      newTree[topicIndex] = updatedTopic
-      treeByCourse[courseId] = newTree
-    }
+    console.error('❌ fetchTopicContent failed:', err)
+    notification.error({ message: 'Tải nội dung thất bại' })
   }
 }
-// ====== Expand handler (lazy-load lessons) ======
-const onExpandTopic = async (expanded: boolean, record: TreeNode, courseId: number) => {
 
-  if (!expanded) {
-    console.log('Collapsed - no action needed')
+// ====== SIMPLIFIED: Expand handler ======
+const onExpand = async (expanded: boolean, record: TreeNode, courseId: number) => {
+  if (!expanded || record.type !== 'topic') return
+
+  console.log('🔍 Expanding topic:', record.id)
+
+  // If already loaded, don't fetch again
+  if (record.loaded) {
+    console.log('📋 Topic already loaded, skipping fetch')
     return
   }
 
-  if (record.type !== 'topic') {
-    console.log('Not a topic - no action needed')
-    return
-  }
-
-  const topicRecord = record as TopicNode
-
-  try {
-    await fetchLesson(courseId, topicRecord.id)
-  } catch (error) {
-    console.error('❌ Fetch lessons failed:', error)
-  }
+  await fetchTopicContent(courseId, record.id)
 }
 
 // ====== Create Topic ======
@@ -378,6 +462,7 @@ const openCreateLesson = async (topicId: number, courseId: number) => {
 const onCreatedLesson = async ({ topicId, courseId }: { topicId: number; courseId?: number }) => {
   const cid = courseId ?? Number(activeCourseKeys.value[0])
   if (cid) {
+    // Mark topic as not loaded to force refresh
     const currentTree = treeByCourse[cid] || []
     treeByCourse[cid] = currentTree.map(node => {
       if (node.type === 'topic' && node.id === topicId) {
@@ -386,7 +471,7 @@ const onCreatedLesson = async ({ topicId, courseId }: { topicId: number; courseI
       return node
     })
 
-    await fetchLesson(cid, topicId)
+    await fetchTopicContent(cid, topicId)
   }
 }
 
@@ -405,20 +490,41 @@ const openEditLesson = (lessonRow: any) => {
   }
 }
 
-const findTopicIdOfLesson = (lessonRow: any): number | null => {
+const findTopicIdOfLesson = (row: any): number | null => {
   const cid = Number(activeCourseKeys.value[0])
   const rows = treeByCourse[cid] || []
   for (const t of rows) {
-    if (t.type === 'topic' && t.children?.some(ch => ch.type === 'lesson' && ch.lesson_id === lessonRow.lesson_id)) {
-      return t.id
+    if (t.type === 'topic') {
+      if (t.children?.some(ch =>
+        (ch.type === 'lesson' && ch.lesson_id === row.lesson_id) ||
+        (ch.type === 'quiz' && ch.quiz_id === row.quiz_id)
+      )) {
+        return t.id
+      }
+      // Kiểm tra quiz trong children của lesson
+      for (const lesson of t.children?.filter(ch => ch.type === 'lesson') ?? []) {
+        if (lesson.children?.some((ch: any) => ch.type === 'quiz' && ch.quiz_id === row.quiz_id)) {
+          return t.id
+        }
+      }
     }
   }
   return null
 }
+
 const onEditedLesson = async ({ topicId, courseId }: { topicId: number; courseId?: number }) => {
   const cid = courseId ?? Number(activeCourseKeys.value[0])
   if (cid && topicId) {
-    await fetchLesson(cid, topicId)
+    // Mark as not loaded and refresh
+    const currentTree = treeByCourse[cid] || []
+    treeByCourse[cid] = currentTree.map(node => {
+      if (node.type === 'topic' && node.id === topicId) {
+        return { ...node, loaded: false }
+      }
+      return node
+    })
+
+    await fetchTopicContent(cid, topicId)
   }
 }
 
@@ -442,6 +548,7 @@ const removeLesson = async (lessonRow: any) => {
     const topicId = findTopicIdOfLesson(lessonRow)
     const cid = Number(activeCourseKeys.value[0])
     if (cid && topicId) {
+      // Mark as not loaded and refresh
       const currentTree = treeByCourse[cid] || []
       treeByCourse[cid] = currentTree.map(node => {
         if (node.type === 'topic' && node.id === topicId) {
@@ -449,10 +556,122 @@ const removeLesson = async (lessonRow: any) => {
         }
         return node
       })
-      await fetchLesson(cid, topicId)
+      await fetchTopicContent(cid, topicId)
     }
   } catch (e: any) {
     notification.error({ message: e?.message || 'Xoá thất bại' })
+  }
+}
+
+// ====== Quiz Modals ======
+const createQuiz = ref<{
+  open: boolean
+  lessonId: number | null
+  topicId: number | null
+  scope: 'lesson' | 'topic'
+}>({
+  open: false,
+  lessonId: null,
+  topicId: null,
+  scope: 'lesson',
+})
+
+const openCreateQuiz = (row: any) => {
+  if (row.type === 'lesson') {
+    const topicId = findTopicIdOfLesson(row)
+    createQuiz.value = { open: true, lessonId: row.lesson_id, topicId, scope: 'lesson' }
+  }
+  if (row.type === 'topic') {
+    createQuiz.value = { open: true, lessonId: null, topicId: row.id, scope: 'topic' }
+  }
+}
+
+const onCreatedQuiz = async ({ lessonId, topicId }: { lessonId?: number; topicId?: number }) => {
+  const cid = Number(activeCourseKeys.value[0])
+  if (!cid) return
+
+  let targetTopicId: number | null = topicId ?? null
+  if (!targetTopicId && lessonId) {
+    targetTopicId = findTopicIdOfLesson({ lesson_id: lessonId })
+  }
+
+  if (targetTopicId) {
+    // Mark topic as not loaded and refresh
+    const currentTree = treeByCourse[cid] || []
+    treeByCourse[cid] = currentTree.map(node => {
+      if (node.type === 'topic' && node.id === targetTopicId) {
+        return { ...node, loaded: false }
+      }
+      return node
+    })
+
+    await fetchTopicContent(cid, targetTopicId)
+  }
+}
+
+const editQuiz = ref<{
+  open: boolean
+  quiz: any | null
+}>({
+  open: false,
+  quiz: null,
+})
+
+const openEditQuiz = (quizRow: any) => {
+  editQuiz.value = {
+    open: true,
+    quiz: {
+      ...quizRow,
+      topic_id: findTopicIdOfLesson(quizRow),
+    }
+  }
+}
+
+const onEditedQuiz = async ({ lessonId, topicId }: { lessonId?: number; topicId?: number }) => {
+  const cid = Number(activeCourseKeys.value[0])
+  if (!cid) return
+
+  let targetTopicId = topicId
+  if (!targetTopicId && lessonId) {
+    targetTopicId = findTopicIdOfLesson({ lesson_id: lessonId })
+  }
+
+  if (targetTopicId) {
+    // Mark topic as not loaded and refresh
+    const currentTree = treeByCourse[cid] || []
+    treeByCourse[cid] = currentTree.map(node => {
+      if (node.type === 'topic' && node.id === targetTopicId) {
+        return { ...node, loaded: false }
+      }
+      return node
+    })
+
+    await fetchTopicContent(cid, targetTopicId)
+  }
+}
+
+const removeQuiz = async (quizRow: any) => {
+  try {
+    await quizApi.deleteQuiz(quizRow.quiz_id)
+    notification.success({ message: 'Đã xoá Quiz' })
+
+    const topicId = findTopicIdOfLesson(quizRow)
+    const cid = Number(activeCourseKeys.value[0])
+
+    if (cid && topicId) {
+      // Mark topic as not loaded and refresh
+      const currentTree = treeByCourse[cid] || []
+      treeByCourse[cid] = currentTree.map(node => {
+        if (node.type === 'topic' && node.id === topicId) {
+          return { ...node, loaded: false }
+        }
+        return node
+      })
+
+      await fetchTopicContent(cid, topicId)
+    }
+  } catch (e: any) {
+    notification.error({ message: e?.message || 'Xoá Quiz thất bại' })
   }
 }
 </script>

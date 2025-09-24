@@ -1,4 +1,4 @@
-import { http } from './http'
+import { http } from '@/helpers/http'
 import type { Topic, TopicPayload } from '@/types/Topic'
 
 export const topicApi = {

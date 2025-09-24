@@ -8,8 +8,6 @@ import Blog from '@/pages/customer/Blog.vue'
 import Membership from '@/pages/customer/Membership.vue'
 import Course from '@/pages/customer/Course.vue'
 import GoogleCallback from '@/pages/customer/auth/GoogleCallback.vue'
-// --- Admin Pages (example) ---
-// import AdminDashboard from '@/pages/admin/Dashboard.vue'
 
 // --- Error Pages ---
 import NotFound from '@/pages/error/404.vue'
@@ -28,12 +26,6 @@ declare module 'vue-router' {
 
 export const routes: RouteRecordRaw[] = [
   {
-    path: '/',
-    name: 'Homepage',
-    component: Homepage,
-    meta: { layout: 'public', title: 'Trang chủ' },
-  },
-  {
     path: '/login',
     name: 'CustomerLogin',
     component: CustomerLogin,
@@ -46,22 +38,38 @@ export const routes: RouteRecordRaw[] = [
     meta: { layout: 'public', title: 'Authenticating...' },
   },
   {
+    path: '/',
+    name: 'Homepage',
+    component: Homepage,
+    meta: { layout: 'public', title: 'Trang chủ' },
+  },
+  {
     path: '/blog',
     name: 'Blog',
     component: Blog,
-    meta: { layout: 'public', title: 'Blog', requiresAuth: true },
+    meta: { layout: 'public', title: 'Blog', requiresAuth: true, roles: ['student', 'instructor'] },
   },
   {
     path: '/membership',
     name: 'Membership',
     component: Membership,
-    meta: { layout: 'public', title: 'Membership', requiresAuth: true },
+    meta: {
+      layout: 'public',
+      title: 'Membership',
+      requiresAuth: true,
+      roles: ['student', 'instructor'],
+    },
   },
   {
     path: '/courses',
     name: 'Courses',
     component: Course,
-    meta: { layout: 'public', title: 'Courses', requiresAuth: true },
+    meta: {
+      layout: 'public',
+      title: 'Courses',
+      requiresAuth: true,
+      roles: ['student', 'instructor'],
+    },
   },
 
   // --- Admin Pages ---
@@ -82,18 +90,6 @@ export const routes: RouteRecordRaw[] = [
     path: '/admin',
     meta: { layout: 'admin', requiresAuth: true, roles: ['admin'] },
     children: [
-      {
-        path: '/listUsers',
-        name: 'AdminListUsers',
-        component: ListUsers,
-        meta: { layout: 'public', title: 'Admin List Users' },
-      },
-      {
-        path: '/profile',
-        name: 'AdminUpdateProfile',
-        component: UserProfile,
-        meta: { layout: 'public', title: 'Admin Update Profile' },
-      },
       {
         path: '',
         name: 'admin-dashboard',
@@ -158,7 +154,11 @@ router.beforeEach((to, from, next) => {
 
   // Rule 1: Route requires authentication
   if (to.meta.requiresAuth && !isAuthenticated) {
-    return next({ name: 'Forbidden' })
+    // Redirect to the appropriate login page based on the route path
+    if (to.path.startsWith('/admin')) {
+      return next({ name: 'AdminLogin' })
+    }
+    return next({ name: 'CustomerLogin' })
   }
 
   // Rule 2: Route requires specific roles

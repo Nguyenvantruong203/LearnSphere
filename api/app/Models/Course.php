@@ -109,23 +109,21 @@ class Course extends Model
     }
 
     // Tiện truy vấn tất cả lessons qua topics
-    // public function lessons()
-    // {
-    //     return $this->hasManyThrough(
-    //         Lesson::class,      // model đích
-    //         Topic::class,       // model trung gian
-    //         'course_id',        // FK trên topics trỏ về courses
-    //         'topic_id',         // FK trên lessons trỏ về topics
-    //         'id',               // Local key trên courses
-    //         'id'                // Local key trên topics
-    //     );
-    // }
-
-    // public function enrollments()
-    // {
-    //     return $this->hasMany(Enrollment::class);
-    // }
-
+    public function lessons()
+    {
+        return $this->hasManyThrough(
+            Lesson::class,      // model đích
+            Topic::class,       // model trung gian
+            'course_id',        // FK trên topics trỏ về courses
+            'topic_id',         // FK trên lessons trỏ về topics
+            'id',               // Local key trên courses
+            'id'                // Local key trên topics
+        );
+    }
+    public function quizzes()
+    {
+        return $this->hasMany(Quiz::class);
+    }
     // Danh sách học viên đã ghi danh
     public function students()
     {

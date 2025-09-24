@@ -1,7 +1,7 @@
 <template>
     <a-modal :visible="visible" title="Chỉnh sửa người dùng" @cancel="handleCancel" :footer="null">
         <a-form :model="formState" @finish="handleFinish" layout="vertical">
-            <a-form-item label="Họ và tên" name="name" :rules="[{ required: true, message: 'Vui lòng nhập họ tên!' }]">
+            <a-form-item label="Họ và tên" name="name">
                 <a-input v-model:value="formState.name" />
             </a-form-item>
 

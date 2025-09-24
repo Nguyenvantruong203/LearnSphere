@@ -21,9 +21,34 @@ export interface Course {
 }
 
 export type CoursePayload = Omit<Course, 'id' | 'slug' | 'created_at' | 'updated_at' | 'creator'> & {
-    // Các trường có thể null hoặc không bắt buộc khi tạo/cập nhật
     thumbnail_url?: string | null;
     short_description?: string | null;
     description?: string | null;
     publish_at?: string | null;
 };
+
+export interface GetCoursesParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
+export interface PaginationCourse<T> {
+  current_page: number
+  data: T[]
+  first_page_url: string
+  from: number
+  last_page: number
+  last_page_url: string
+  links: {
+    url: string | null
+    label: string
+    active: boolean
+  }[]
+  next_page_url: string | null
+  path: string
+  per_page: number
+  prev_page_url: string | null
+  to: number
+  total: number
+}

@@ -38,26 +38,6 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function currentUser() {
-    if (token.value) {
-      try {
-        const freshUser = await authApi.getCurrentUser();
-        setUser(freshUser);
-      } catch (error: any) {
-        console.error('Failed to refresh user data:', error);
-        // Only log out if the error is an authentication error (e.g., 401)
-        // This prevents logging out on temporary network or server errors.
-        if (error.response && error.response.status === 401) {
-          console.warn('Token expired or invalid. Logging out.');
-          // We call the core logic of logout without a full page redirect
-          // to avoid disrupting the user if they are on a public page.
-          setUser(null);
-          setToken(null);
-        }
-      }
-    }
-  }
-
   async function login(payload: LoginPayload): Promise<User> {
     try {
       const response = await authApi.login(payload)
@@ -106,8 +86,6 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('auth_token')
     await router.push('/login')
   }
-
-  currentUser()
 
   return {
     user,

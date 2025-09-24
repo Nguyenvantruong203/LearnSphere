@@ -1,5 +1,5 @@
 import type { User } from '@/types/user'
-import { http } from './http'
+import { http } from '@/helpers/http'
 
 export type RegisterPayload = {
   username: string

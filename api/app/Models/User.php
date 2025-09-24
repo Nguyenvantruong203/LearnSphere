@@ -6,7 +6,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements MustVerifyEmail
@@ -114,7 +114,22 @@ class User extends Authenticatable implements MustVerifyEmail
     /**
      * Các quan hệ (ví dụ nếu sau này có bảng courses, posts...).
      */
-    // public function courses() {
-    //     return $this->hasMany(Course::class);
-    // }
+    public function courses()
+    {
+        return $this->hasMany(Course::class);
+    }
+
+    // User có nhiều kết quả quiz
+    public function quizResults(): HasMany
+    {
+        return $this->hasMany(QuizResult::class);
+    }
+
+    // User tham gia nhiều quiz thông qua kết quả
+    public function quizzes()
+    {
+        return $this->belongsToMany(Quiz::class, 'quiz_results')
+            ->withPivot(['score', 'attempt_number', 'submitted_at'])
+            ->withTimestamps();
+    }
 }
