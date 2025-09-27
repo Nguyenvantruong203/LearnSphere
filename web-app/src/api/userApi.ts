@@ -1,9 +1,8 @@
 import { http } from '@/helpers/http'
-import type { Paginator } from '@/types/Paginator'
-import type { GetUsersParams, User } from '@/types/user'
+import type { GetUsersParams, User, PaginationUser } from '@/types/user'
 
 export const userApi = {
-async getUsers(params: GetUsersParams = {}): Promise<Paginator<User>> {
+async getUsers(params: GetUsersParams = {}): Promise<PaginationUser<User>> {
   const query = new URLSearchParams(
     Object.entries(params)
       .filter(([, value]) => value !== undefined && value !== null)

@@ -11,17 +11,19 @@ class Question extends Model
 
     protected $fillable = [
         'quiz_id',
-        'type',            // multiple_choice | true_false | short_answer
+        'type',            // multiple_choice | true_false
         'text',
         'options',
         'correct_options',
         'weight',
+        'is_temp',
     ];
 
     protected $casts = [
         'options'         => 'array',
         'correct_options' => 'array',
         'weight'          => 'decimal:2',
+        'is_temp'         => 'boolean',
     ];
 
     /* =========================

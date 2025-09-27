@@ -90,12 +90,12 @@ export const routes: RouteRecordRaw[] = [
     path: '/admin',
     meta: { layout: 'admin', requiresAuth: true, roles: ['admin'] },
     children: [
-      {
-        path: '',
-        name: 'admin-dashboard',
-        component: () => import('@/pages/admin/Dashboard.vue'),
-        meta: { title: 'Bảng điều khiển' },
-      },
+      // {
+      //   path: '',
+      //   name: 'admin-dashboard',
+      //   component: () => import('@/pages/admin/Dashboard.vue'),
+      //   meta: { title: 'Bảng điều khiển' },
+      // },
       {
         path: 'users',
         name: 'admin-users',

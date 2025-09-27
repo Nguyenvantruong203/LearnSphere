@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Lesson;
 use App\Models\Topic;
 use App\Services\YouTubeService;
@@ -13,6 +14,9 @@ use Illuminate\Support\Facades\Storage;
 
 class LessonController extends Controller
 {
+    /**
+     * @author Truong
+     */
     protected YouTubeService $youtubeService;
 
     public function __construct(YouTubeService $youtubeService)

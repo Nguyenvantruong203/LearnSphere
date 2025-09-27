@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\GoogleOauthToken;
 use Google\Client as GoogleClient;
 use Illuminate\Support\Facades\Auth;
@@ -9,6 +10,9 @@ use Illuminate\Http\Request;
 
 class GoogleAuthController extends Controller
 {
+    /**
+     * @author Truong
+     */
 
     public function redirect()
     {

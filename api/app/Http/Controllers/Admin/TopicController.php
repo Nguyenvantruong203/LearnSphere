@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Topic;
 use Illuminate\Http\Request;
 use App\Models\Course;
@@ -12,6 +13,9 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 class TopicController extends Controller
 {
     use AuthorizesRequests;
+    /**
+     * @author Truong
+     */
 
     // GET /admin/courses/{course}/topics
     public function index(Course $course, Request $request)

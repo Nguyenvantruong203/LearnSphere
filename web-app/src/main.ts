@@ -5,11 +5,12 @@ import router from './router'
 import Antd from 'ant-design-vue'
 import 'ant-design-vue/dist/reset.css'
 import './style.css'
-import 'cropperjs/dist/cropper.css'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 
 import { ConfigProvider, theme } from 'ant-design-vue'
 
 const pinia = createPinia()
+pinia.use(piniaPluginPersistedstate)
 const app = createApp({
   render: () =>
     h(ConfigProvider, {

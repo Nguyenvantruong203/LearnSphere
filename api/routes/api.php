@@ -1,13 +1,15 @@
 <?php
 
-use App\Http\Controllers\Authcontroller;
-use App\Http\Controllers\CourseController;
-use App\Http\Controllers\TopicController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\LessonController;
-use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\CourseController;
+use App\Http\Controllers\Admin\TopicController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\LessonController;
+use App\Http\Controllers\Admin\GoogleAuthController;
+use App\Http\Controllers\Admin\QuizController;
+use App\Http\Controllers\Admin\LessonQuestionController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\QuizController;
+use App\Http\Controllers\Admin\TopicQuestionController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -82,18 +84,29 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
         ->name('topics.lessons.reorder');
     Route::get('/me/youtube/status', [GoogleAuthController::class, 'status']);
 
-    // Quiz gắn với Lesson
+    // Quiz
     Route::get('lessons/{lesson}/quizzes', [QuizController::class, 'index']);
     Route::post('lessons/{lesson}/quizzes', [QuizController::class, 'store']);
-
-    // Quiz gắn với Topic (quiz tổng hợp)
     Route::get('topics/{topic}/quizzes', [QuizController::class, 'indexForTopic']);
     Route::post('topics/{topic}/quizzes', [QuizController::class, 'storeForTopic']);
-
-    // shallow routes
     Route::get('quizzes/{quiz}', [QuizController::class, 'show']);
     Route::put('quizzes/{quiz}', [QuizController::class, 'update']);
     Route::delete('quizzes/{quiz}', [QuizController::class, 'destroy']);
+
+    // Questions for lesson
+    Route::post('quizzes/{quiz}/lesson-questions/ai-generate', [LessonQuestionController::class, 'generate']);
+    Route::get('quizzes/{quiz}/lesson-questions', [LessonQuestionController::class, 'indexForLesson']);
+    Route::post('quizzes/{quiz}/lesson-questions', [LessonQuestionController::class, 'createForLesson']);
+    Route::get('lesson-questions/{question}', [LessonQuestionController::class, 'show']);
+    Route::put('quizzes/{quiz}/lesson-questions/{question}', [LessonQuestionController::class, 'updateForLesson']);
+
+    // Questions for topic
+    Route::get('quizzes/{quiz}/topic-questions', [TopicQuestionController::class, 'indexForTopic']);
+    Route::post('quizzes/{quiz}/topic-questions/ai-suggest', [TopicQuestionController::class, 'suggestForTopic']);
+    Route::post('quizzes/{quiz}/topic-questions/publish', [TopicQuestionController::class, 'publishForTopic']);
+    Route::put('quizzes/{quiz}/topic-questions/{question}', [TopicQuestionController::class, 'updateForTopic']);
+
+    Route::delete('questions/{question}', [LessonQuestionController::class, 'destroy']);
 });
 
 // Đặt lại mật khẩu

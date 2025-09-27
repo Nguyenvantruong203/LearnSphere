@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Course;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -11,6 +12,9 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 class CourseController extends Controller
 {
     use AuthorizesRequests;
+    /**
+     * @author Truong
+     */
     /**
      * Display a listing of the resource.
      *

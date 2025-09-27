@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Quiz;
 use App\Models\Lesson;
 use App\Models\Topic;
@@ -12,6 +13,9 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 class QuizController extends Controller
 {
     use AuthorizesRequests;
+    /**
+     * @author Truong
+     */
 
     // GET /admin/lessons/{lesson}/quizzes
     public function index(Lesson $lesson, Request $request)

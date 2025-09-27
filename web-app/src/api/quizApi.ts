@@ -6,20 +6,18 @@ export const quizApi = {
    * Lấy danh sách quiz của 1 lesson.
    */
   async getQuizzesByLesson(lessonId: number): Promise<Quiz[]> {
-    const response = await http(`/api/admin/lessons/${lessonId}/quizzes`, {
+    return await http(`/api/admin/lessons/${lessonId}/quizzes`, {
       method: 'GET',
     })
-    return response.data
   },
 
   /**
    * Lấy danh sách quiz của 1 topic (quiz tổng hợp cuối chương).
    */
   async getQuizzesByTopic(topicId: number): Promise<Quiz[]> {
-    const response = await http(`/api/admin/topics/${topicId}/quizzes`, {
+    return await http(`/api/admin/topics/${topicId}/quizzes`, {
       method: 'GET',
     })
-    return response.data
   },
 
   /**
@@ -48,8 +46,7 @@ export const quizApi = {
    * Lấy chi tiết quiz.
    */
   async getQuiz(id: number): Promise<Quiz> {
-    const response = await http(`/api/admin/quizzes/${id}`, { method: 'GET' })
-    return response.data
+    return await http(`/api/admin/quizzes/${id}`, { method: 'GET' })
   },
 
   /**
