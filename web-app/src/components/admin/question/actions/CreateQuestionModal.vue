@@ -61,7 +61,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { lessonQuestionApi } from '@/api/lessonQuestionApi'
+import { lessonQuestionApi } from '@/api/admin/lessonQuestionApi'
 import type { Question } from '@/types/Question'
 
 const props = defineProps<{

@@ -1,4 +1,4 @@
-import { http } from '@/helpers/http'
+import { httpAdmin } from '@/helpers/http'
 import type { GetLessonsParams, Lesson, LessonPayload, PaginationLesson } from '@/types/Lesson'
 
 export const lessonApi = {
@@ -7,7 +7,7 @@ export const lessonApi = {
     if (!topicId) {
       throw new Error('topicId is required for getLessons')
     }
-    const response = await http(`/api/admin/topics/${topicId}/lessons`, {
+    const response = await httpAdmin(`/api/admin/topics/${topicId}/lessons`, {
       method: 'GET',
       params: restParams
     })
@@ -15,7 +15,7 @@ export const lessonApi = {
   },
 
   async createLesson(topicId: number, data: FormData): Promise<Lesson> {
-    const response = await http(`/api/admin/topics/${topicId}/lessons/upload`, {
+    const response = await httpAdmin(`/api/admin/topics/${topicId}/lessons/upload`, {
       method: 'POST',
       body: data
     })
@@ -23,17 +23,17 @@ export const lessonApi = {
   },
 
   async updateLesson(lessonId: number, data: Partial<LessonPayload>): Promise<Lesson> {
-    const response = await http(`/api/admin/lessons/${lessonId}`, { method: 'PATCH', body: data })
+    const response = await httpAdmin(`/api/admin/lessons/${lessonId}`, { method: 'PATCH', body: data })
     return response.data
   },
 
   async deleteLesson(lessonId: number) {
-    const response = await http(`/api/admin/lessons/${lessonId}`, { method: 'DELETE' })
+    const response = await httpAdmin(`/api/admin/lessons/${lessonId}`, { method: 'DELETE' })
     return response.data
   },
 
   async reorderLessons(topicId: number, ids: number[]) {
-    const response = await http(`/api/admin/topics/${topicId}/lessons/reorder`, {
+    const response = await httpAdmin(`/api/admin/topics/${topicId}/lessons/reorder`, {
       method: 'POST',
       body: { ids },
     })

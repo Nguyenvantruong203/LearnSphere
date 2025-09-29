@@ -39,7 +39,7 @@
 
 <script setup lang="ts">
 import { ref, watch, nextTick } from 'vue'
-import { quizApi } from '@/api/quizApi'
+import { quizApi } from '@/api/admin/quizApi'
 import { message } from 'ant-design-vue'
 
 // Props

@@ -1,10 +1,10 @@
-import { http } from '@/helpers/http'
+import { httpAdmin } from '@/helpers/http'
 import type { Course, CoursePayload, GetCoursesParams, PaginationCourse } from '@/types/Course'
 import type { Topic } from '@/types/Topic'
 
 export const courseApi = {
   async getCourses(params: GetCoursesParams): Promise<PaginationCourse<Course>> {
-    return await http('/api/admin/courses', {
+    return await httpAdmin('/api/admin/courses', {
       method: 'GET',
       params
     })
@@ -23,7 +23,7 @@ export const courseApi = {
     if (thumbnailFile) {
       formData.append('thumbnail', thumbnailFile)
     }
-    const response = await http('/api/admin/courses', {
+    const response = await httpAdmin('/api/admin/courses', {
       method: 'POST',
       body: formData
     })
@@ -31,7 +31,7 @@ export const courseApi = {
   },
 
   async getTopicsByCourse(courseId: number): Promise<Topic[]> {
-    const response = await http(`/api/admin/courses/${courseId}/topics`, {
+    const response = await httpAdmin(`/api/admin/courses/${courseId}/topics`, {
       method: 'GET',
       params: { limit: 999 }
     })
@@ -39,7 +39,7 @@ export const courseApi = {
   },
 
   async deleteCourse(courseId: number): Promise<void> {
-    await http(`/api/admin/courses/${courseId}`, {
+    await httpAdmin(`/api/admin/courses/${courseId}`, {
       method: 'DELETE'
     })
   },
@@ -63,8 +63,8 @@ export const courseApi = {
 
     formData.append('_method', 'PUT')
 
-    const response = await http(`/api/admin/courses/${courseId}`, {
-      method: 'POST', // Using POST for FormData with _method
+    const response = await httpAdmin(`/api/admin/courses/${courseId}`, {
+      method: 'POST',
       body: formData
     })
     return response.data

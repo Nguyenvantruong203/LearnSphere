@@ -15,7 +15,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue';
-import { topicApi } from '@/api/topicApi';
+import { topicApi } from '@/api/admin/topicApi';
 import type { Topic, TopicPayload } from '@/types/Topic';
 import { notification } from 'ant-design-vue';
 import type { Rule } from 'ant-design-vue/es/form';

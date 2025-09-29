@@ -11,10 +11,11 @@
 import { onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Spin, Modal, notification } from 'ant-design-vue'
-import { authApi } from '@/api/authApi'
+import { useClientAuthStore } from '@/stores/clientAuth'
 
 const route = useRoute()
 const router = useRouter()
+const authStore = useClientAuthStore()
 
 onMounted(async () => {
   const code = route.query.code as string
@@ -24,45 +25,35 @@ onMounted(async () => {
       message: 'Lỗi',
       description: 'Không tìm thấy mã xác thực từ Google.'
     })
-    router.push('/login') // Redirect to login page
+    router.push('/login')
     return
   }
 
   try {
-    const { user, token } = await authApi.handleGoogleCallback(code)
-
-    // Store user and token
-    localStorage.setItem('auth_user', JSON.stringify(user))
-    localStorage.setItem('auth_token', token)
+    await authStore.loginWithGoogle(code)
 
     Modal.success({
       title: 'Thành công',
       content: 'Đăng nhập bằng Google thành công!',
       onOk() {
-        // Redirect to homepage
         router.push('/')
       }
     })
   } catch (err: any) {
-    // Kiểm tra nếu lỗi là do chờ duyệt (status 403)
     if (err.status === 403) {
       Modal.info({
         title: 'Chờ phê duyệt',
-        content: err.message || 'Tài khoản của bạn đã được ghi nhận và đang chờ quản trị viên phê duyệt.',
+        content: err.message || 'Tài khoản đang chờ quản trị viên phê duyệt.',
         onOk() {
           router.push('/login')
         }
       })
     } else {
-      // Xử lý các lỗi khác
-      Modal.info({
-        title: 'Chờ phê duyệt',
-        content: err.message || 'Tài khoản của bạn đã được ghi nhận và đang chờ quản trị viên phê duyệt.',
-        onOk() {
-          router.push('/login')
-        }
+      notification.error({
+        message: 'Lỗi',
+        description: err.message || 'Đăng nhập Google thất bại.'
       })
-      router.push('/login') // Redirect to login page
+      router.push('/login')
     }
   }
 })

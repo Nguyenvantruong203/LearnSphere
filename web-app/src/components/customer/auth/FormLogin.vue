@@ -4,7 +4,8 @@
       <Alert v-if="error" :message="error" type="error" show-icon class="mb-4" />
 
       <!-- Email -->
-      <FormItem label="Email" name="email" :rules="[{ required: true, type: 'email', message: 'Vui lòng nhập email hợp lệ' }]">
+      <FormItem label="Email" name="email"
+        :rules="[{ required: true, type: 'email', message: 'Vui lòng nhập email hợp lệ' }]">
         <Input size="large" placeholder="Nhập email" v-model:value="formData.email" :disabled="loading" />
       </FormItem>
 
@@ -21,7 +22,8 @@
 
       <!-- Submit -->
       <FormItem>
-        <Button type="primary" html-type="submit" block size="large" :loading="loading" class="bg-green !h-12 rounded-full">
+        <Button type="primary" html-type="submit" block size="large" :loading="loading"
+          class="bg-green !h-12 rounded-full">
           Login
         </Button>
       </FormItem>
@@ -32,7 +34,8 @@
       </Divider>
 
       <!-- Google button -->
-      <Button @click="handleGoogleLogin" :loading="loading" block size="large" class="!h-12 rounded-full mb-4 flex items-center justify-center gap-2">
+      <Button @click="handleGoogleLogin" :loading="loading" block size="large"
+        class="!h-12 rounded-full mb-4 flex items-center justify-center gap-2">
         <GoogleOutlined />
         Continue with Google
       </Button>
@@ -46,7 +49,9 @@ import { useRouter } from 'vue-router'
 import { Form, FormItem, Input, InputPassword, Button, Row, Divider, Modal, notification, Alert } from 'ant-design-vue'
 import { GoogleOutlined } from '@ant-design/icons-vue'
 import { authApi } from '@/api/authApi'
+import { useClientAuthStore } from '@/stores/clientAuth'
 
+const authStore = useClientAuthStore()
 const router = useRouter()
 
 const formData = reactive({
@@ -61,18 +66,13 @@ const handleFinish = async () => {
   loading.value = true
   error.value = null
   try {
-    const { user, token } = await authApi.login(formData)
-
-    // Store user and token in localStorage
-    localStorage.setItem('auth_user', JSON.stringify(user))
-    localStorage.setItem('auth_token', token)
+    await authStore.login(formData)
 
     Modal.success({
       title: 'Thành công',
       content: 'Đăng nhập thành công!',
       onOk() {
-        // Redirect to homepage or dashboard
-        router.push('/')
+        router.push('/') // hoặc /admin tùy role
       }
     })
   } catch (err: any) {
@@ -86,8 +86,8 @@ const handleGoogleLogin = async () => {
   loading.value = true
   error.value = null
   try {
-    const response = await authApi.redirectToGoogle()
-    window.location.href = response.url
+    await authApi.redirectToGoogle()
+    router.push('/')
   } catch (err: any) {
     error.value = err.message || 'Không thể kết nối tới dịch vụ của Google.'
     notification.error({

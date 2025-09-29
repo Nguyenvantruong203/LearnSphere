@@ -157,7 +157,7 @@ class UserController extends Controller
 
         $user->update($validator->validated());
 
-        return response()->json(['data' => $user]);
+        return response()->json( $user);
     }
 
     /**
@@ -184,6 +184,6 @@ class UserController extends Controller
             $user->save();
         }
 
-        return response()->json(['data' => $user]);
+        return response()->json($user);
     }
 }

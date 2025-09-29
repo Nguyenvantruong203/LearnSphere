@@ -1,9 +1,9 @@
-import { http } from '@/helpers/http'
+import { httpAdmin } from '@/helpers/http'
 import type { Topic, TopicPayload } from '@/types/Topic'
 
 export const topicApi = {
   async getTopicsByCourse(courseId: number): Promise<Topic[]> {
-    const response = await http(`/api/admin/courses/${courseId}/topics`, { method: 'GET' })
+    const response = await httpAdmin(`/api/admin/courses/${courseId}/topics`, { method: 'GET' })
     return response.data
   },
 
@@ -13,18 +13,18 @@ export const topicApi = {
     if (!courseId) {
       throw new Error('course_id is required to create a topic.')
     }
-    return await http(`/api/admin/courses/${courseId}/topics`, {
+    return await httpAdmin(`/api/admin/courses/${courseId}/topics`, {
       method: 'POST',
       body: payload,
     })
   },
 
   async getTopic(id: number): Promise<Topic> {
-    return await http(`/api/admin/topics/${id}`)
+    return await httpAdmin(`/api/admin/topics/${id}`)
   },
 
   async updateTopic(id: number, payload: Partial<TopicPayload>): Promise<Topic> {
-    return await http(`/api/admin/topics/${id}`, {
+    return await httpAdmin(`/api/admin/topics/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: payload,
@@ -32,7 +32,7 @@ export const topicApi = {
   },
 
   async deleteTopic(id: number): Promise<void> {
-    await http(`/api/admin/topics/${id}`, {
+    await httpAdmin(`/api/admin/topics/${id}`, {
       method: 'DELETE',
     })
   },

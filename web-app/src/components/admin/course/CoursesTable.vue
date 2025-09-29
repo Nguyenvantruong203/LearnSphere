@@ -61,9 +61,9 @@
 import { ref, h, onMounted, watch, nextTick, reactive } from 'vue'
 import { Button, Space, message, Popconfirm, Tag, Modal, notification } from 'ant-design-vue'
 
-import { courseApi } from '@/api/courseApi'
-import { topicApi } from '@/api/topicApi'
-import { lessonApi } from '@/api/lessonApi'
+import { courseApi } from '@/api/admin/courseApi'
+import { topicApi } from '@/api/admin/topicApi'
+import { lessonApi } from '@/api/admin/lessonApi'
 
 // ====== Modal components ======
 import CreateCourseModal from '@/components/admin/course/actions/CreateCourseModal.vue'
@@ -78,8 +78,8 @@ import QuizDrawer from '@/components/admin/quiz/QuizDrawer.vue'
 
 import type { Topic } from '@/types/Topic'
 import type { Course } from '@/types/Course'
-import { youtubeApi } from '@/api/youtubeApi'
-import { quizApi } from '@/api/quizApi'
+import { youtubeApi } from '@/api/admin/youtubeApi'
+import { quizApi } from '@/api/admin/quizApi'
 
 interface TopicNode extends Topic {
   key: string;

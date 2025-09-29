@@ -1,4 +1,4 @@
-
+// User entity
 export interface User {
   id: number
   name: string
@@ -16,6 +16,7 @@ export interface User {
   updated_at: string
 }
 
+// Query params khi get danh sách user
 export interface GetUsersParams {
   page?: number
   per_page?: number
@@ -26,6 +27,7 @@ export interface GetUsersParams {
   sort_order?: 'asc' | 'desc'
 }
 
+// Pagination generic cho user
 export interface PaginationUser<T> {
   current_page: number
   data: T[]
@@ -44,4 +46,28 @@ export interface PaginationUser<T> {
   prev_page_url: string | null
   to: number
   total: number
+}
+
+// Auth payloads & responses
+export type RegisterPayload = {
+  username: string
+  email: string
+  password: string
+  password_confirmation: string
+}
+
+export type LoginPayload = {
+  email: string
+  password: string
+}
+
+export type LoginResponse = {
+  user: User
+  access_token: string
+  token_type: string
+  message?: string
+}
+
+export type RegisterResponse = {
+  message: string
 }

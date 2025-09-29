@@ -27,9 +27,9 @@
       <!-- Form -->
       <div class="flex justify-center items-center">
         <FormLogin v-if="tab === 'login'" v-model:email="email" v-model:password="password" :loading="loading"
-          :tab="tab" @submit="onSubmit" />
+          :tab="tab" />
         <FormRegister v-if="tab === 'register'" v-model:email="email" v-model:password="password" v-model:username="username" :loading="loading"
-          :tab="tab" @submit="onSubmit" />
+          :tab="tab" />
       </div>
     </div>
   </LayoutLoginUser>
@@ -37,14 +37,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
-import { notification } from 'ant-design-vue'
 import LayoutLoginUser from '@/pages/customer/layout/layoutLoginUser.vue'
 import FormLogin from '@/components/customer/auth/FormLogin.vue'
 import FormRegister from '@/components/customer/auth/FormRegister.vue'
 import logoUrl from '@/assets/images/logo.png'
-import { useAuthStore } from '@/stores/auth'
+import { useClientAuthStore } from '@/stores/clientAuth'
 
-const authStore = useAuthStore()
+const authStore = useClientAuthStore()
 const email = ref('')
 const password = ref('')
 const username = ref('')
@@ -63,35 +62,4 @@ onMounted(() => {
 watch(tab, (newTab) => {
   localStorage.setItem('auth_tab', newTab)
 })
-
-const onSubmit = async () => {
-  loading.value = true
-  try {
-    if (tab.value === 'login') {
-      await authStore.login({ email: email.value, password: password.value })
-      notification.success({
-        message: 'Thành công',
-        description: 'Đăng nhập thành công!'
-      })
-    } else {
-      await authStore.register({
-        username: username.value,
-        email: email.value,
-        password: password.value,
-        password_confirmation: password.value // Assuming confirmation is the same for simplicity
-      })
-      notification.success({
-        message: 'Thành công',
-        description: 'Đăng ký thành công!'
-      })
-    }
-  } catch (e: any) {
-    notification.error({
-      message: 'Thất bại',
-      description: e?.message ?? (tab.value === 'login' ? 'Đăng nhập thất bại' : 'Đăng ký thất bại')
-    })
-  } finally {
-    loading.value = false
-  }
-}
 </script>

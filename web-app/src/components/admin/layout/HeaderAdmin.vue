@@ -54,11 +54,11 @@ import {
   UserOutlined,
   LogoutOutlined
 } from '@ant-design/icons-vue'
-import { useAuthStore } from '@/stores/auth'
+import { useAdminAuthStore } from '@/stores/adminAuth'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 
-const authStore = useAuthStore()
+const authStore = useAdminAuthStore()
 const { user } = storeToRefs(authStore)
 const router = useRouter()
 

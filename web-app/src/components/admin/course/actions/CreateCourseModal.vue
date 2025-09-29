@@ -74,7 +74,7 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
-import { courseApi } from '@/api/courseApi';
+import { courseApi } from '@/api/admin/courseApi';
 import type { CoursePayload } from '@/types/Course';
 import { notification } from 'ant-design-vue';
 import type { Rule } from 'ant-design-vue/es/form';

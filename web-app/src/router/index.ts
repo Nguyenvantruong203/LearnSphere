@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { useClientAuthStore } from '@/stores/clientAuth'
+import { useAdminAuthStore } from '@/stores/adminAuth'
 import CustomerLogin from '@/pages/customer/auth/CustomerLogin.vue'
 import AdminLogin from '@/pages/admin/auth/AdminLogin.vue'
 import ListUsers from '@/pages/admin/user/ListUsers.vue'
@@ -73,13 +74,6 @@ export const routes: RouteRecordRaw[] = [
   },
 
   // --- Admin Pages ---
-  // {
-  //   path: '/admin/dashboard',
-  //   name: 'AdminDashboard',
-  //   component: AdminDashboard,
-  //   meta: { requiresAuth: true, roles: ['admin'], layout: 'admin', title: 'Dashboard' },
-  // },
-
   {
     path: '/admin/login',
     name: 'AdminLogin',
@@ -90,12 +84,6 @@ export const routes: RouteRecordRaw[] = [
     path: '/admin',
     meta: { layout: 'admin', requiresAuth: true, roles: ['admin'] },
     children: [
-      // {
-      //   path: '',
-      //   name: 'admin-dashboard',
-      //   component: () => import('@/pages/admin/Dashboard.vue'),
-      //   meta: { title: 'Bảng điều khiển' },
-      // },
       {
         path: 'users',
         name: 'admin-users',
@@ -141,21 +129,24 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  // Initialize store here to ensure it's used within an active pinia instance
-  const auth = useAuthStore()
+  const clientAuth = useClientAuthStore()
+  const adminAuth = useAdminAuthStore()
+
+  // Chọn store phù hợp
+  const isAdminRoute = to.path.startsWith('/admin')
+  const auth = isAdminRoute ? adminAuth : clientAuth
+
+  const isAuthenticated = auth.isLoggedIn
+  const userRole = auth.user?.role as 'admin' | 'student' | 'instructor' | undefined
 
   // Set document title
   if (to.meta.title) {
     document.title = `${to.meta.title} — LearnSphere`
   }
 
-  const isAuthenticated = auth.isLoggedIn
-  const userRole = auth.user?.role as 'admin' | 'student' | 'instructor' | undefined
-
   // Rule 1: Route requires authentication
   if (to.meta.requiresAuth && !isAuthenticated) {
-    // Redirect to the appropriate login page based on the route path
-    if (to.path.startsWith('/admin')) {
+    if (isAdminRoute) {
       return next({ name: 'AdminLogin' })
     }
     return next({ name: 'CustomerLogin' })
@@ -164,15 +155,15 @@ router.beforeEach((to, from, next) => {
   // Rule 2: Route requires specific roles
   if (to.meta.roles && isAuthenticated) {
     if (!userRole || !to.meta.roles.includes(userRole)) {
-      // User does not have the required role
       return next({ name: 'Forbidden' })
     }
   }
 
   // Rule 3: Prevent authenticated users from accessing login pages again
   if (isAuthenticated && (to.name === 'CustomerLogin' || to.name === 'AdminLogin')) {
-    return next({ name: 'Homepage' })
+    return next({ name: isAdminRoute ? 'admin-users' : 'Homepage' })
   }
+
   next()
 })
 

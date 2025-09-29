@@ -6,7 +6,6 @@ import Antd from 'ant-design-vue'
 import 'ant-design-vue/dist/reset.css'
 import './style.css'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
-
 import { ConfigProvider, theme } from 'ant-design-vue'
 
 const pinia = createPinia()
@@ -32,7 +31,3 @@ app.use(pinia)
 app.use(router)
 app.use(Antd)
 app.mount('#app')
-
-// Hoặc nếu muốn tách theme config ra file riêng:
-// import themeConfig from './theme.config'
-// theme: themeConfig

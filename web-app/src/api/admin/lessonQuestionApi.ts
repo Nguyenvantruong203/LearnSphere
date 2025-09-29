@@ -1,4 +1,4 @@
-import { http } from '@/helpers/http'
+import { httpAdmin } from '@/helpers/http'
 import type {
   Question,
   QuestionPayload,
@@ -15,7 +15,7 @@ export const lessonQuestionApi = {
     quizId: number,
     params: GetQuestionsParams = {},
   ): Promise<PaginationQuestion<Question>> {
-    return await http(`/api/admin/quizzes/${quizId}/lesson-questions`, {
+    return await httpAdmin(`/api/admin/quizzes/${quizId}/lesson-questions`, {
       method: 'GET',
       params,
       withCredentials: true,
@@ -26,7 +26,7 @@ export const lessonQuestionApi = {
    * Tạo mới câu hỏi cho quiz lesson.
    */
   async createQuestion(quizId: number, data: QuestionPayload): Promise<Question> {
-    return await http(`/api/admin/quizzes/${quizId}/lesson-questions`, {
+    return await httpAdmin(`/api/admin/quizzes/${quizId}/lesson-questions`, {
       method: 'POST',
       body: { ...data, quiz_id: quizId },
       withCredentials: true,
@@ -41,7 +41,7 @@ export const lessonQuestionApi = {
     questionId: number,
     data: Partial<QuestionPayload>,
   ): Promise<Question> {
-    return await http(`/api/admin/quizzes/${quizId}/lesson-questions/${questionId}`, {
+    return await httpAdmin(`/api/admin/quizzes/${quizId}/lesson-questions/${questionId}`, {
       method: 'PUT',
       body: data,
       withCredentials: true,
@@ -52,7 +52,7 @@ export const lessonQuestionApi = {
    * Sinh câu hỏi bằng AI từ quiz lesson.
    */
   async generateQuestions(quizId: number, num: number): Promise<GenerateQuestionsResponse> {
-    return await http(`/api/admin/quizzes/${quizId}/lesson-questions/ai-generate`, {
+    return await httpAdmin(`/api/admin/quizzes/${quizId}/lesson-questions/ai-generate`, {
       method: 'POST',
       body: { num },
       withCredentials: true,
@@ -60,7 +60,7 @@ export const lessonQuestionApi = {
   },
 
   async deleteQuestion(questionId: number): Promise<void> {
-    await http(`/api/admin/questions/${questionId}`, {
+    await httpAdmin(`api/admin/questions/${questionId}`, {
       method: 'DELETE',
       withCredentials: true,
     })

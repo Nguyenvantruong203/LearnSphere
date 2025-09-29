@@ -41,10 +41,10 @@ import { Form, FormItem, Input, Button, notification, Alert } from 'ant-design-v
 import type { Rule } from 'ant-design-vue/es/form'
 import LayoutLoginAdmin from '@/pages/customer/layout/layoutLoginAdmin.vue'
 import { MailOutlined, LockOutlined } from '@ant-design/icons-vue';
-import { useAuthStore } from '@/stores/auth';
+import { useAdminAuthStore } from '@/stores/adminAuth';
 
 const router = useRouter()
-const authStore = useAuthStore()
+const authStore = useAdminAuthStore()
 const loading = ref(false)
 const error = ref('')
 

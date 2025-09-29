@@ -1,4 +1,4 @@
-import { http } from '@/helpers/http'
+import { httpAdmin } from '@/helpers/http'
 import type { GetUsersParams, User, PaginationUser } from '@/types/user'
 
 export const userApi = {
@@ -9,7 +9,7 @@ async getUsers(params: GetUsersParams = {}): Promise<PaginationUser<User>> {
       .map(([key, value]) => [key, String(value)])
   ).toString()
 
-  const response = await http(`/api/admin/users?${query}`, {
+  const response = await httpAdmin(`/api/admin/users?${query}`, {
     method: 'GET',
     withCredentials: true
   })
@@ -17,7 +17,7 @@ async getUsers(params: GetUsersParams = {}): Promise<PaginationUser<User>> {
   return response
 },
   async updateUser(id: number, data: Partial<User>): Promise<User> {
-    const response = await http(`/api/admin/users/${id}`, {
+    const response = await httpAdmin(`/api/admin/users/${id}`, {
       method: 'PUT',
       body: data,
       withCredentials: true
@@ -26,27 +26,27 @@ async getUsers(params: GetUsersParams = {}): Promise<PaginationUser<User>> {
   },
 
   async deleteUser(id: number): Promise<void> {
-    await http(`/api/admin/users/${id}`, {
+    await httpAdmin(`/api/admin/users/${id}`, {
       method: 'DELETE',
       withCredentials: true
     })
   },
 
   async updateProfile(data: { name: string }): Promise<User> {
-    const response = await http('/api/admin/profile', {
+    const response = await httpAdmin('/api/admin/profile', {
       method: 'POST',
       body: data,
       withCredentials: true
     })
-    return response.data
+    return response
   },
 
   async updateAvatar(formData: FormData): Promise<User> {
-    const response = await http('/api/admin/profile/avatar', {
+    const response = await httpAdmin('/api/admin/profile/avatar', {
       method: 'POST',
       body: formData,
       withCredentials: true
     })
-    return response.data
+    return response
   }
 }

@@ -55,7 +55,7 @@
 <script setup lang="ts">
 import { ref, reactive, watch, defineProps, defineEmits } from 'vue';
 import type { User } from '@/types/user';
-import { userApi } from '@/api/userApi';
+import { userApi } from '@/api/admin/userApi';
 import { notification } from 'ant-design-vue';
 import dayjs from 'dayjs';
 

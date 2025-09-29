@@ -7,6 +7,7 @@
           <img class="h-10 w-auto sticky z-50 top-0" src="@/assets/images/logo.png" alt="LearnSphere Logo">
         </div>
 
+        <!-- Menu -->
         <div class="hidden md:block">
           <div class="ml-10 flex items-baseline space-x-8">
             <a href="/" class="text-gray-900 hover:text-blue-600 px-3 py-2 text-sm font-medium">Home</a>
@@ -18,15 +19,14 @@
 
         <!-- User Profile -->
         <div class="flex items-center">
-          <div v-if="authStore.isLoggedIn && authStore.user" class="relative">
+          <!-- Chỉ hiển thị dropdown nếu user login và KHÔNG phải admin -->
+          <div v-if="authStore.isLoggedIn && authStore.user && authStore.user.role !== 'admin'">
             <a-dropdown :trigger="['click']">
               <a class="ant-dropdown-link flex items-center space-x-2 cursor-pointer select-none" @click.prevent>
-                <img class="h-8 w-8 rounded-full"
-                  :src="authStore.user.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'"
-                  alt="User" />
+                <img class="h-8 w-8 rounded-full" :src="authStore.user.avatar || defaultAvatar" alt="User" />
                 <span class="text-sm text-gray-700">{{ authStore.user.name }}</span>
                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
               </a>
 
@@ -41,34 +41,54 @@
             </a-dropdown>
           </div>
           <div v-else class="flex items-center space-x-2">
-            <a href="/login" class="text-gray-500 hover:text-blue-600 px-3 py-2 text-sm font-medium">Đăng nhập</a>
-            <a href="/login"
-              class="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-md text-sm font-medium">Đăng
-              ký</a>
+            <a href="/login" class="text-gray-500 hover:text-blue-600 px-3 py-2 text-sm font-medium"
+              @click.prevent="goLogin">
+              Đăng nhập
+            </a>
+            <a href="/login" class="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-md text-sm font-medium"
+              @click.prevent="goRegister">
+              Đăng ký
+            </a>
           </div>
         </div>
-
       </div>
     </nav>
   </header>
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from '@/stores/auth';
-import { useRouter } from 'vue-router';
-import type { MenuInfo } from 'ant-design-vue/es/menu/src/interface';
+import { useClientAuthStore } from '@/stores/clientAuth'
+import { useRouter } from 'vue-router'
+import type { MenuInfo } from 'ant-design-vue/es/menu/src/interface'
 
-const authStore = useAuthStore();
-const router = useRouter();
+const authStore = useClientAuthStore()
+const router = useRouter()
 
+const defaultAvatar =
+  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
+
+function resetAuth() {
+  localStorage.removeItem('client_auth')
+  authStore.$reset() // clear state trong Pinia
+}
+
+function goLogin() {
+  localStorage.setItem('auth_tab', 'login')
+  router.push('/login')
+}
+
+function goRegister() {
+  localStorage.setItem('auth_tab', 'register')
+  router.push('/login')
+}
 async function onMenuClick(info: MenuInfo) {
-  const key = info.key as string;
+  const key = info.key as string
   if (key === 'logout') {
-    await authStore.logout();
+    await authStore.logout()
   } else if (key === 'profile') {
-    router.push('/profile');
+    router.push('/profile')
   } else if (key === 'settings') {
-    router.push('/settings');
+    router.push('/settings')
   }
 }
 </script>

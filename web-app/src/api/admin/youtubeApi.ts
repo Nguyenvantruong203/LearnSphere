@@ -1,8 +1,8 @@
-import { http } from '@/helpers/http'
+import { httpAdmin } from '@/helpers/http'
 
 export const youtubeApi = {
 async getStatus() {
-  const res = await http('/api/admin/me/youtube/status')
+  const res = await httpAdmin('/api/admin/me/youtube/status')
   return res  
 },
 

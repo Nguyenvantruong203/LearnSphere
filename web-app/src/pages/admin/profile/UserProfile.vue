@@ -177,14 +177,14 @@
 
 <script setup lang="ts">
 import { ref, reactive, watchEffect } from 'vue';
-import { useAuthStore } from '@/stores/auth';
-import { userApi } from '@/api/userApi';
+import { useClientAuthStore } from '@/stores/clientAuth';
+import { userApi } from '@/api/admin/userApi';
 import { notification, Upload as AUpload, Form as AForm, Input as AInput, Button as AButton, FormItem as AFormItem, DatePicker as ADatePicker, Select as ASelect, SelectOption as ASelectOption, SkeletonInput as ASkeletonInput, SkeletonAvatar as ASkeletonAvatar, SkeletonButton as ASkeletonButton } from 'ant-design-vue';
 import { PlusOutlined, LoadingOutlined, UploadOutlined } from '@ant-design/icons-vue';
 import LayoutAdmin from '../layout/LayoutAdmin.vue';
 import dayjs from 'dayjs';
 
-const authStore = useAuthStore();
+const authStore = useClientAuthStore();
 const initialLoading = ref(true);
 
 const formState = reactive({
@@ -194,6 +194,7 @@ const formState = reactive({
   address: '',
   birth_date: undefined as dayjs.Dayjs | undefined,
   gender: '',
+  avatar_url: '',
 });
 
 const originalState = reactive({
@@ -203,11 +204,12 @@ const originalState = reactive({
   address: '',
   birth_date: undefined as dayjs.Dayjs | undefined,
   gender: '',
+  avatar_url: '',
 });
 
 const loading = ref(false);
 const loadingAvatar = ref(false);
-const imageUrl = ref<string>('');
+const imageUrl = ref<string | undefined>('');
 const fileList = ref([]);
 const uploadInput = ref<HTMLInputElement | null>(null);
 
@@ -245,11 +247,9 @@ const handleFinish = async (values: any) => {
       ...values,
       birth_date: values.birth_date ? values.birth_date.format('YYYY-MM-DD') : null,
     };
-    const response = await userApi.updateProfile(payload);
-    authStore.setUser(response.data);
+    const updatedUser = await userApi.updateProfile(payload)
+    authStore.setUser(updatedUser)
 
-    // Manually update formState and originalState to ensure UI reactivity
-    const updatedUser = response.data;
     formState.name = updatedUser.name;
     formState.phone = updatedUser.phone || '';
     formState.address = updatedUser.address || '';
@@ -291,9 +291,9 @@ const uploadAvatar = async (file: File) => {
 
   loadingAvatar.value = true;
   try {
-    const response = await userApi.updateAvatar(formData);
-    authStore.setUser(response.data);
-    imageUrl.value = response.data.avatar_url || '';
+    const updatedUser = await userApi.updateAvatar(formData)
+    authStore.setUser(updatedUser)
+    imageUrl.value = updatedUser.avatar_url || ''
     notification.success({ message: 'Avatar updated successfully!' });
   } catch (error: any) {
     notification.error({ message: error.message || 'Avatar update failed.' });

@@ -32,8 +32,8 @@
 <script setup lang="ts">
 import { ref, computed, defineProps, defineEmits } from 'vue'
 import { notification } from 'ant-design-vue'
-import { lessonApi } from '@/api/lessonApi'
-import { youtubeApi } from '@/api/youtubeApi'
+import { lessonApi } from '@/api/admin/lessonApi'
+import { youtubeApi } from '@/api/admin/youtubeApi'
 
 const props = defineProps<{
     visible: boolean

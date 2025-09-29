@@ -26,7 +26,7 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import { notification } from 'ant-design-vue'
-import { lessonApi } from '@/api/lessonApi'
+import { lessonApi } from '@/api/admin/lessonApi'
 
 interface Lesson {
   id: number
