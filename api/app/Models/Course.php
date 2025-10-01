@@ -128,7 +128,7 @@ class Course extends Model
     public function students()
     {
         return $this->belongsToMany(User::class, 'enrollments')
-                    ->withTimestamps();
+            ->withTimestamps();
     }
 
     public function creator()
@@ -148,10 +148,10 @@ class Course extends Model
     public function scopePublished($q)
     {
         return $q->where('status', 'published')
-                 ->where(function ($q) {
-                     $q->whereNull('publish_at')
-                       ->orWhere('publish_at', '<=', now());
-                 });
+            ->where(function ($q) {
+                $q->whereNull('publish_at')
+                    ->orWhere('publish_at', '<=', now());
+            });
     }
 
     public function scopeVisible($q, string $visibility = 'public')
@@ -164,8 +164,8 @@ class Course extends Model
         if (!$term) return $q;
         return $q->where(function ($qq) use ($term) {
             $qq->where('title', 'like', "%{$term}%")
-               ->orWhere('short_description', 'like', "%{$term}%")
-               ->orWhere('description', 'like', "%{$term}%");
+                ->orWhere('short_description', 'like', "%{$term}%")
+                ->orWhere('description', 'like', "%{$term}%");
         });
     }
 
@@ -178,11 +178,6 @@ class Course extends Model
     {
         return (float) $this->price <= 0;
     }
-
-    /* =========================
-     |  Helpers (tuỳ chọn)
-     |=========================*/
-
     /**
      * Gọi thủ công khi muốn đổi slug theo title mới.
      * Không tự động chạy trong updating() để tránh vỡ URL.
@@ -190,5 +185,13 @@ class Course extends Model
     public function refreshSlug(): void
     {
         $this->slug = static::generateUniqueSlug($this->title);
+    }
+
+    public function getThumbnailUrlAttribute($value)
+    {
+        if ($value && !str_starts_with($value, 'http')) {
+            return asset('storage/' . $value);
+        }
+        return $value;
     }
 }

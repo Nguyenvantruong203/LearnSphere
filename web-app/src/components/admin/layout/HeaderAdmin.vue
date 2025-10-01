@@ -1,47 +1,99 @@
 <template>
-  <header class="p-4">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center justify-center"> 
+  <header class="sticky top-0 z-40">
+    <div class="px-4 lg:px-6">
+      <div class="flex items-center justify-between">
+        <!-- Left side - Logo/Brand -->
+        <div class="flex items-center min-w-0"> 
           <slot />
-      </div>
-      <div class="flex items-center space-x-4">
-        <div v-if="authStore.isLoggedIn && user" class="flex items-center space-x-3">
-          <a-dropdown :trigger="['click']">
-            <a class="ant-dropdown-link flex items-center" @click.prevent>
-              <a-avatar :src="user.avatar_url">
-                <template #icon><UserOutlined /></template>
-              </a-avatar>
-              <span class="ml-2 font-semibold text-gray-700">{{ user.name }}</span>
-            </a>
-            <template #overlay>
-              <a-menu @click="handleMenuClick">
-                <a-menu-item key="profile">
-                  <template #icon><UserOutlined /></template>
-                  Trang cá nhân
-                </a-menu-item>
-                <a-menu-divider />
-                <a-menu-item key="logout" @click="handleLogout">
-                  <template #icon>
-                    <LogoutOutlined />
-                  </template>
-                  Đăng xuất
-                </a-menu-item>
-              </a-menu>
-            </template>
-          </a-dropdown>
-
-          <a-button type="text" size="small">
-            <span class="flex items-center justify-center">
-              <BellOutlined />
-            </span>
-          </a-button>
         </div>
-        <div v-else>
-          <router-link to="/admin/login">
-            <a-button type="primary">
-              Đăng nhập
-            </a-button>
-          </router-link>
+
+        <!-- Right side - User actions -->
+        <div class="flex items-center space-x-2 lg:space-x-4">
+          <div v-if="authStore.isLoggedIn && user" class="flex items-center space-x-2 lg:space-x-3">
+            <!-- Notification Button -->
+            <div class="relative">
+              <a-button 
+                type="text" 
+                size="large"
+                class="notification-btn flex items-center justify-center hover:bg-gray-50 transition-colors duration-200"
+                @click="handleNotificationClick"
+              >
+                <BellOutlined class="text-lg text-gray-600" />
+              </a-button>
+              <!-- Notification badge -->
+              <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                3
+              </span>
+            </div>
+
+            <!-- User Dropdown -->
+            <a-dropdown :trigger="['click']" placement="bottomRight">
+              <a class="ant-dropdown-link flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition-all duration-200 cursor-pointer group" @click.prevent>
+                <a-avatar 
+                  :size="36" 
+                  :src="user.avatar_url"
+                  class="border-2 border-gray-200 group-hover:border-blue-300 transition-colors duration-200"
+                >
+                  <template #icon>
+                    <UserOutlined class="text-gray-500" />
+                  </template>
+                </a-avatar>
+                <div class="hidden sm:block text-left">
+                  <div class="font-semibold text-gray-800 text-sm leading-tight">{{ user.name }}</div>
+                  <div class="text-xs text-gray-500">{{ user.email || 'Administrator' }}</div>
+                </div>
+                <DownOutlined class="text-xs text-gray-400 ml-1 group-hover:text-gray-600 transition-colors duration-200" />
+              </a>
+              <template #overlay>
+                <a-menu 
+                  @click="handleMenuClick"
+                  class="min-w-48 shadow-lg border border-gray-100 rounded-lg overflow-hidden"
+                >
+                  <div class="px-4 py-3 bg-gray-50 border-b border-gray-100">
+                    <div class="font-medium text-gray-800">{{ user.name }}</div>
+                    <div class="text-sm text-gray-500">{{ user.email || 'Administrator' }}</div>
+                  </div>
+                  
+                  <a-menu-item key="profile" class="hover:bg-blue-50">
+                    <template #icon>
+                      <UserOutlined class="text-blue-600" />
+                    </template>
+                    <span class="text-gray-700">Trang cá nhân</span>
+                  </a-menu-item>
+                  
+                  <a-menu-item key="settings" class="hover:bg-blue-50">
+                    <template #icon>
+                      <SettingOutlined class="text-blue-600" />
+                    </template>
+                    <span class="text-gray-700">Cài đặt</span>
+                  </a-menu-item>
+                  
+                  <a-menu-divider class="my-1" />
+                  
+                  <a-menu-item key="logout" @click="handleLogout" class="hover:bg-red-50">
+                    <template #icon>
+                      <LogoutOutlined class="text-red-600" />
+                    </template>
+                    <span class="text-red-600">Đăng xuất</span>
+                  </a-menu-item>
+                </a-menu>
+              </template>
+            </a-dropdown>
+          </div>
+
+          <!-- Login button for non-authenticated users -->
+          <div v-else>
+            <router-link to="/admin/login">
+              <a-button 
+                type="primary" 
+                size="large"
+                class="font-medium px-6 hover:shadow-md transition-all duration-200"
+              >
+                <LoginOutlined class="mr-2" />
+                Đăng nhập
+              </a-button>
+            </router-link>
+          </div>
         </div>
       </div>
     </div>
@@ -52,28 +104,55 @@
 import {
   BellOutlined,
   UserOutlined,
-  LogoutOutlined
+  LogoutOutlined,
+  DownOutlined,
+  SettingOutlined,
+  LoginOutlined
 } from '@ant-design/icons-vue'
 import { useAdminAuthStore } from '@/stores/adminAuth'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
+import { notification } from 'ant-design-vue'
 
 const authStore = useAdminAuthStore()
 const { user } = storeToRefs(authStore)
 const router = useRouter()
 
 const handleMenuClick = (info: { key: string | number }) => {
-  if (info.key === 'profile') {
-    router.push('/admin/profile');
+  switch (info.key) {
+    case 'profile':
+      router.push('/admin/profile')
+      break
+    case 'settings':
+      router.push('/admin/settings')
+      break
+    default:
+      break
   }
-};
+}
+
+const handleNotificationClick = () => {
+  notification.info({
+    message: 'Thông báo',
+    description: 'Bạn có 3 thông báo mới',
+    placement: 'topRight'
+  })
+}
 
 const handleLogout = async () => {
   try {
     await authStore.logout()
+    notification.success({
+      message: 'Đăng xuất thành công',
+      description: 'Hẹn gặp lại bạn!'
+    })
     router.push('/admin/login')
   } catch (error) {
     console.error('Logout failed:', error)
+    notification.error({
+      message: 'Lỗi đăng xuất',
+      description: 'Có lỗi xảy ra khi đăng xuất'
+    })
   }
 }
 </script>

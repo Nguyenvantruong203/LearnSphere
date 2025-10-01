@@ -138,10 +138,10 @@ const confirmRemoveCourse = (course: Course) => {
 const removeCourse = async (courseId: number) => {
   try {
     await courseApi.deleteCourse(courseId);
-    message.success('Đã xoá Course');
+    notification.success({ message: 'Đã xoá Course' });
     await fetchCourses();
   } catch (error: any) {
-    message.error(error.message || 'Xoá Course thất bại');
+    notification.error({ message: error.message || 'Xoá Course thất bại' });
   }
 };
 

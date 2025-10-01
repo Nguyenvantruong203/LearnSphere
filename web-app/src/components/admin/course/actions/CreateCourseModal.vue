@@ -61,7 +61,10 @@
                 </a-col>
                  <a-col :span="8">
                     <a-form-item label="Ngôn ngữ" name="language">
-                        <a-input v-model:value="formState.language" />
+                        <a-select v-model:value="formState.language" >
+                            <a-select-option value="vi">VN</a-select-option>
+                            <a-select-option value="en">ENG</a-select-option>
+                        </a-select>
                     </a-form-item>
                 </a-col>
             </a-row>
@@ -130,7 +133,7 @@ const initialFormState: CoursePayload = {
     level: 'beginner',
     language: 'vi',
     currency: 'VND',
-    created_by: 0, // Sẽ được set ở backend
+    created_by: 0, 
 };
 
 const formState = reactive({ ...initialFormState });

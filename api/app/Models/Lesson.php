@@ -31,9 +31,14 @@ class Lesson extends Model
     {
         return $this->belongsTo(Topic::class);
     }
-      public function quizzes()
+    public function quizzes()
     {
         return $this->hasMany(Quiz::class)->orderBy('id');
+    }
+
+    public function quiz()
+    {
+        return $this->hasOne(Quiz::class, 'lesson_id');
     }
 
     public function scopeOrdered($q)

@@ -24,10 +24,7 @@ class TopicQuestionController extends Controller
 
         $questions = $quiz->questions()->where('is_temp', false)->get();
 
-        return response()->json([
-            'success'   => true,
-            'questions' => $questions,
-        ]);
+        return response()->json($questions);
     }
 
     /**
@@ -57,7 +54,7 @@ class TopicQuestionController extends Controller
 
         $questions = Question::whereIn('quiz_id', $lessonQuizIds)
             ->where('is_temp', false)
-            ->get(['id', 'text']);
+            ->get();
 
         if ($questions->isEmpty()) {
             return response()->json([
@@ -66,13 +63,63 @@ class TopicQuestionController extends Controller
             ], 400);
         }
 
+        // Gọi AI gợi ý
         $suggestedIds = $gemini->suggestForTopic($questions, $num);
 
-        return response()->json([
-            'success'       => true,
-            'suggested_ids' => $suggestedIds,
-            'all_questions' => $questions,
-        ]);
+        // Clone các câu hỏi gợi ý vào quiz topic
+        $suggestedQuestions = $questions->whereIn('id', $suggestedIds);
+
+        foreach ($suggestedQuestions as $origin) {
+            Question::create([
+                'quiz_id'          => $quiz->id,
+                'type'             => $origin->type,
+                'text'             => $origin->text,
+                'options'          => $origin->options,
+                'correct_options'  => $origin->correct_options,
+                'weight'           => $origin->weight ?? 1,
+                'is_temp'          => false,
+            ]);
+        }
+        $result = $quiz->questions()->where('is_temp', false)->get();
+        return response()->json($result);
+    }
+
+    public function poolForTopic(Quiz $quiz)
+    {
+        $topic = $quiz->topic;
+        if (!$topic) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Quiz này không thuộc topic nào.',
+            ], 400);
+        }
+
+        $lessonQuizIds = $topic->lessons()
+            ->with('quiz')
+            ->get()
+            ->pluck('quiz.id')
+            ->filter();
+
+        $questions = Question::whereIn('quiz_id', $lessonQuizIds)
+            ->where('is_temp', false)
+            ->get(['id', 'text', 'type', 'options', 'correct_options', 'weight']);
+
+        // Lấy danh sách text đã tồn tại trong quiz topic
+        $existingTexts = $quiz->questions()->pluck('text')->toArray();
+
+        $result = $questions->map(function ($q) use ($existingTexts) {
+            return [
+                'id'             => $q->id,
+                'text'           => $q->text,
+                'type'           => $q->type,
+                'options'        => $q->options,
+                'correct_options' => $q->correct_options,
+                'weight'         => $q->weight,
+                'selected'       => in_array($q->text, $existingTexts), // ⚡ append
+            ];
+        });
+
+        return response()->json($result);
     }
 
     /**
@@ -80,72 +127,34 @@ class TopicQuestionController extends Controller
      */
     public function publishForTopic(Request $request, Quiz $quiz)
     {
-        $data = $request->validate([
-            'question_ids' => 'required|array',
-            'question_ids.*' => 'integer|exists:questions,id',
-        ]);
+        $ids = $request->input('question_ids', []);
 
-        if (!$quiz->topic) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Quiz này không thuộc topic nào.',
-            ], 400);
+        // Lấy danh sách câu gốc từ lesson
+        $originQuestions = Question::whereIn('id', $ids)->get();
+
+        // Xóa những câu hỏi trong quiz topic mà không còn trong selection
+        $quiz->questions()
+            ->whereNotIn('text', $originQuestions->pluck('text'))
+            ->delete();
+
+        // Thêm mới những câu chưa có
+        $existingTexts = $quiz->questions()->pluck('text')->toArray();
+        foreach ($originQuestions as $origin) {
+            if (in_array($origin->text, $existingTexts)) continue;
+
+            Question::create([
+                'quiz_id'         => $quiz->id,
+                'type'            => $origin->type,
+                'text'            => $origin->text,
+                'options'         => $origin->options,
+                'correct_options' => $origin->correct_options,
+                'weight'          => $origin->weight ?? 1,
+                'is_temp'         => false,
+            ]);
         }
 
-        $published = [];
-        foreach ($data['question_ids'] as $qid) {
-            $origin = Question::find($qid);
-            if (!$origin) {
-                continue;
-            }
-
-            // copy sang quiz topic (nếu chưa tồn tại)
-            $copy = $quiz->questions()->firstOrCreate(
-                ['origin_question_id' => $origin->id],
-                [
-                    'type'              => $origin->type,
-                    'text'              => $origin->text,
-                    'options'           => $origin->options,
-                    'correct_options'   => $origin->correct_options,
-                    'weight'            => $origin->weight,
-                    'is_temp'           => false,
-                ]
-            );
-
-            $published[] = $copy;
-        }
-
-        return response()->json([
-            'success'   => true,
-            'published' => $published,
-        ]);
-    }
-
-    /**
-     * Sửa lại câu hỏi đã copy vào quiz topic
-     */
-    public function updateForTopic(Request $request, Quiz $quiz, Question $question)
-    {
-        if ($quiz->id !== $question->quiz_id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Câu hỏi này không thuộc quiz topic.',
-            ], 400);
-        }
-
-        $data = $request->validate([
-            'type' => 'sometimes|string',
-            'text' => 'sometimes|string',
-            'options' => 'nullable|array',
-            'correct_options' => 'nullable|array',
-            'weight' => 'nullable|numeric',
-        ]);
-
-        $question->update($data);
-
-        return response()->json([
-            'success'  => true,
-            'question' => $question,
-        ]);
+        return response()->json(
+            $quiz->questions()->where('is_temp', false)->get()
+        );
     }
 }

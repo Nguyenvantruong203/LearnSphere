@@ -14,8 +14,12 @@ class GeminiService
         $this->apiKey = env('GEMINI_API_KEY');
     }
 
-    public function generateQuestions(string $content, int $num = 5): array
+    public function generateQuestions(string $content, int $num = 5, string $language = 'vi'): array
     {
+        // Xác định mô tả ngôn ngữ
+        $langInstruction = $language === 'en'
+            ? "Write all questions and options in English."
+            : "Viết tất cả câu hỏi và đáp án bằng tiếng Việt.";
 
         $prompt = "
 Bạn là một AI chuyên tạo quiz.
@@ -37,6 +41,8 @@ Yêu cầu:
    - answers là [\"A\"] nếu đúng, hoặc [\"B\"] nếu sai.
 5. Trả về duy nhất một mảng JSON hợp lệ (bắt đầu bằng [ và kết thúc bằng ]).
 6. KHÔNG giải thích, KHÔNG thêm text ngoài JSON.
+
+Ngôn ngữ: $langInstruction
 ";
 
         $response = Http::post("{$this->apiUrl}?key={$this->apiKey}", [

@@ -40,7 +40,7 @@
 <script setup lang="ts">
 import { ref, watch, nextTick } from 'vue'
 import { quizApi } from '@/api/admin/quizApi'
-import { message } from 'ant-design-vue'
+import { message, notification } from 'ant-design-vue'
 
 // Props
 const props = defineProps<{
@@ -123,7 +123,7 @@ const handleCancel = () => {
 // Submit
 const handleSubmit = async () => {
   if (!props.quiz) {
-    message.error('Không tìm thấy thông tin quiz')
+    notification.error({ message: 'Không có quiz để cập nhật.' })
     return
   }
 
@@ -134,19 +134,19 @@ const handleSubmit = async () => {
   try {
     const quizId = props.quiz.id ?? props.quiz.quiz_id
     if (!quizId) {
-      message.error('Không tìm thấy ID của quiz để cập nhật.')
+      notification.error({ message: 'Không tìm thấy ID của quiz để cập nhật.' })
       return
     }
 
     await quizApi.updateQuiz(quizId, payload)
-    message.success('Cập nhật quiz thành công')
+    notification.success({ message: 'Cập nhật quiz thành công' })
     emit('finish', {
       lessonId: props.quiz.lesson_id,
       topicId: props.quiz.topic_id,
     })
     localOpen.value = false
   } catch (err: any) {
-    message.error(err.message || 'Lỗi khi cập nhật quiz')
+    notification.error({ message: err.message || 'Lỗi khi cập nhật quiz' })
   }
 }
 </script>

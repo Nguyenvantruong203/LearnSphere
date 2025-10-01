@@ -1,0 +1,74 @@
+<template>
+    <a-modal v-model:open="innerOpen" title="Chọn câu hỏi từ Lesson" @ok="handleSave" :confirm-loading="loading"
+        width="800px">
+        <a-table row-key="id" :columns="columns" :data-source="pool" :loading="loading" :row-selection="rowSelection"
+            size="middle" :pagination="{ pageSize: 10 }" />
+    </a-modal>
+</template>
+
+<script setup lang="ts">
+import { ref, watch, computed } from 'vue'
+import { topicQuestionApi } from '@/api/admin/topicQuestionApi'
+import type { Question } from '@/types/Question'
+
+const props = defineProps<{
+    quizId: number
+    open: boolean
+}>()
+
+const emit = defineEmits<{
+    (e: 'update:open', val: boolean): void
+    (e: 'published'): void
+}>()
+
+// ✅ innerOpen để dùng v-model:open
+const innerOpen = computed({
+    get: () => props.open,
+    set: (val: boolean) => emit('update:open', val),
+})
+
+const pool = ref<(Question & { selected?: boolean })[]>([])
+const selectedRowKeys = ref<number[]>([])
+const loading = ref(false)
+
+const columns = [
+    { title: '#', key: 'index', customRender: ({ index }: any) => index + 1 },
+    { title: 'Câu hỏi', dataIndex: 'text' },
+    { title: 'Loại', dataIndex: 'type' },
+    { title: 'Điểm', dataIndex: 'weight' },
+]
+
+const rowSelection = computed(() => ({
+    selectedRowKeys: selectedRowKeys.value,
+    onChange: (keys: number[]) => {
+        selectedRowKeys.value = keys
+    },
+}))
+
+watch(
+    () => props.open,
+    async (val) => {
+        if (val) {
+            loading.value = true
+            const res = await topicQuestionApi.getPool(props.quizId)
+            pool.value = res ?? []
+            selectedRowKeys.value = pool.value
+                .filter((q) => q.selected)
+                .map((q) => q.id)
+            loading.value = false
+        }
+    },
+)
+
+const handleSave = async () => {
+    if (!selectedRowKeys.value.length) {
+        innerOpen.value = false
+        return
+    }
+    loading.value = true
+    await topicQuestionApi.publishQuestions(props.quizId, selectedRowKeys.value)
+    loading.value = false
+    innerOpen.value = false
+    emit('published')
+}
+</script>

@@ -29,7 +29,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { quizApi } from '@/api/admin/quizApi'
-import { message } from 'ant-design-vue'
+import { message, notification } from 'ant-design-vue'
 
 const props = defineProps<{
   open: boolean
@@ -68,11 +68,11 @@ const handleSubmit = async () => {
     } else {
       throw new Error('Thiếu topicId hoặc lessonId')
     }
-    message.success('Tạo quiz thành công')
+    notification.success({ message: 'Tạo quiz thành công' })
     emit('finish', { topicId: props.topicId, lessonId: props.lessonId })
     emit('update:open', false)
   } catch (err: any) {
-    message.error(err.message || 'Lỗi khi tạo quiz')
+    notification.error({ message: err.message || 'Lỗi khi tạo quiz' })
   }
 }
 const handleCancel = () => emit('update:open', false)

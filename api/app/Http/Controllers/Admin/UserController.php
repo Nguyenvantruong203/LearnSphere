@@ -172,15 +172,12 @@ class UserController extends Controller
         $user = $request->user();
 
         if ($request->hasFile('avatar')) {
-            // Delete old avatar if it exists
             if ($user->avatar_url) {
-                // The stored path might be just 'avatars/filename.png', not the full URL.
-                // We assume the value in `avatar_url` is the storage path.
                 Storage::disk('public')->delete($user->avatar_url);
             }
 
             $path = $request->file('avatar')->store('avatars', 'public');
-            $user->avatar_url = $path; // Corrected to use the database column name
+            $user->avatar_url = $path;
             $user->save();
         }
 

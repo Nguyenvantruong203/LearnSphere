@@ -5,7 +5,7 @@
       <!-- Quiz Info -->
       <div class="info-section">
         <h3 class="section-title">Thông tin Quiz</h3>
-        <a-card class="info-card" :bordered="false" >
+        <a-card class="info-card" :bordered="false">
           <a-row>
             <a-col :span="6">
               <div class="info-item">
@@ -46,9 +46,15 @@
       </div>
       <a-divider />
 
-      <!-- Questions Table -->
-      <QuestionsTable :quiz-id="quiz.id" :questions="quiz.questions || []"
-        @update:questions="qs => $emit('update:quiz', { ...quiz, questions: qs })" />
+      <QuestionsTable
+        v-if="quiz"
+        :key="quizKey"
+        :quiz-id="quiz.id"
+        :mode="quizMode"
+        @update:questions="qs => $emit('update:quiz', { ...quiz, questions: qs } as Quiz)"
+      />
+
+
     </div>
 
     <div v-else class="error-state">
@@ -58,10 +64,11 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { Quiz } from '@/types/Quiz'
 import QuestionsTable from '@/components/admin/question/QuestionsTable.vue'
 
-defineProps<{
+const props = defineProps<{
   open: boolean
   quiz: Quiz | null
 }>()
@@ -70,5 +77,17 @@ defineEmits<{
   (e: 'update:open', value: boolean): void
   (e: 'update:quiz', quiz: Quiz): void
 }>()
-</script>
 
+// Computed để xác định mode và key duy nhất
+const quizMode = computed(() => {
+  if (!props.quiz) return 'topic'
+  const mode = props.quiz.lesson_id ? 'lesson' : 'topic'
+  console.log('QuizDrawer - Quiz ID:', props.quiz.id, 'Mode:', mode, 'lesson_id:', props.quiz.lesson_id, 'topic_id:', props.quiz.topic_id)
+  return mode
+})
+
+const quizKey = computed(() => {
+  if (!props.quiz) return 'empty'
+  return `quiz-${props.quiz.id}-${quizMode.value}-${props.quiz.lesson_id || props.quiz.topic_id}`
+})
+</script>

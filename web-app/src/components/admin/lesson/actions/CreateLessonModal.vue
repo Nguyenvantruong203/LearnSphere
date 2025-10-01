@@ -36,19 +36,19 @@ import { lessonApi } from '@/api/admin/lessonApi'
 import { youtubeApi } from '@/api/admin/youtubeApi'
 
 const props = defineProps<{
-    visible: boolean
+    open: boolean
     topicId: number | undefined
     youtubeConnected: boolean
 }>()
 
 const emit = defineEmits<{
-    (e: 'update:visible', v: boolean): void;
-    (e: 'finish'): void
+    (e: 'update:open', v: boolean): void
+    (e: 'finish', data: { topicId: number | undefined, courseId?: any }): void
 }>()
 
 const open = computed({
-    get: () => props.visible,
-    set: (val: boolean) => emit('update:visible', val),
+    get: () => props.open,
+    set: (val: boolean) => emit('update:open', val),
 })
 
 const youtubeConnected = computed(() => props.youtubeConnected)
@@ -95,7 +95,7 @@ const handleFinish = async () => {
 
         await lessonApi.createLesson(props.topicId as number, formData)
         notification.success({ message: 'Thêm bài học thành công!' })
-        emit('finish')
+        emit('finish', { topicId: props.topicId, courseId: (props as any).courseId })
         open.value = false
         resetForm()
     } catch (err: any) {
@@ -110,8 +110,10 @@ const handleCancel = () => {
     open.value = false
 }
 
-const user = JSON.parse(localStorage.getItem('auth_user') || '{}')
+const auth = JSON.parse(localStorage.getItem('admin_auth') || '{}')
+const userId = auth.user?.id
+
 const connectYoutube = () => {
-    window.location.href = youtubeApi.connectUrl(user.id)
+    window.location.href = youtubeApi.connectUrl(userId)
 }
 </script>

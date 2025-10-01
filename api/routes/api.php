@@ -27,10 +27,9 @@ Route::post('/email/verification-notification', [AuthController::class, 'resendV
 // Google Auth Routes
 Route::get('/auth/google/redirect', [AuthController::class, 'redirectToGoogle']);
 Route::get('/google/callback-login', [AuthController::class, 'handleGoogleCallback']);
-
+// Google OAuth for YouTube
 Route::get('/google/connect-youtube', [GoogleAuthController::class, 'redirect'])->name('google.youtube.connect');
 Route::get('/google/callback-youtube', [GoogleAuthController::class, 'callback'])->name('google.youtube.callback');
-
 // Các định tuyến yêu cầu xác thực
 Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
@@ -54,7 +53,6 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::get('/courses/{course}', [CourseController::class, 'show'])->name('courses.show');  // Chi tiết course
     Route::put('/courses/{course}', [CourseController::class, 'update'])->name('courses.update');  // Update course
     Route::delete('/courses/{course}', [CourseController::class, 'destroy'])->name('courses.destroy');
-
 
     // Topics
     Route::get('/courses/{course}/topics', [TopicController::class, 'index'])->name('courses.topics.index');
@@ -103,10 +101,11 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     // Questions for topic
     Route::get('quizzes/{quiz}/topic-questions', [TopicQuestionController::class, 'indexForTopic']);
     Route::post('quizzes/{quiz}/topic-questions/ai-suggest', [TopicQuestionController::class, 'suggestForTopic']);
+    Route::get('quizzes/{quiz}/topic-questions/pool', [TopicQuestionController::class, 'poolForTopic']);
     Route::post('quizzes/{quiz}/topic-questions/publish', [TopicQuestionController::class, 'publishForTopic']);
     Route::put('quizzes/{quiz}/topic-questions/{question}', [TopicQuestionController::class, 'updateForTopic']);
 
-    Route::delete('questions/{question}', [LessonQuestionController::class, 'destroy']);
+    Route::delete('quizzes/{quiz}/questions/{question}', [LessonQuestionController::class, 'destroy']);
 });
 
 // Đặt lại mật khẩu

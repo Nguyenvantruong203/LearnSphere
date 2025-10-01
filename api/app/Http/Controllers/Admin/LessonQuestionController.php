@@ -71,7 +71,6 @@ class LessonQuestionController extends Controller
         return response()->json($question);
     }
 
-
     // Xóa câu hỏi
     public function destroy(Quiz $quiz, Question $question)
     {
@@ -92,21 +91,20 @@ class LessonQuestionController extends Controller
         $num = $request->input('num', 5);
         $content = null;
 
-        // 1. Thử lấy transcript từ video YouTube trước (đa ngôn ngữ)
+        // 1. Lấy transcript từ video YouTube nếu có
         if ($quiz->lesson && $quiz->lesson->video_url) {
             $videoId = $gemini->extractVideoId($quiz->lesson->video_url);
 
-            // Thử lấy caption tiếng Việt, nếu không có thì fallback sang tiếng Anh
             $content = $gemini->getCaptionsFromYouTube($videoId, 'vi')
                 ?? $gemini->getCaptionsFromYouTube($videoId, 'en');
         }
 
-        // 2. Nếu vẫn không có thì fallback sang content text của bài học
+        // 2. Fallback sang content của bài học
         if (!$content && $quiz->lesson) {
             $content = $quiz->lesson->content ?? null;
         }
 
-        // 3. Nếu không có transcript và content thì báo lỗi
+        // 3. Nếu vẫn không có thì báo lỗi
         if (!$content) {
             return response()->json([
                 'success' => false,
@@ -114,8 +112,12 @@ class LessonQuestionController extends Controller
             ], 400);
         }
 
-        // 4. Sinh câu hỏi từ Gemini
-        $questions = $gemini->generateQuestions($content, $num);
+        // ✅ Lấy language từ course
+        $course   = $quiz->topic->course ?? null;
+        $language = $course?->language ?? 'vi';
+
+        // 4. Sinh câu hỏi từ Gemini với language
+        $questions = $gemini->generateQuestions($content, $num, $language);
 
         $inserted = [];
         foreach ($questions as $q) {
@@ -135,6 +137,7 @@ class LessonQuestionController extends Controller
             'questions' => $inserted,
         ]);
     }
+
 
     private function authorizeQuestion(Quiz $quiz, Question $question)
     {

@@ -43,24 +43,33 @@ class CourseController extends Controller
     public function store(Request $request)
     {
         $this->authorize('create', Course::class);
+
         $data = $request->validate([
-            'title'              => ['required', 'string', 'max:255'],
-            'short_description'  => ['nullable', 'string'],
-            'description'        => ['nullable', 'string'],
-            'price'              => ['nullable', 'numeric', 'min:0'],
-            'status'             => ['nullable', 'in:draft,published,archived'],
-            'visibility'         => ['nullable', 'in:public,private'],
-            'level'              => ['nullable', 'in:beginner,intermediate,advanced'],
-            'language'           => ['nullable', 'string', 'max:10'],
-            'currency'           => ['nullable', 'string', 'max:10'],
+            'title'             => ['required', 'string', 'max:255'],
+            'short_description' => ['nullable', 'string'],
+            'description'       => ['nullable', 'string'],
+            'price'             => ['nullable', 'numeric', 'min:0'],
+            'status'            => ['nullable', 'in:draft,published,archived'],
+            'visibility'        => ['nullable', 'in:public,private'],
+            'level'             => ['nullable', 'in:beginner,intermediate,advanced'],
+            'language'          => ['nullable', 'string'],
+            'currency'          => ['nullable', 'string'],
+            'thumbnail'         => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
         ]);
+
+        if ($request->hasFile('thumbnail')) {
+            $path = $request->file('thumbnail')->store('thumbnails', 'public');
+            $data['thumbnail_url'] = $path;
+        }
+
+        unset($data['thumbnail']);
 
         $course = Course::create([
             'created_by' => $request->user()->id,
             ...$data
         ]);
 
-        return response()->json(['message' => 'created', 'data' => $course], 201);
+        return response()->json($course);
     }
 
     // GET /admin/courses/{course}
@@ -71,7 +80,7 @@ class CourseController extends Controller
         // Có thể trả kèm counts
         $course->loadCount('topics');
 
-        return response()->json(['data' => $course]);
+        return response()->json($course);
     }
 
     // PATCH /admin/courses/{course}
@@ -80,29 +89,35 @@ class CourseController extends Controller
         $this->authorize('update', $course);
 
         $data = $request->validate([
-            'title'              => ['required', 'string', 'max:255'],
-            'short_description'  => ['nullable', 'string'],
-            'description'        => ['nullable', 'string'],
-            'price'              => ['nullable', 'numeric', 'min:0'],
-            'status'             => ['nullable', 'in:draft,published,archived'],
-            'visibility'         => ['nullable', 'in:public,private'],
-            'level'              => ['nullable', 'in:beginner,intermediate,advanced'],
-            'language'           => ['nullable', 'string', 'max:10'],
-            'currency'           => ['nullable', 'string', 'max:10'],
+            'title'             => ['required', 'string', 'max:255'],
+            'short_description' => ['nullable', 'string'],
+            'description'       => ['nullable', 'string'],
+            'price'             => ['nullable', 'numeric', 'min:0'],
+            'status'            => ['nullable', 'in:draft,published,archived'],
+            'visibility'        => ['nullable', 'in:public,private'],
+            'level'             => ['nullable', 'in:beginner,intermediate,advanced'],
+            'language'          => ['nullable', 'string'],
+            'currency'          => ['nullable', 'string'],
+            'thumbnail'         => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
         ]);
 
-        // Nếu có file thumbnail
+        // ✅ nếu upload thumbnail mới
         if ($request->hasFile('thumbnail')) {
+            // Xóa ảnh cũ nếu có
+            if ($course->thumbnail_url) {
+                Storage::disk('public')->delete(str_replace('/storage/', '', $course->thumbnail_url));
+            }
+
+            // Lưu ảnh mới
             $path = $request->file('thumbnail')->store('thumbnails', 'public');
-            $data['thumbnail_url'] = '/storage/' . $path;
+            $data['thumbnail_url'] = $path;
         }
+
+        unset($data['thumbnail']); // bỏ key gốc tránh lỗi fillable
 
         $course->update($data);
 
-        return response()->json([
-            'message' => 'updated',
-            'data' => $course
-        ]);
+        return response()->json($course);
     }
 
     // DELETE /admin/courses/{course}
