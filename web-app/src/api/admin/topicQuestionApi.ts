@@ -4,18 +4,17 @@ import type {
   QuestionPayload,
   GetQuestionsParams,
   PaginationQuestion,
-  GenerateQuestionsResponse,
 } from '@/types/Question'
 
 export const topicQuestionApi = {
   /**
-   * Lấy danh sách câu hỏi (có phân trang) cho quiz của lesson.
+   * Lấy danh sách câu hỏi (public) cho quiz của topic.
    */
   async getQuestions(
     quizId: number,
     params: GetQuestionsParams = {},
   ): Promise<PaginationQuestion<Question>> {
-    return await httpAdmin(`/api/admin/quizzes/${quizId}/lesson-questions`, {
+    return await httpAdmin(`/api/admin/quizzes/${quizId}/topic-questions`, {
       method: 'GET',
       params,
       withCredentials: true,
@@ -23,41 +22,33 @@ export const topicQuestionApi = {
   },
 
   /**
-   * Tạo mới câu hỏi cho quiz lesson.
+   * Gợi ý câu hỏi từ lesson để chọn vào quiz topic.
    */
-  async createQuestion(quizId: number, data: QuestionPayload): Promise<Question> {
-    return await httpAdmin(`/api/admin/lesson-questions`, {
-      method: 'POST',
-      body: { ...data, quiz_id: quizId },
-      withCredentials: true,
-    })
-  },
-
-  /**
-   * Cập nhật câu hỏi của lesson.
-   */
-  async updateQuestion(questionId: number, data: Partial<QuestionPayload>): Promise<Question> {
-    return await httpAdmin(`/api/admin/lesson-questions/${questionId}`, {
-      method: 'PUT',
-      body: data,
-      withCredentials: true,
-    })
-  },
-
-  /**
-   * Sinh câu hỏi bằng AI từ quiz lesson.
-   */
-  async generateQuestions(quizId: number, num = 5): Promise<GenerateQuestionsResponse> {
-    return await httpAdmin(`/api/admin/quizzes/${quizId}/lesson-questions/ai-generate`, {
+  async suggestQuestions(quizId: number, num: number) {
+    return await httpAdmin(`/api/admin/quizzes/${quizId}/topic-questions/ai-suggest`, {
       method: 'POST',
       body: { num },
       withCredentials: true,
     })
   },
-  
-  async deleteQuestion(questionId: number): Promise<void> {
-    await httpAdmin(`/api/admin/questions/${questionId}`, {
-      method: 'DELETE',
+
+  /**
+   * Lấy pool câu hỏi từ lesson trong topic (để tick chọn publish).
+   */
+  async getPool(quizId: number) {
+    return await httpAdmin(`/api/admin/quizzes/${quizId}/topic-questions/pool`, {
+      method: 'GET',
+      withCredentials: true,
+    })
+  },
+
+  /**
+   * Publish (tick chọn) câu hỏi vào quiz topic.
+   */
+  async publishQuestions(quizId: number, questionIds: number[]) {
+    return await httpAdmin(`/api/admin/quizzes/${quizId}/topic-questions/publish`, {
+      method: 'POST',
+      body: { question_ids: questionIds },
       withCredentials: true,
     })
   },

@@ -25,13 +25,13 @@ class Course extends Model
         'description',
 
         'status',       // draft|published|archived
-        'visibility',   // public|unlisted|private
         'publish_at',
 
         'price',
         'currency',     // VND
         'level',        // beginner|intermediate|advanced
         'language',     // vi
+        'subject',
 
         'created_by',
         'updated_by',
@@ -50,7 +50,6 @@ class Course extends Model
      */
     protected $attributes = [
         'status'     => 'draft',
-        'visibility' => 'public',
         'price'      => 0,
         'currency'   => 'VND',
         'level'      => 'beginner',
@@ -61,15 +60,6 @@ class Course extends Model
      * Append thuộc tính tính toán is_free vào JSON (tuỳ thích).
      */
     protected $appends = ['is_free'];
-
-    /**
-     * Route Model Binding sử dụng slug (tiện SEO/URL).
-     * Bỏ đi nếu anh vẫn muốn dùng id.
-     */
-    // public function getRouteKeyName(): string
-    // {
-    //     return 'slug';
-    // }
 
     /**
      * Tạo slug khi tạo mới (nếu chưa set).
@@ -130,6 +120,11 @@ class Course extends Model
         return $this->belongsToMany(User::class, 'enrollments')
             ->withTimestamps();
     }
+
+    public function instructor()
+{
+    return $this->belongsTo(User::class, 'created_by');
+}
 
     public function creator()
     {

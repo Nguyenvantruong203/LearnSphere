@@ -6,7 +6,6 @@ import AdminLogin from '@/pages/admin/auth/AdminLogin.vue'
 import ListUsers from '@/pages/admin/user/ListUsers.vue'
 import Homepage from '@/pages/customer/Homepage.vue'
 import Blog from '@/pages/customer/Blog.vue'
-import Membership from '@/pages/customer/Membership.vue'
 import Course from '@/pages/customer/Course.vue'
 import GoogleCallback from '@/pages/customer/auth/GoogleCallback.vue'
 
@@ -15,6 +14,7 @@ import NotFound from '@/pages/error/404.vue'
 import Forbidden from '@/pages/error/403.vue'
 import UserProfile from '@/pages/admin/profile/UserProfile.vue'
 import ListCourses from '@/pages/admin/course/ListCourses.vue'
+import About from '@/pages/customer/About.vue'
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -51,17 +51,6 @@ export const routes: RouteRecordRaw[] = [
     meta: { layout: 'public', title: 'Blog', requiresAuth: true, roles: ['student', 'instructor'] },
   },
   {
-    path: '/membership',
-    name: 'Membership',
-    component: Membership,
-    meta: {
-      layout: 'public',
-      title: 'Membership',
-      requiresAuth: true,
-      roles: ['student', 'instructor'],
-    },
-  },
-  {
     path: '/courses',
     name: 'Courses',
     component: Course,
@@ -72,7 +61,12 @@ export const routes: RouteRecordRaw[] = [
       roles: ['student', 'instructor'],
     },
   },
-
+  {
+    path: '/about',
+    name: 'About',
+    component: About,
+    meta: { layout: 'public', title: 'About Us' },
+  },
   // --- Admin Pages ---
   {
     path: '/admin/login',

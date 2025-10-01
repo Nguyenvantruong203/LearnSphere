@@ -18,7 +18,21 @@
             <a-input v-model:value="formState.title" />
           </a-form-item>
         </a-col>
-        <a-col :span="12">
+        <a-col :span="6">
+          <a-form-item label="Chủ đề" name="subject">
+            <a-select v-model:value="formState.subject" placeholder="Chọn chủ đề" style="width: 100%" allowClear>
+              <a-select-option value="it">IT</a-select-option>
+              <a-select-option value="design">Design</a-select-option>
+              <a-select-option value="development">Development</a-select-option>
+              <a-select-option value="business">Business</a-select-option>
+              <a-select-option value="marketing">Marketing</a-select-option>
+              <a-select-option value="finance">Finance</a-select-option>
+              <a-select-option value="language">Language</a-select-option>
+            </a-select>
+          </a-form-item>
+        </a-col>
+
+        <a-col :span="6">
           <a-form-item label="Giá" name="price">
             <a-input-number v-model:value="formState.price" style="width: 100%" :min="0" />
           </a-form-item>

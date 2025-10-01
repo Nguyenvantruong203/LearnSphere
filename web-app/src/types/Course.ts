@@ -12,6 +12,7 @@ export interface Course {
   publish_at?: string;
   price: number;
   currency: string;
+  subject?: string;
   level: 'beginner' | 'intermediate' | 'advanced';
   language: string;
   created_by: number;
@@ -51,4 +52,29 @@ export interface PaginationCourse<T> {
   prev_page_url: string | null
   to: number
   total: number
+}
+
+export interface CourseSearchParams {
+  search?: string
+  subject?: string
+  level?: string
+  language?: string
+  is_paid?: boolean
+  price_min?: number
+  price_max?: number
+  category_id?: number
+  sort_by?: string
+  sort_order?: 'asc' | 'desc'
+  page?: number
+  per_page?: number
+}
+
+export interface CourseSearchPayload {
+  searchText: string
+  filters: {
+    subject: string | undefined
+    level: string | undefined
+    language: string | undefined
+    availability: 'free' | 'paid' | undefined
+  }
 }

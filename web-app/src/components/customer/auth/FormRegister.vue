@@ -95,11 +95,10 @@ const handleFinish = async () => {
       title: 'Đăng ký thành công',
       content: 'Vui lòng xác nhận lại email của bạn và chờ admin duyệt để có thể trải nghiệm trang web.',
       onOk() {
-        router.push('/login') // Redirect to login page on OK
+        router.push('/login') 
       }
     })
   } catch (err: any) {
-    // Xử lý lỗi từ API (ví dụ: email đã tồn tại)
     if (err.data && typeof err.data === 'object') {
         const errorMessages = Object.values(err.data).flat().join(' ');
         error.value = errorMessages || 'Đã có lỗi xảy ra. Vui lòng thử lại.';

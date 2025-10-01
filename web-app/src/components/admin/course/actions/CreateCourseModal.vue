@@ -1,24 +1,10 @@
 <template>
-    <a-modal
-        title="Thêm khóa học mới"
-        :open="open"
-        :confirm-loading="loading"
-        ok-text="Tạo"
-        cancel-text="Hủy"
-        @ok="handleFinish"
-        @cancel="handleCancel"
-        width="800px"
-    >
+    <a-modal title="Thêm khóa học mới" :open="open" :confirm-loading="loading" ok-text="Tạo" cancel-text="Hủy"
+        @ok="handleFinish" @cancel="handleCancel" width="800px">
         <a-form ref="formRef" :model="formState" :rules="rules" layout="vertical">
             <a-form-item label="Ảnh bìa" name="thumbnail">
-                <a-upload
-                    v-model:file-list="fileList"
-                    list-type="picture-card"
-                    :before-upload="() => false"
-                    @change="handleThumbnailChange"
-                    @preview="handlePreview"
-                    :max-count="1"
-                >
+                <a-upload v-model:file-list="fileList" list-type="picture-card" :before-upload="() => false"
+                    @change="handleThumbnailChange" @preview="handlePreview" :max-count="1">
                     <div v-if="fileList.length < 1">
                         <plus-outlined />
                         <div style="margin-top: 8px">Tải lên</div>
@@ -31,7 +17,22 @@
                         <a-input v-model:value="formState.title" />
                     </a-form-item>
                 </a-col>
-                <a-col :span="12">
+                <a-col :span="6">
+                    <a-form-item label="Chủ đề" name="subject">
+                        <a-select v-model:value="formState.subject" placeholder="Chọn chủ đề" style="width: 100%"
+                            allowClear>
+                            <a-select-option value="it">IT</a-select-option>
+                            <a-select-option value="design">Design</a-select-option>
+                            <a-select-option value="development">Development</a-select-option>
+                            <a-select-option value="business">Business</a-select-option>
+                            <a-select-option value="marketing">Marketing</a-select-option>
+                            <a-select-option value="finance">Finance</a-select-option>
+                            <a-select-option value="language">Language</a-select-option>
+                        </a-select>
+                    </a-form-item>
+                </a-col>
+
+                <a-col :span="6">
                     <a-form-item label="Giá" name="price">
                         <a-input-number v-model:value="formState.price" style="width: 100%" :min="0" />
                     </a-form-item>
@@ -59,9 +60,9 @@
                         </a-select>
                     </a-form-item>
                 </a-col>
-                 <a-col :span="8">
+                <a-col :span="8">
                     <a-form-item label="Ngôn ngữ" name="language">
-                        <a-select v-model:value="formState.language" >
+                        <a-select v-model:value="formState.language">
                             <a-select-option value="vi">VN</a-select-option>
                             <a-select-option value="en">ENG</a-select-option>
                         </a-select>
@@ -71,7 +72,7 @@
         </a-form>
     </a-modal>
     <a-modal :visible="previewVisible" :title="previewTitle" :footer="null" @cancel="handlePreviewCancel">
-      <img alt="example" style="width: 100%" :src="previewImage" />
+        <img alt="example" style="width: 100%" :src="previewImage" />
     </a-modal>
 </template>
 
@@ -101,26 +102,26 @@ const previewImage = ref('');
 const previewTitle = ref('');
 
 function getBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = error => reject(error);
-  });
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = error => reject(error);
+    });
 }
 
 const handlePreviewCancel = () => {
-  previewVisible.value = false;
-  previewTitle.value = '';
+    previewVisible.value = false;
+    previewTitle.value = '';
 };
 
 const handlePreview = async (file: UploadFile) => {
-  if (!file.url && !file.preview) {
-    file.preview = await getBase64(file.originFileObj as File);
-  }
-  previewImage.value = file.url || file.preview || '';
-  previewVisible.value = true;
-  previewTitle.value = file.name || (file.url ? file.url.substring(file.url.lastIndexOf('/') + 1) : '');
+    if (!file.url && !file.preview) {
+        file.preview = await getBase64(file.originFileObj as File);
+    }
+    previewImage.value = file.url || file.preview || '';
+    previewVisible.value = true;
+    previewTitle.value = file.name || (file.url ? file.url.substring(file.url.lastIndexOf('/') + 1) : '');
 };
 
 const initialFormState: CoursePayload = {
@@ -133,7 +134,7 @@ const initialFormState: CoursePayload = {
     level: 'beginner',
     language: 'vi',
     currency: 'VND',
-    created_by: 0, 
+    created_by: 0,
 };
 
 const formState = reactive({ ...initialFormState });

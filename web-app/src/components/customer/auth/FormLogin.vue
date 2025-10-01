@@ -86,8 +86,8 @@ const handleGoogleLogin = async () => {
   loading.value = true
   error.value = null
   try {
-    await authApi.redirectToGoogle()
-    router.push('/')
+    const response = await authApi.redirectToGoogle()
+    window.location.href = response.url
   } catch (err: any) {
     error.value = err.message || 'Không thể kết nối tới dịch vụ của Google.'
     notification.error({

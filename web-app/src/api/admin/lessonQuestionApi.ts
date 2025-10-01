@@ -59,8 +59,8 @@ export const lessonQuestionApi = {
     })
   },
 
-  async deleteQuestion(questionId: number): Promise<void> {
-    await httpAdmin(`api/admin/questions/${questionId}`, {
+  async deleteQuestion(quizId: number, questionId: number): Promise<void> {
+    await httpAdmin(`/api/admin/quizzes/${quizId}/questions/${questionId}`, {
       method: 'DELETE',
       withCredentials: true,
     })

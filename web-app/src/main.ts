@@ -18,10 +18,7 @@ const app = createApp({
         token: { 
           colorPrimary: '#14b8a6',
           borderRadius: 12,
-          // Thêm một số token khác nếu cần
           fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-          // colorBgContainer: '#ffffff',
-          // colorBorder: '#e5e7eb'
         }
       }
     }, { default: () => h(App) })

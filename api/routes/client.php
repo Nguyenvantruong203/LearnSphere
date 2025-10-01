@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Client\CourseController;
 
 
 /*
@@ -15,8 +16,10 @@ use Illuminate\Support\Facades\Route;
 
 // Auth
 // Profile
-Route::middleware('auth:sanctum')->group(function () {
-
+Route::middleware('auth:sanctum')->prefix('client')->group(function () {
+    
+    Route::get('/courses', [CourseController::class, 'index']);
+    Route::get('/courses/{id}', [CourseController::class, 'show']);
 });
 
 

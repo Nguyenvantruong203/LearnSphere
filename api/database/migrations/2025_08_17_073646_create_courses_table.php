@@ -20,8 +20,8 @@ return new class extends Migration
             $t->text('description')->nullable();
 
             $t->enum('status', ['draft', 'published', 'archived'])->default('draft');
-            $t->enum('visibility', ['public', 'unlisted', 'private'])->default('public');
             $t->timestamp('publish_at')->nullable();
+            $t->string('subject')->nullable();
 
             $t->decimal('price', 12, 2)->default(0);
             $t->char('currency', 3)->default('VND');
@@ -33,7 +33,7 @@ return new class extends Migration
             $t->timestamps();
             $t->softDeletes();
 
-            $t->index(['status', 'visibility', 'publish_at']);
+            $t->index(['status', 'subject', 'publish_at']);
             $t->fullText(['title', 'short_description', 'description']);
         });
     }

@@ -177,14 +177,14 @@
 
 <script setup lang="ts">
 import { ref, reactive, watchEffect } from 'vue';
-import { useClientAuthStore } from '@/stores/clientAuth';
+import { useAdminAuthStore } from '@/stores/adminAuth';
 import { userApi } from '@/api/admin/userApi';
 import { notification, Upload as AUpload, Form as AForm, Input as AInput, Button as AButton, FormItem as AFormItem, DatePicker as ADatePicker, Select as ASelect, SelectOption as ASelectOption, SkeletonInput as ASkeletonInput, SkeletonAvatar as ASkeletonAvatar, SkeletonButton as ASkeletonButton } from 'ant-design-vue';
 import { PlusOutlined, LoadingOutlined, UploadOutlined } from '@ant-design/icons-vue';
 import LayoutAdmin from '../layout/LayoutAdmin.vue';
 import dayjs from 'dayjs';
 
-const authStore = useClientAuthStore();
+const authStore = useAdminAuthStore();
 const initialLoading = ref(true);
 
 const formState = reactive({
@@ -280,7 +280,6 @@ const handleAvatarChange = (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files[0]) {
     const file = target.files[0];
-    // `beforeUpload` now handles validation, preview, and triggering the upload.
     beforeUpload(file);
   }
 };
@@ -322,10 +321,7 @@ const beforeUpload = (file: File) => {
   };
   reader.readAsDataURL(file);
 
-  // Trigger the upload manually
   uploadAvatar(file);
-
-  // Prevent ant-design-vue's default upload behavior by returning false
   return false;
 };
 </script>

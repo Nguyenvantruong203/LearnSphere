@@ -50,10 +50,10 @@ class CourseController extends Controller
             'description'       => ['nullable', 'string'],
             'price'             => ['nullable', 'numeric', 'min:0'],
             'status'            => ['nullable', 'in:draft,published,archived'],
-            'visibility'        => ['nullable', 'in:public,private'],
             'level'             => ['nullable', 'in:beginner,intermediate,advanced'],
             'language'          => ['nullable', 'string'],
             'currency'          => ['nullable', 'string'],
+            'subject'           => ['nullable', 'string', 'max:100'],
             'thumbnail'         => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
         ]);
 
@@ -94,14 +94,13 @@ class CourseController extends Controller
             'description'       => ['nullable', 'string'],
             'price'             => ['nullable', 'numeric', 'min:0'],
             'status'            => ['nullable', 'in:draft,published,archived'],
-            'visibility'        => ['nullable', 'in:public,private'],
             'level'             => ['nullable', 'in:beginner,intermediate,advanced'],
             'language'          => ['nullable', 'string'],
             'currency'          => ['nullable', 'string'],
+            'subject'           => ['nullable', 'string', 'max:100'],
             'thumbnail'         => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
         ]);
 
-        // ✅ nếu upload thumbnail mới
         if ($request->hasFile('thumbnail')) {
             // Xóa ảnh cũ nếu có
             if ($course->thumbnail_url) {

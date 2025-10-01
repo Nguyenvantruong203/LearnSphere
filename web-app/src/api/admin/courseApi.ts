@@ -10,25 +10,21 @@ export const courseApi = {
     })
   },
 
-  async createCourse(payload: CoursePayload, thumbnailFile?: File | null): Promise<Course> {
-    const formData = new FormData()
-    for (const key in payload) {
-      if (Object.prototype.hasOwnProperty.call(payload, key)) {
-        const value = payload[key as keyof CoursePayload]
-        if (value !== undefined && value !== null) {
-          formData.append(key, value as string)
-        }
-      }
-    }
-    if (thumbnailFile) {
-      formData.append('thumbnail', thumbnailFile)
-    }
-    const response = await httpAdmin('/api/admin/courses', {
-      method: 'POST',
-      body: formData
-    })
-    return response.data
-  },
+async createCourse(data: CoursePayload, thumbnailFile: File | null) {
+  const formData = new FormData()
+  Object.entries(data).forEach(([key, value]) => {
+    formData.append(key, value as any)
+  })
+  if (thumbnailFile) {
+    formData.append('thumbnail', thumbnailFile)
+  }
+
+  return await httpAdmin('/api/admin/courses', {
+    method: 'POST',
+    body: formData,
+  })
+},
+
 
   async getTopicsByCourse(courseId: number): Promise<Topic[]> {
     const response = await httpAdmin(`/api/admin/courses/${courseId}/topics`, {
@@ -67,6 +63,6 @@ export const courseApi = {
       method: 'POST',
       body: formData
     })
-    return response.data
+    return response
   }
 }

@@ -41,9 +41,7 @@ import LayoutLoginUser from '@/pages/customer/layout/layoutLoginUser.vue'
 import FormLogin from '@/components/customer/auth/FormLogin.vue'
 import FormRegister from '@/components/customer/auth/FormRegister.vue'
 import logoUrl from '@/assets/images/logo.png'
-import { useClientAuthStore } from '@/stores/clientAuth'
 
-const authStore = useClientAuthStore()
 const email = ref('')
 const password = ref('')
 const username = ref('')

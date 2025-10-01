@@ -6,7 +6,7 @@ type HttpOptions = {
   body?: unknown
   withCredentials?: boolean
   params?: Record<string, any>
-  authType?: 'client' | 'admin'   // phân biệt loại token
+  authType?: 'client' | 'admin' // phân biệt loại token
 }
 
 function getToken(authType: 'client' | 'admin' = 'client'): string | null {
@@ -57,20 +57,17 @@ export async function http(path: string, opts: HttpOptions = {}) {
     credentials: opts.withCredentials ? 'include' : 'same-origin',
     headers,
     body:
-      opts.body instanceof FormData
-        ? opts.body
-        : opts.body
-        ? JSON.stringify(opts.body)
-        : undefined,
+      opts.body instanceof FormData ? opts.body : opts.body ? JSON.stringify(opts.body) : undefined,
   })
 
   if (res.status === 401) {
     if (opts.authType === 'admin') {
       localStorage.removeItem('admin_auth')
-    } else {
+    }
+    if (opts.authType === 'client') {
       localStorage.removeItem('client_auth')
     }
-    throw new Error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.')
+    throw new Error('Session expired. Please login again.')
   }
 
   const isJson = res.headers.get('content-type')?.includes('application/json')
@@ -89,4 +86,3 @@ export const httpClient = (path: string, opts: Omit<HttpOptions, 'authType'> = {
 
 export const httpAdmin = (path: string, opts: Omit<HttpOptions, 'authType'> = {}) =>
   http(path, { ...opts, authType: 'admin' })
-
