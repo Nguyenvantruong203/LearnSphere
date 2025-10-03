@@ -4,14 +4,14 @@ namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Course;  
+use App\Models\Course;
 
 class CourseController extends Controller
 {
     public function index(Request $request)
     {
         $query = Course::query()
-            ->with('instructor')
+            ->with(['instructor:id,name,email,avatar_url'])
             ->published(); // chỉ hiển thị course đã publish
 
         // Search
@@ -55,5 +55,24 @@ class CourseController extends Controller
         $courses = $query->paginate($request->input('per_page', 15));
 
         return response()->json($courses);
+    }
+
+    public function show($id)
+    {
+        $course = Course::query()
+            ->with(['instructor:id,name,email,avatar_url'])
+            ->withCount(['topics as total_topics'])
+            ->withCount(['lessons as total_lessons'])
+            ->published()
+            ->find($id);
+
+        if (!$course) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Course không tồn tại hoặc chưa được publish.'
+            ], 404);
+        }
+
+        return response()->json($course);
     }
 }

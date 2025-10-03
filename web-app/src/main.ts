@@ -7,6 +7,7 @@ import 'ant-design-vue/dist/reset.css'
 import './style.css'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { ConfigProvider, theme } from 'ant-design-vue'
+import '@fortawesome/fontawesome-free/css/all.min.css'
 
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)

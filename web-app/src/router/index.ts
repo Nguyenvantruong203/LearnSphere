@@ -5,8 +5,8 @@ import CustomerLogin from '@/pages/customer/auth/CustomerLogin.vue'
 import AdminLogin from '@/pages/admin/auth/AdminLogin.vue'
 import ListUsers from '@/pages/admin/user/ListUsers.vue'
 import Homepage from '@/pages/customer/Homepage.vue'
-import Blog from '@/pages/customer/Blog.vue'
-import Course from '@/pages/customer/Course.vue'
+import Blog from '@/pages/customer/blog/Blog.vue'
+import Course from '@/pages/customer/course/Course.vue'
 import GoogleCallback from '@/pages/customer/auth/GoogleCallback.vue'
 
 // --- Error Pages ---
@@ -15,6 +15,10 @@ import Forbidden from '@/pages/error/403.vue'
 import UserProfile from '@/pages/admin/profile/UserProfile.vue'
 import ListCourses from '@/pages/admin/course/ListCourses.vue'
 import About from '@/pages/customer/About.vue'
+import CourseDetail from '@/pages/customer/course/detail/CourseDetail.vue'
+import Cart from '@/pages/customer/cart/Cart.vue'
+import VNPayReturn from '@/pages/customer/payment/VNPayReturn.vue'
+import CouponList from '@/pages/admin/coupon/CouponList.vue'
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -62,6 +66,37 @@ export const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/courses/:id',
+    name: 'CourseDetail',
+    component: CourseDetail,
+    meta: {
+      layout: 'public',
+      title: 'Course Detail',
+      requiresAuth: true,
+      roles: ['student', 'instructor'],
+    },
+  },
+  {
+    path: '/cart',
+    name: 'Cart',
+    component: Cart,
+    meta: {
+      layout: 'public',
+      title: 'Cart',
+      requiresAuth: true,
+      roles: ['student', 'instructor'],
+    },
+  },
+  {
+    path: '/payment/vnpay-return',
+    name: 'VNPayReturn',
+    component: VNPayReturn,
+    meta: {
+      layout: 'public',
+      title: 'Kết quả thanh toán',
+    },
+  },
+  {
     path: '/about',
     name: 'About',
     component: About,
@@ -95,6 +130,12 @@ export const routes: RouteRecordRaw[] = [
         name: 'admin-courses',
         component: ListCourses,
         meta: { title: 'Quản lý khóa học' },
+      },
+      {
+        path: 'coupons',
+        name: 'admin-coupons',
+        component: CouponList,
+        meta: { title: 'Quản lý mã giảm giá' },
       },
     ],
   },

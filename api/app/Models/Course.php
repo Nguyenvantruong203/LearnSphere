@@ -117,14 +117,16 @@ class Course extends Model
     // Danh sách học viên đã ghi danh
     public function students()
     {
-        return $this->belongsToMany(User::class, 'enrollments')
+        return $this->belongsToMany(User::class, 'user_courses')
+            ->using(UserCourse::class)
+            ->withPivot(['enrolled_at', 'is_paid', 'access_expires_at'])
             ->withTimestamps();
     }
 
     public function instructor()
-{
-    return $this->belongsTo(User::class, 'created_by');
-}
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 
     public function creator()
     {
@@ -136,9 +138,10 @@ class Course extends Model
         return $this->belongsTo(User::class, 'updated_by');
     }
 
-    /* =========================
-     |  Scopes
-     |=========================*/
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
 
     public function scopePublished($q)
     {

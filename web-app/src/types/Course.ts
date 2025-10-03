@@ -8,7 +8,6 @@ export interface Course {
   short_description?: string;
   description?: string;
   status: 'draft' | 'published' | 'archived';
-  visibility: 'public' | 'unlisted' | 'private';
   publish_at?: string;
   price: number;
   currency: string;
@@ -18,7 +17,9 @@ export interface Course {
   created_by: number;
   created_at: string;
   updated_at: string;
-  creator?: User; // Quan hệ với người tạo
+  instructor?: User; // Quan hệ với người tạo
+  total_topics: number;
+  total_lessons: number;
 }
 
 export type CoursePayload = Omit<Course, 'id' | 'slug' | 'created_at' | 'updated_at' | 'creator'> & {
@@ -76,5 +77,21 @@ export interface CourseSearchPayload {
     level: string | undefined
     language: string | undefined
     availability: 'free' | 'paid' | undefined
+  }
+}
+
+export interface MappedCourse {
+  id: number
+  title: string
+  description?: string
+  price: string
+  originalPrice?: string
+  image: string
+  category: string
+  duration: string
+  progress?: string
+  instructor: {
+    name: string
+    avatar_url: string
   }
 }
