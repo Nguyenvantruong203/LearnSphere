@@ -18,35 +18,27 @@
         <!-- Navigation Menu -->
         <div class="hidden md:block">
           <div class="flex items-center space-x-1">
-            <router-link
-              to="/"
+            <router-link to="/"
               class="group relative px-4 py-2 font-semibold text-base transition-all duration-300 rounded-xl"
-              :class="isActive('/') ? 'text-teal-60' : 'text-[#2F327D] hover:text-teal-600 hover:bg-gradient-to-r hover:from-teal-50 hover:to-cyan-50'"
-            >
+              :class="isActive('/') ? 'text-teal-60' : 'text-[#2F327D] hover:text-teal-600 hover:bg-gradient-to-r hover:from-teal-50 hover:to-cyan-50'">
               Home
             </router-link>
 
-            <router-link
-              to="/courses"
+            <router-link to="/courses"
               class="group relative px-4 py-2 font-medium text-base transition-all duration-300 rounded-xl"
-              :class="isActive('/courses') ? 'text-teal-600' : 'text-[#696984] hover:text-teal-600 hover:bg-gradient-to-r hover:from-teal-50 hover:to-cyan-50'"
-            >
+              :class="isActive('/courses') ? 'text-teal-600' : 'text-[#696984] hover:text-teal-600 hover:bg-gradient-to-r hover:from-teal-50 hover:to-cyan-50'">
               Courses
             </router-link>
 
-            <router-link
-              to="/blog"
+            <router-link to="/blog"
               class="group relative px-4 py-2 font-medium text-base transition-all duration-300 rounded-xl"
-              :class="isActive('/blog') ? 'text-teal-600' : 'text-[#696984] hover:text-teal-600 hover:bg-gradient-to-r hover:from-teal-50 hover:to-cyan-50'"
-            >
+              :class="isActive('/blog') ? 'text-teal-600' : 'text-[#696984] hover:text-teal-600 hover:bg-gradient-to-r hover:from-teal-50 hover:to-cyan-50'">
               Blog
             </router-link>
 
-            <router-link
-              to="/about"
+            <router-link to="/about"
               class="group relative px-4 py-2 font-medium text-base transition-all duration-300 rounded-xl"
-              :class="isActive('/about') ? 'text-teal-600' : 'text-[#696984] hover:text-teal-600 hover:bg-gradient-to-r hover:from-teal-50 hover:to-cyan-50'"
-            >
+              :class="isActive('/about') ? 'text-teal-600' : 'text-[#696984] hover:text-teal-600 hover:bg-gradient-to-r hover:from-teal-50 hover:to-cyan-50'">
               About Us
             </router-link>
           </div>
@@ -59,16 +51,93 @@
           <button
             class="hidden md:flex items-center justify-center w-10 h-10 text-[#696984] hover:text-teal-600 hover:bg-gray-100 rounded-xl transition-all duration-300 group relative">
             <i class="fas fa-bell group-hover:scale-110 transition-transform duration-300"></i>
-            <div class="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
+            <div class="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-orange-500 to-red-500 rounded-full">
+            </div>
           </button>
+
+          <!-- Shopping Cart -->
+          <a-dropdown :trigger="['click']" placement="bottomRight" v-if="authStore.isLoggedIn">
+            <button
+              class="hidden md:flex items-center justify-center w-10 h-10 text-[#696984] hover:text-teal-600 hover:bg-gray-100 rounded-xl transition-all duration-300 group relative">
+              <i class="fas fa-shopping-cart group-hover:scale-110 transition-transform duration-300"></i>
+              <div v-if="cartItemsCount > 0"
+                class="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-xs rounded-full flex items-center justify-center font-semibold">
+                {{ cartItemsCount }}
+              </div>
+            </button>
+
+            <template #overlay>
+              <div class="bg-white rounded-2xl shadow-2xl border-0 overflow-hidden"
+                style="width: 380px; max-height: 500px;">
+                <!-- Cart Header -->
+                <div class="px-6 py-4 bg-gradient-to-r from-teal-50 to-cyan-50 border-b border-gray-100">
+                  <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-800">Giỏ hàng</h3>
+                    <span class="text-sm text-gray-600">{{ cartItemsCount }} khóa học</span>
+                  </div>
+                </div>
+
+                <!-- Cart Items -->
+                <div class="max-h-80 overflow-y-auto">
+                  <div v-if="cartItems.length === 0" class="p-8 text-center">
+                    <div class="text-gray-400 mb-3">
+                      <i class="fas fa-shopping-cart text-4xl"></i>
+                    </div>
+                    <p class="text-gray-500 mb-4">Giỏ hàng của bạn đang trống</p>
+                    <router-link to="/courses"
+                      class="inline-flex items-center px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors">
+                      Khám phá khóa học
+                    </router-link>
+                  </div>
+
+                  <div v-else class="py-2">
+                    <div v-for="item in cartItems" :key="item.id"
+                      class="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 transition-colors">
+                      <div class="relative flex-shrink-0">
+                        <img :src="item.thumbnail_url" :alt="item.title" class="w-16 h-12 object-cover rounded-lg" />
+                        <div class="absolute inset-0 flex items-center justify-center">
+                          <div class="w-6 h-6 bg-white bg-opacity-80 rounded-full flex items-center justify-center">
+                            <svg class="w-3 h-3 text-teal-600" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M8 5v10l7-5-7-5z" />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="flex-1 min-w-0">
+                        <h4 class="text-sm font-medium text-gray-900 truncate">{{ item.title }}</h4>
+                        <p class="text-sm text-teal-600 font-semibold mt-1">{{ formatPrice(item.price) }}</p>
+                      </div>
+
+                      <button @click="removeFromCart(item.id)"
+                        class="flex-shrink-0 p-1 text-gray-400 hover:text-red-500 transition-colors">
+                        <i class="fas fa-times text-sm"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Cart Footer -->
+                <div v-if="cartItems.length > 0" class="px-6 py-4 bg-gray-50 border-t border-gray-100">
+                  <div class="flex items-center justify-between mb-3">
+                    <span class="text-sm font-medium text-gray-600">Tổng cộng:</span>
+                    <span class="text-lg font-bold text-teal-600">{{ formatPrice(cartTotal) }}</span>
+                  </div>
+                  <router-link to="/cart"
+                    class="block w-full bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-center font-semibold py-3 rounded-xl hover:from-teal-600 hover:to-cyan-600 transition-all duration-300 transform hover:scale-105">
+                    Xem chi tiết giỏ hàng
+                  </router-link>
+                </div>
+              </div>
+            </template>
+          </a-dropdown>
 
           <!-- User Profile / Auth Buttons -->
           <div class="flex items-center">
             <!-- Logged in user dropdown -->
             <div v-if="authStore.isLoggedIn && authStore.user && authStore.user.role !== 'admin'">
               <a-dropdown :trigger="['click']" placement="bottomRight">
-                <a
-                  class="flex items-center space-x-3 cursor-pointer select-none group p-2 rounded-xl hover:bg-gray-50 transition-all duration-300"
+                <a class="flex items-center space-x-3 cursor-pointer select-none group p-2 rounded-xl hover:bg-gray-50 transition-all duration-300"
                   @click.prevent>
                   <div class="relative">
                     <img
@@ -149,27 +218,19 @@
 
       <!-- Mobile Navigation Menu -->
       <div class="md:hidden border-t border-gray-100 py-4 space-y-2">
-        <router-link
-          to="/"
-          class="block px-4 py-3 font-semibold rounded-xl transition-all duration-300"
+        <router-link to="/" class="block px-4 py-3 font-semibold rounded-xl transition-all duration-300"
           :class="isActive('/') ? 'text-teal-600 bg-gradient-to-r from-teal-50 to-cyan-50' : 'text-[#2F327D] hover:text-teal-600 hover:bg-gradient-to-r hover:from-teal-50 hover:to-cyan-50'">
           Home
         </router-link>
-        <router-link
-          to="/courses"
-          class="block px-4 py-3 font-medium rounded-xl transition-all duration-300"
+        <router-link to="/courses" class="block px-4 py-3 font-medium rounded-xl transition-all duration-300"
           :class="isActive('/courses') ? 'text-teal-600 bg-gradient-to-r from-teal-50 to-cyan-50' : 'text-[#696984] hover:text-teal-600 hover:bg-gradient-to-r hover:from-teal-50 hover:to-cyan-50'">
           Courses
         </router-link>
-        <router-link
-          to="/blog"
-          class="block px-4 py-3 font-medium rounded-xl transition-all duration-300"
+        <router-link to="/blog" class="block px-4 py-3 font-medium rounded-xl transition-all duration-300"
           :class="isActive('/blog') ? 'text-teal-600 bg-gradient-to-r from-teal-50 to-cyan-50' : 'text-[#696984] hover:text-teal-600 hover:bg-gradient-to-r hover:from-teal-50 hover:to-cyan-50'">
           Blog
         </router-link>
-        <router-link
-          to="/about"
-          class="block px-4 py-3 font-medium rounded-xl transition-all duration-300"
+        <router-link to="/about" class="block px-4 py-3 font-medium rounded-xl transition-all duration-300"
           :class="isActive('/about') ? 'text-teal-600 bg-gradient-to-r from-teal-50 to-cyan-50' : 'text-[#696984] hover:text-teal-600 hover:bg-gradient-to-r hover:from-teal-50 hover:to-cyan-50'">
           About Us
         </router-link>
@@ -179,21 +240,91 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted, watch } from 'vue'
 import { useClientAuthStore } from '@/stores/clientAuth'
 import { useRouter, useRoute } from 'vue-router'
+import { notification } from 'ant-design-vue'
 import type { MenuInfo } from 'ant-design-vue/es/menu/src/interface'
+import type { CartItem } from '@/types/order'
+import { CartStorage } from '@/helpers/cartStorage'
 
 const authStore = useClientAuthStore()
 const router = useRouter()
 const route = useRoute()
 
+// Cart state
+const cartItems = ref<CartItem[]>([])
+
 const defaultAvatar =
   'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
 
-function resetAuth() {
-  localStorage.removeItem('client_auth')
-  authStore.$reset()
+// Helper: lấy userId từ localStorage
+const getUserId = (): string | null => {
+  const auth = JSON.parse(localStorage.getItem('client_auth') || '{}')
+  return auth?.user?.id ? String(auth.user.id) : null
 }
+
+// Load cart items
+const loadCartItems = () => {
+  const userId = getUserId()
+  if (!userId) {
+    cartItems.value = []
+    return
+  }
+  cartItems.value = CartStorage.getCart(userId).map((item: any) => ({
+    ...item,
+    price: Number(item.price) || 0,
+  }))
+}
+
+// Cart computed values
+const cartItemsCount = computed(() => cartItems.value.length)
+
+const cartTotal = computed(() => {
+  return cartItems.value.reduce((sum, item) => sum + (item.price || 0), 0)
+})
+
+// Format price
+const formatPrice = (price: number) => {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND'
+  }).format(price)
+}
+
+// Remove item from cart
+const removeFromCart = (courseId: number) => {
+  const userId = getUserId()
+  if (!userId) return
+
+  CartStorage.removeItem(userId, courseId)
+  loadCartItems()
+
+  notification.success({
+    message: 'Đã xóa khóa học khỏi giỏ hàng'
+  })
+}
+
+// Listen for cart changes
+const handleStorageChange = (e: StorageEvent) => {
+  if (e.key === 'cart_data') {
+    loadCartItems()
+  }
+}
+
+onMounted(() => {
+  loadCartItems()
+  // Listen for localStorage changes
+  window.addEventListener('storage', handleStorageChange)
+
+  // Custom event khi cart update ở component khác
+  window.addEventListener('cartUpdated', loadCartItems)
+})
+
+// Watch for route changes to reload cart
+watch(() => route.path, () => {
+  loadCartItems()
+})
 
 function goLogin() {
   localStorage.setItem('auth_tab', 'login')

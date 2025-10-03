@@ -20,8 +20,8 @@
             </div>
 
             <a-table :columns="columns" :data-source="treeByCourse[course.id] || []" row-key="key"
-              :loading="loading[course.id]" :pagination="false" sticky
-              :scroll="{ y: 'calc(100vh - 160px)', x: 'max-content' }" :expandable="{
+              :loading="loading[course.id]" :pagination="false" sticky table-layout="fixed"
+              :scroll="{ y: 'calc(100vh - 160px)', x: '100%' }" :expandable="{
                 childrenColumnName: 'children',
                 expandRowByClick: false,
                 defaultExpandAllRows: false
@@ -162,15 +162,16 @@ const columns = [
   {
     title: 'Tiêu đề',
     key: 'title',
+    ellipsis: true,    
     customRender: ({ record }: any) => {
       if (record.type === 'quiz') {
         return h(
           'a',
           {
             style: {
-              textDecoration: 'underline', // gạch chân
+              textDecoration: 'underline', 
               cursor: 'pointer',
-              color: '#1677ff' // màu link giống theme
+              color: '#1677ff' 
             },
             onClick: () => openQuizDrawer(record),
           },

@@ -1,5 +1,8 @@
 <template>
-  <div class="group bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-100 transform hover:-translate-y-2">
+  <router-link
+    :to="{ name: 'CourseDetail', params: { id: course.id } }"
+    class="group block bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-100 transform hover:-translate-y-2"
+  >
     <!-- Course Image -->
     <div class="relative overflow-hidden">
       <img 
@@ -13,11 +16,6 @@
       <!-- Progress badge -->
       <div v-if="showProgress" class="absolute bottom-3 left-3 bg-white/95 backdrop-blur-md rounded-xl px-4 py-2 shadow-lg">
         <span class="text-gray-800 text-sm font-semibold">{{ course.progress }}</span>
-      </div>
-      
-      <!-- Category badge -->
-      <div v-if="showPrice" class="absolute top-3 left-3 bg-gradient-to-r from-teal-500 to-cyan-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
-        {{ course.category }}
       </div>
       
       <!-- Duration badge -->
@@ -42,14 +40,14 @@
       <div class="flex items-center space-x-3">
         <div class="relative">
           <img 
-            :src="course.avatar" 
-            :alt="course.instructor" 
+            :src="course.instructor.avatar_url" 
+            :alt="course.instructor.avatar_url" 
             class="w-10 h-10 rounded-full object-cover shadow-md"
           />
           <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
         </div>
         <div>
-          <span class="text-gray-800 text-sm font-semibold block">{{ course.instructor }}</span>
+          <span class="text-gray-800 text-sm font-semibold block">{{ course.instructor.name }}</span>
           <span class="text-gray-500 text-xs">Giảng viên</span>
         </div>
       </div>
@@ -90,26 +88,14 @@
         </button>
       </div>
     </div>
-  </div>
+  </router-link>
 </template>
 
 <script setup lang="ts">
-interface Course {
-  id?: number
-  title: string
-  description?: string
-  instructor: string
-  originalPrice?: string
-  price?: string
-  image: string
-  avatar: string
-  category?: string
-  duration?: string
-  progress?: string
-}
+import type { MappedCourse } from '@/types/Course'
 
 defineProps<{
-  course: Course
+  course: MappedCourse
   showProgress?: boolean
   showPrice?: boolean
 }>()

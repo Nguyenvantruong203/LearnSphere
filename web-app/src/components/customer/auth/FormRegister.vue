@@ -4,8 +4,8 @@
       <Alert v-if="error" :message="error" type="error" show-icon class="mb-4" />
 
       <!-- Fullname -->
-      <FormItem class="mb-4" label="Fullname" name="username" :rules="[{ required: true, message: 'Vui lòng nhập họ tên' }]">
-        <Input size="large" placeholder="Nhập họ và tên" v-model:value="formData.username" :disabled="loading" />
+      <FormItem class="mb-4" label="Fullname" name="name" :rules="[{ required: true, message: 'Vui lòng nhập họ tên' }]">
+        <Input size="large" placeholder="Nhập họ và tên" v-model:value="formData.name" :disabled="loading" />
       </FormItem>
 
       <!-- Email -->
@@ -55,7 +55,7 @@ import type { Rule } from 'ant-design-vue/es/form'
 const router = useRouter()
 
 const formData = reactive({
-  username: '',
+  name: '',
   email: '',
   password: '',
   password_confirmation: ''
@@ -85,7 +85,7 @@ const handleFinish = async () => {
     await authApi.register(formData)
 
     // Reset form
-    formData.username = ''
+    formData.name = ''
     formData.email = ''
     formData.password = ''
     formData.password_confirmation = ''
