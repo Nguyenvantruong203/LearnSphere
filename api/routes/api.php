@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\QuizController;
 use App\Http\Controllers\Admin\LessonQuestionController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\TopicQuestionController;
+use App\Http\Controllers\Admin\CouponController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -106,6 +107,12 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::put('quizzes/{quiz}/topic-questions/{question}', [TopicQuestionController::class, 'updateForTopic']);
 
     Route::delete('quizzes/{quiz}/questions/{question}', [LessonQuestionController::class, 'destroy']);
+
+            // Lấy danh sách tất cả coupon
+        Route::get('/coupons', [CouponController::class, 'index'])->name('coupons.index');
+        Route::post('/coupons', [CouponController::class, 'store'])->name('coupons.store');
+        Route::put('/coupons/{id}', [CouponController::class, 'update'])->name('coupons.update');
+        Route::delete('/coupons/{id}', [CouponController::class, 'destroy'])->name('coupons.destroy');
 });
 
 // Đặt lại mật khẩu
