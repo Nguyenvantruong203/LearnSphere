@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Sanctum\HasApiTokens;
+use App\Mail\CustomVerifyEmail;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -69,6 +70,11 @@ class User extends Authenticatable implements MustVerifyEmail
         }
     }
 
+    public function sendEmailVerificationNotification()
+    {
+        $this->notify(new CustomVerifyEmail);
+    }
+
     /**
      * Check nhanh quyền user.
      */
@@ -116,7 +122,10 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function courses()
     {
-        return $this->hasMany(Course::class);
+        return $this->belongsToMany(Course::class, 'user_courses')
+            ->using(UserCourse::class)
+            ->withPivot(['enrolled_at', 'is_paid', 'access_expires_at'])
+            ->withTimestamps();
     }
 
     // User có nhiều kết quả quiz
@@ -130,6 +139,12 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->belongsToMany(Quiz::class, 'quiz_results')
             ->withPivot(['score', 'attempt_number', 'submitted_at'])
+            ->withTimestamps();
+    }
+    public function notifications()
+    {
+        return $this->belongsToMany(Notification::class, 'notification_users')
+            ->withPivot('is_read', 'read_at')
             ->withTimestamps();
     }
 }
