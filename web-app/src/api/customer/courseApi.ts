@@ -9,15 +9,8 @@ export const customerCourseApi = {
     })
   },
 
-  async getCourses(params?: { page?: number; limit?: number }): Promise<PaginationCourse<Course>> {
-    return await httpClient('/api/courses', {
-      method: 'GET',
-      params,
-    })
-  },
-
   async getCourse(courseId: string): Promise<Course> {
-    return await httpClient(`/api/courses/${courseId}`, {
+    return await httpClient(`/api/client/courses/${courseId}`, {
       method: 'GET',
     })
   },
