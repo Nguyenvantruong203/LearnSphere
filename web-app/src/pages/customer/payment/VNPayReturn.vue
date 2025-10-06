@@ -15,11 +15,11 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
           </svg>
         </div>
-        
+
         <div>
           <h2 class="text-2xl font-bold text-green-600 mb-2">Thanh toán thành công!</h2>
           <p class="text-gray-600 mb-4">{{ paymentResult.message }}</p>
-          
+
           <div class="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
             <div class="flex justify-between">
               <span class="text-gray-600">Mã giao dịch:</span>
@@ -35,7 +35,7 @@
             </div>
           </div>
         </div>
-        
+
         <div class="space-y-3">
           <a-button type="primary" size="large" block @click="goToCourses">
             Vào học ngay
@@ -53,13 +53,13 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
           </svg>
         </div>
-        
+
         <div>
           <h2 class="text-2xl font-bold text-red-600 mb-2">Thanh toán thất bại!</h2>
           <p class="text-gray-600 mb-4">
             {{ paymentResult?.message || 'Có lỗi xảy ra trong quá trình thanh toán' }}
           </p>
-          
+
           <div v-if="paymentResult?.data" class="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
             <div class="flex justify-between">
               <span class="text-gray-600">Mã giao dịch:</span>
@@ -71,7 +71,7 @@
             </div>
           </div>
         </div>
-        
+
         <div class="space-y-3">
           <a-button type="primary" size="large" block @click="goToCart">
             Thử lại
@@ -89,56 +89,76 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { notification } from 'ant-design-vue'
-import { paymentApi, type PaymentReturnResponse } from '@/api/customer/paymentApi'
+import { paymentApi } from '@/api/customer/paymentApi'
+import type { PaymentReturnResponse } from '@/types/Payment'
 
 const router = useRouter()
 const route = useRoute()
 
 const loading = ref(true)
 const paymentResult = ref<PaymentReturnResponse | null>(null)
+const firstPaidCourseId = ref<number | null>(null)
 
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND'
-  }).format(price)
-}
+const formatPrice = (price: number) =>
+  new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)
 
 const goToCourses = () => {
-  // Xóa giỏ hàng và thông tin đơn hàng
-  localStorage.removeItem('cart_items')
+  localStorage.removeItem('cart_data')
   localStorage.removeItem('vnpay_order_info')
-  router.push('/courses')
+
+  if (firstPaidCourseId.value) {
+    router.push(`/learning/${firstPaidCourseId.value}`)
+  } else {
+    notification.warning({
+      message: 'Không tìm thấy khóa học',
+      description: 'Không xác định được khóa học bạn vừa thanh toán, vui lòng kiểm tra lại!',
+      duration: 4
+    })
+    router.push('/my-courses')
+  }
 }
 
-const goToHome = () => {
-  router.push('/')
-}
 
-const goToCart = () => {
-  router.push('/cart')
-}
+const goToHome = () => router.push('/')
+const goToCart = () => router.push('/cart')
 
 onMounted(async () => {
   try {
-    // Lấy tất cả query parameters từ URL
     const queryParams = route.query as Record<string, string>
-    
-    if (!queryParams.vnp_TxnRef) {
-      throw new Error('Thiếu thông tin giao dịch từ VNPay')
-    }
+    if (!queryParams.vnp_TxnRef) throw new Error('Thiếu thông tin giao dịch từ VNPay')
 
-    // Gọi API để xử lý kết quả
     const result = await paymentApi.handleVNPayReturn(queryParams)
     paymentResult.value = result
 
-    // Nếu thanh toán thành công, có thể thực hiện các tác vụ bổ sung
     if (result.status === 'success') {
-      // TODO: Có thể gọi API để cập nhật đơn hàng, cấp quyền truy cập khóa học...
-      
+      // ✅ Lấy thông tin order đã lưu trước khi thanh toán
+      const orderInfo = JSON.parse(localStorage.getItem('vnpay_order_info') || '{}')
+      const paidItems = Array.isArray(orderInfo.items) ? orderInfo.items : []
+
+      // ✅ Xác định ID khóa học đầu tiên
+      if (paidItems.length > 0) {
+        firstPaidCourseId.value = paidItems[0]?.id || paidItems[0]
+      }
+
+      // ✅ Xử lý lại giỏ hàng
+      const cartData = JSON.parse(localStorage.getItem('cart_data') || '{}')
+      const clientAuth = JSON.parse(localStorage.getItem('client_auth') || '{}')
+      const userId = clientAuth?.user?.id
+
+      if (userId && Array.isArray(cartData[userId])) {
+        const updatedCart = cartData[userId].filter(
+          (item: any) => !paidItems.some((p: any) => p.id === item.id || p === item)
+        )
+
+        cartData[userId] = updatedCart
+        localStorage.setItem('cart_data', JSON.stringify(cartData))
+      }
+
+      localStorage.removeItem('vnpay_order_info')
+
       notification.success({
         message: 'Thanh toán thành công!',
-        description: 'Bạn đã đăng ký khóa học thành công. Chúc bạn học tập vui vẻ!',
+        description: 'Các khóa học đã được đăng ký thành công!',
         duration: 5
       })
     } else {
@@ -154,14 +174,9 @@ onMounted(async () => {
       status: 'error',
       message: error?.message || 'Có lỗi xảy ra khi xử lý kết quả thanh toán'
     }
-    
-    notification.error({
-      message: 'Lỗi xử lý thanh toán',
-      description: error?.message || 'Có lỗi xảy ra khi xử lý kết quả thanh toán',
-      duration: 5
-    })
   } finally {
     loading.value = false
   }
 })
+
 </script>

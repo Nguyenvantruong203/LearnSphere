@@ -11,6 +11,9 @@ use App\Models\UserCourse;
 use Illuminate\Support\Facades\DB;
 use App\Mail\InstructorNewEnrollmentMail;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use App\Models\User;
+use App\Models\Notification;
 
 class OrderService
 {
@@ -54,8 +57,15 @@ class OrderService
     public function markOrderPaid($txnRef, $params)
     {
         return DB::transaction(function () use ($txnRef, $params) {
+            Log::info('MARK ORDER PAID CALLED', ['txnRef' => $txnRef]);
+
             $order = Order::with('items.course')->where('id', $txnRef)->first();
-            if (!$order) return null;
+            if (!$order) {
+                Log::warning('ORDER NOT FOUND', ['txnRef' => $txnRef]);
+                return null;
+            }
+
+            Log::info('ORDER FOUND', ['order_id' => $order->id]);
 
             $order->status = 'paid';
             $order->save();
@@ -95,10 +105,10 @@ class OrderService
                 );
 
                 $instructorId = $item->course->created_by;
-                $instructor   = \App\Models\User::find($instructorId);
+                $instructor   = User::find($instructorId);
 
                 // Notify DB
-                \App\Models\Notification::create([
+                Notification::create([
                     'type'    => 'order',
                     'title'   => 'Khóa học mới đã được đăng ký',
                     'message' => "Người dùng #{$order->user_id} vừa đăng ký khóa học {$item->course->title}",
@@ -109,6 +119,17 @@ class OrderService
                     ])
                 ])->users()->attach([$instructorId]);
 
+                // Notify student
+                Notification::create([
+                    'type'    => 'course',
+                    'title'   => 'Thanh toán thành công',
+                    'message' => "Bạn đã đăng ký thành công khóa học {$item->course->title}",
+                    'data'    => json_encode([
+                        'order_id'  => $order->id,
+                        'course_id' => $item->course_id,
+                    ]),
+                ])->users()->attach([$order->user_id]);
+
                 // ✅ Gửi mail cho instructor
                 if ($instructor && $instructor->email) {
                     Mail::to($instructor->email)->send(
@@ -118,9 +139,9 @@ class OrderService
             }
 
             // Bắn thông báo tới Admin
-            $adminIds = \App\Models\User::where('role', 'admin')->pluck('id')->toArray();
+            $adminIds = User::where('role', 'admin')->pluck('id')->toArray();
             if ($adminIds) {
-                \App\Models\Notification::create([
+                Notification::create([
                     'type'    => 'order',
                     'title'   => 'Đơn hàng mới',
                     'message' => "Đơn hàng #{$order->id} đã được thanh toán thành công",
@@ -155,6 +176,30 @@ class OrderService
                 'ipn_received_at'   => now(),
                 'currency'          => 'VND',
             ]);
+        }
+        // ⚠️ Notify student
+        Notification::create([
+            'type'    => 'order',
+            'title'   => 'Thanh toán thất bại',
+            'message' => "Đơn hàng #{$order->id} của bạn chưa được thanh toán thành công. Vui lòng thử lại.",
+            'data'    => json_encode([
+                'order_id' => $order->id,
+                'user_id'  => $order->user_id,
+            ]),
+        ])->users()->attach([$order->user_id]);
+
+        // ⚠️ Notify admin (để theo dõi lỗi)
+        $adminIds = User::where('role', 'admin')->pluck('id')->toArray();
+        if ($adminIds) {
+            Notification::create([
+                'type'    => 'order',
+                'title'   => 'Thanh toán thất bại',
+                'message' => "Đơn hàng #{$order->id} vừa bị lỗi thanh toán qua VNPAY.",
+                'data'    => json_encode([
+                    'order_id' => $order->id,
+                    'user_id'  => $order->user_id,
+                ]),
+            ])->users()->attach($adminIds);
         }
     }
 }

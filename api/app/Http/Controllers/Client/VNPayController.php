@@ -79,6 +79,7 @@ class VNPayController extends Controller
      */
     public function vnpayIpn(Request $request)
     {
+        Log::info('VNPay IPN Callback', ['method' => $request->method(), 'params' => $request->all()]);
         $params = $request->all();
         Log::info('VNPay IPN Callback', $params);
 

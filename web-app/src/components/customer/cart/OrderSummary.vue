@@ -173,9 +173,8 @@
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { notification } from 'ant-design-vue'
-import type { CartItem } from '@/types/order'
+import type { CartItem, PaymentForm } from '@/types/Order'
 import { paymentApi } from '@/api/customer/paymentApi'
-import type { PaymentForm } from '@/types/order'
 import { couponApi } from '@/api/customer/couponApi'
 import { CartStorage } from '@/helpers/cartStorage'
 
