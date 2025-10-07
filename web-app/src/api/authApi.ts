@@ -4,7 +4,7 @@ import type {
   RegisterResponse,
   LoginPayload,
   LoginResponse,
-} from '@/types/user'
+} from '@/types/User'
 
 export const authApi = {
   async register(payload: RegisterPayload): Promise<RegisterResponse> {

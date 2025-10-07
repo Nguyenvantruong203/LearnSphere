@@ -84,15 +84,6 @@ erDiagram
     decimal points_awarded
   }
 
-  %% optional snapshot (latest)
-  quiz_results {
-    string id PK
-    string user_id FK
-    string quiz_id FK
-    float score
-    datetime submitted_at
-  }
-
   %% ==== FLASHCARDS ====
   flashcards {
     string id PK

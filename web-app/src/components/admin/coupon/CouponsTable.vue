@@ -106,7 +106,7 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive, watch } from 'vue'
 import { couponApi } from '@/api/admin/couponApi'
-import type { Coupon, GetCouponsParams } from '@/types/coupon'
+import type { Coupon, GetCouponsParams } from '@/types/Coupon'
 import FormatDate from './FormatDate.vue'
 import CreateCouponModal from './actions/CreateCouponModal.vue'
 import EditCouponModal from './actions/EditCouponModal.vue'

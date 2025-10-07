@@ -13,10 +13,7 @@ use Illuminate\Validation\Rule;
 class UserController extends Controller
 {
     /**
-     * @author Truong
-     */
-    /**
-     * Display a listing of the resource.
+     * Danh sách user
      */
     public function index(Request $request)
     {
@@ -32,15 +29,9 @@ class UserController extends Controller
             });
         }
 
-        // Filter by role
-        if ($request->has('role')) {
-            $query->where('role', $request->input('role'));
-        }
-
-        // Filter by status
-        if ($request->has('status')) {
-            $query->where('status', $request->input('status'));
-        }
+        // Filter by role / status
+        if ($request->filled('role')) $query->where('role', $request->input('role'));
+        if ($request->filled('status')) $query->where('status', $request->input('status'));
 
         // Sorting
         $sortBy = $request->input('sort_by', 'created_at');
@@ -53,12 +44,12 @@ class UserController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Tạo user mới
      */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'string|max:255',
+            'name' => 'nullable|string|max:255', // ✅ không bắt buộc
             'email' => 'required|string|email|max:255|unique:users',
             'username' => 'nullable|string|max:50|unique:users',
             'password' => 'required|string|min:8',
@@ -80,7 +71,7 @@ class UserController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Hiển thị chi tiết user
      */
     public function show(User $user)
     {
@@ -88,12 +79,12 @@ class UserController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Cập nhật user
      */
     public function update(Request $request, User $user)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'sometimes|string|max:255',
+            'name' => 'nullable|string|max:255', // ✅ không bắt buộc
             'email' => ['sometimes', 'required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'username' => ['nullable', 'string', 'max:50', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:8',
@@ -109,42 +100,37 @@ class UserController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $validatedData = $validator->validated();
+        $validated = $validator->validated();
 
-        // Chỉ cập nhật password nếu nó được cung cấp
-        if (isset($validatedData['password'])) {
-            $validatedData['password'] = Hash::make($validatedData['password']);
+        if (!empty($validated['password'])) {
+            $validated['password'] = Hash::make($validated['password']);
         } else {
-            unset($validatedData['password']);
+            unset($validated['password']);
         }
 
-        $user->update($validatedData);
+        $user->update($validated);
 
         return response()->json($user);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Xóa user
      */
     public function destroy(User $user)
     {
-        // Thêm policy check ở đây nếu cần, ví dụ:
-        // $this->authorize('delete', $user);
-
         $user->delete();
-
         return response()->json(null, 204);
     }
 
     /**
-     * Update the authenticated user's profile information.
+     * Cập nhật profile người dùng đăng nhập
      */
     public function updateProfile(Request $request)
     {
         $user = $request->user();
 
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
+            'name' => 'nullable|string|max:255', // ✅ bỏ required
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:255',
             'birth_date' => 'nullable|date_format:Y-m-d',
@@ -157,11 +143,11 @@ class UserController extends Controller
 
         $user->update($validator->validated());
 
-        return response()->json( $user);
+        return response()->json($user);
     }
 
     /**
-     * Update the authenticated user's avatar.
+     * Cập nhật avatar
      */
     public function updateAvatar(Request $request)
     {

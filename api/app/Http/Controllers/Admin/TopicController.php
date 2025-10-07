@@ -46,6 +46,20 @@ class TopicController extends Controller
             'order' => ['nullable', 'integer', 'min:1'],
         ]);
 
+        // ✅ Kiểm tra trùng title trong cùng khóa học
+        $existsTitle = $course->topics()
+            ->where('title', trim($data['title']))
+            ->exists();
+
+        if ($existsTitle) {
+            return response()->json([
+                'message' => 'Tiêu đề này đã tồn tại trong khóa học.',
+                'errors' => [
+                    'title' => ['Tiêu đề đã tồn tại trong khóa học này.']
+                ]
+            ], 422);
+        }
+
         // Nếu không truyền order thì auto max+1
         if (!isset($data['order'])) {
             $data['order'] = ($course->topics()->max('order') ?? 0) + 1;
@@ -72,7 +86,6 @@ class TopicController extends Controller
         return response()->json(['message' => 'created', 'data' => $topic], 201);
     }
 
-
     // GET /admin/topics/{topic}  (shallow show)
     public function show(Topic $topic)
     {
@@ -93,6 +106,19 @@ class TopicController extends Controller
             'order' => ['required', 'integer', 'min:1'],
         ]);
 
+        // ✅ Check trùng title (trừ chính nó)
+        $existsTitle = $topic->course
+            ->topics()
+            ->where('id', '<>', $topic->id)
+            ->where('title', trim($data['title']))
+            ->exists();
+
+        if ($existsTitle) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'title' => ['Tiêu đề đã tồn tại trong khóa học này.']
+            ]);
+        }
+
         $oldOrder = $topic->order;
         $newOrder = $data['order'];
 
@@ -100,7 +126,7 @@ class TopicController extends Controller
             if ($newOrder != $oldOrder) {
                 $courseTopics = $topic->course->topics();
 
-                // Check trùng (ngoài chính nó)
+                // ✅ Check trùng order (ngoài chính nó)
                 $exists = $courseTopics
                     ->where('id', '<>', $topic->id)
                     ->where('order', $newOrder)
@@ -127,7 +153,7 @@ class TopicController extends Controller
                         ->decrement('order');
                 }
 
-                // Set về newOrder
+                // Cập nhật title + order mới
                 $topic->update([
                     'title' => $data['title'],
                     'order' => $newOrder,

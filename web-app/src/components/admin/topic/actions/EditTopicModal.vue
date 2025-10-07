@@ -52,7 +52,6 @@ watch(() => props.topic, (newTopic) => {
 
 const rules: Record<string, Rule[]> = {
     title: [{ required: true, message: 'Vui lòng nhập tiêu đề!' }],
-    order: [{ required: true, message: 'Vui lòng nhập thứ tự!' }],
 };
 
 const handleFinish = async () => {

@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'name' => 'Truong Admin',
             'username' => 'admin',
-            'email' => 'truongnvgch211359@fpt.edu.vn',
+            'email' => 'truongcon02112003@gmail.com',
             'password' => '12345678',
             'phone' => '0987654321',
             'address' => '123 Admin Street, District 1, HCMC',

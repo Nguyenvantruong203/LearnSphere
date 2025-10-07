@@ -6,7 +6,7 @@
     <!-- Course Image -->
     <div class="relative overflow-hidden">
       <img 
-        :src="course.image" 
+        :src="course.thumbnail_url" 
         :alt="course.title" 
         class="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
       />
@@ -16,11 +16,6 @@
       <!-- Progress badge -->
       <div v-if="showProgress" class="absolute bottom-3 left-3 bg-white/95 backdrop-blur-md rounded-xl px-4 py-2 shadow-lg">
         <span class="text-gray-800 text-sm font-semibold">{{ course.progress }}</span>
-      </div>
-      
-      <!-- Duration badge -->
-      <div v-if="showPrice && course.duration" class="absolute top-3 right-3 bg-black/50 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium">
-        <i class="fas fa-clock mr-1"></i>{{ course.duration }}
       </div>
     </div>
     

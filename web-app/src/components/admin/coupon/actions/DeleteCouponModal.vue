@@ -58,7 +58,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { couponApi } from '@/api/admin/couponApi'
-import type { Coupon } from '@/types/coupon'
+import type { Coupon } from '@/types/Coupon'
 import { notification } from 'ant-design-vue'
 
 interface Props {

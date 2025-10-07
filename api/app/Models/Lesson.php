@@ -38,7 +38,7 @@ class Lesson extends Model
 
     public function quiz()
     {
-        return $this->hasOne(Quiz::class, 'lesson_id');
+        return $this->hasOne(Quiz::class, 'lesson_id', 'id');
     }
 
     public function scopeOrdered($q)

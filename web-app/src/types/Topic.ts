@@ -1,4 +1,5 @@
 import type { Course } from './Course';
+import type { Lesson } from './Lesson';
 
 export interface Topic {
     id: number;
@@ -8,6 +9,7 @@ export interface Topic {
     created_at: string;
     updated_at: string;
     course?: Course;
+    lessons?: Lesson[];
 }
 
 export interface TopicPayload {

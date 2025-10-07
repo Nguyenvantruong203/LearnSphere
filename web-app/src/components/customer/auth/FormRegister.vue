@@ -4,12 +4,14 @@
       <Alert v-if="error" :message="error" type="error" show-icon class="mb-4" />
 
       <!-- Fullname -->
-      <FormItem class="mb-4" label="Fullname" name="name" :rules="[{ required: true, message: 'Vui lòng nhập họ tên' }]">
+      <FormItem class="mb-4" label="Fullname" name="name"
+        :rules="[{ required: true, message: 'Vui lòng nhập họ tên' }]">
         <Input size="large" placeholder="Nhập họ và tên" v-model:value="formData.name" :disabled="loading" />
       </FormItem>
 
       <!-- Email -->
-      <FormItem label="Email" name="email" :rules="[{ required: true, type: 'email', message: 'Vui lòng nhập email hợp lệ' }]">
+      <FormItem label="Email" name="email"
+        :rules="[{ required: true, type: 'email', message: 'Vui lòng nhập email hợp lệ' }]">
         <Input size="large" placeholder="Nhập email" v-model:value="formData.email" :disabled="loading" />
       </FormItem>
 
@@ -19,13 +21,16 @@
       </FormItem>
 
       <!-- Confirm Password -->
-      <FormItem label="Confirm Password" name="password_confirmation" :rules="[{ required: true, validator: validatePasswordConfirmation }]">
-        <InputPassword size="large" placeholder="Xác nhận lại mật khẩu" v-model:value="formData.password_confirmation" :disabled="loading" />
+      <FormItem label="Confirm Password" name="password_confirmation"
+        :rules="[{ required: true, validator: validatePasswordConfirmation }]">
+        <InputPassword size="large" placeholder="Xác nhận lại mật khẩu" v-model:value="formData.password_confirmation"
+          :disabled="loading" />
       </FormItem>
 
       <!-- Submit -->
       <FormItem>
-        <Button type="primary" html-type="submit" block size="large" :loading="loading" class="bg-green h-12 rounded-full">
+        <Button type="primary" html-type="submit" block size="large" :loading="loading"
+          class="bg-green h-12 rounded-full">
           Register
         </Button>
       </FormItem>
@@ -36,7 +41,8 @@
       </Divider>
 
       <!-- Google button -->
-      <Button @click="handleGoogleLogin" :loading="loading" block size="large" class="!h-12 rounded-full mb-4 flex items-center justify-center gap-2">
+      <Button @click="handleGoogleLogin" :loading="loading" block size="large"
+        class="!h-12 rounded-full mb-4 flex items-center justify-center gap-2">
         <GoogleOutlined />
         Continue with Google
       </Button>
@@ -90,20 +96,17 @@ const handleFinish = async () => {
     formData.password = ''
     formData.password_confirmation = ''
 
-    // Show success modal
-    Modal.success({
-      title: 'Đăng ký thành công',
-      content: 'Vui lòng xác nhận lại email của bạn và chờ admin duyệt để có thể trải nghiệm trang web.',
-      onOk() {
-        router.push('/login') 
-      }
+    notification.success({
+      message: 'Thành công',
+      description: 'Đăng ký thành công!'
     })
+    router.push('/login')
   } catch (err: any) {
     if (err.data && typeof err.data === 'object') {
-        const errorMessages = Object.values(err.data).flat().join(' ');
-        error.value = errorMessages || 'Đã có lỗi xảy ra. Vui lòng thử lại.';
+      const errorMessages = Object.values(err.data).flat().join(' ');
+      error.value = errorMessages || 'Đã có lỗi xảy ra. Vui lòng thử lại.';
     } else {
-        error.value = err.message || 'Đã có lỗi xảy ra. Vui lòng thử lại.';
+      error.value = err.message || 'Đã có lỗi xảy ra. Vui lòng thử lại.';
     }
   } finally {
     loading.value = false

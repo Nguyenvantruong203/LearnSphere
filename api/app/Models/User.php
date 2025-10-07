@@ -128,17 +128,17 @@ class User extends Authenticatable implements MustVerifyEmail
             ->withTimestamps();
     }
 
-    // User có nhiều kết quả quiz
-    public function quizResults(): HasMany
+    // ====== QUIZ ATTEMPTS (mỗi lượt làm bài) ======
+    public function quizAttempts(): HasMany
     {
-        return $this->hasMany(QuizResult::class);
+        return $this->hasMany(QuizAttempt::class);
     }
 
-    // User tham gia nhiều quiz thông qua kết quả
+    // ====== QUIZZES (liên kết thông qua attempts) ======
     public function quizzes()
     {
-        return $this->belongsToMany(Quiz::class, 'quiz_results')
-            ->withPivot(['score', 'attempt_number', 'submitted_at'])
+        return $this->belongsToMany(Quiz::class, 'quiz_attempts')
+            ->withPivot(['attempt_no', 'score', 'status', 'submitted_at'])
             ->withTimestamps();
     }
     public function notifications()

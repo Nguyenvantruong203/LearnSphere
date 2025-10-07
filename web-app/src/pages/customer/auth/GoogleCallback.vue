@@ -31,30 +31,19 @@ onMounted(async () => {
 
   try {
     await authStore.loginWithGoogle(code)
-
-    Modal.success({
-      title: 'Thành công',
-      content: 'Đăng nhập bằng Google thành công!',
+    notification.success({
+      message: 'Thành công',
+      description: 'Đăng nhập Google thành công!'
+    })
+    router.push('/')
+  } catch (err: any) {
+    Modal.info({
+      title: 'Chờ phê duyệt',
+      content: err.message || 'Tài khoản đang chờ quản trị viên phê duyệt.',
       onOk() {
-        router.push('/')
+        router.push('/login')
       }
     })
-  } catch (err: any) {
-    if (err.status === 403) {
-      Modal.info({
-        title: 'Chờ phê duyệt',
-        content: err.message || 'Tài khoản đang chờ quản trị viên phê duyệt.',
-        onOk() {
-          router.push('/login')
-        }
-      })
-    } else {
-      notification.error({
-        message: 'Lỗi',
-        description: err.message || 'Đăng nhập Google thất bại.'
-      })
-      router.push('/login')
-    }
   }
 })
 </script>

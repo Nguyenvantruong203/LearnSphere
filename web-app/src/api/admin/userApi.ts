@@ -1,5 +1,5 @@
 import { httpAdmin } from '@/helpers/http'
-import type { GetUsersParams, User, PaginationUser } from '@/types/user'
+import type { GetUsersParams, User, PaginationUser } from '@/types/User'
 
 export const userApi = {
 async getUsers(params: GetUsersParams = {}): Promise<PaginationUser<User>> {

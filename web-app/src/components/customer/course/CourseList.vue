@@ -43,8 +43,8 @@
 <script setup lang="ts">
 import { reactive, ref, watch } from 'vue'
 import { notification } from 'ant-design-vue'
-import { customerCourseApi } from '@/api/customer/courseApi'
-import CourseCard from './CourseCard.vue'
+import { courseApi } from '@/api/customer/courseApi'
+import CourseCard from '@/components/customer/course/CourseCard.vue'
 import type { Course, PaginationCourse, MappedCourse } from '@/types/Course'
 
 const props = defineProps<{
@@ -76,7 +76,7 @@ const currentPage = ref(1)
 const fetchCourses = async () => {
     try {
         loading.value = true
-        const response = await customerCourseApi.searchCourses({
+        const response = await courseApi.getAllCourses({
             page: currentPage.value,
             per_page: courses.per_page,
             ...props.filters
@@ -112,7 +112,7 @@ const mapCourse = (course: Course): MappedCourse => ({
     description: course.short_description || course.description,
     price: course.price > 0 ? `${course.price.toLocaleString()} ${course.currency}` : 'Miễn phí',
     originalPrice: course.price > 0 ? `${(course.price * 1.2).toLocaleString()} ${course.currency}` : undefined,
-    image: course.thumbnail_url || '/placeholder-course.jpg',
+    thumbnail_url: course.thumbnail_url || '/placeholder-course.jpg',
     category: course.level,
     duration: '4 giờ',
     instructor: {

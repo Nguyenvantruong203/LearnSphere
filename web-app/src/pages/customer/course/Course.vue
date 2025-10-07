@@ -8,7 +8,6 @@
       searchResults.total + ' kết quả cho ' + currentSearchPayload.searchText : ''"
       :filters="isSearching ? currentSearchPayload?.filters : {}" emptyText="Không tìm thấy khóa học" />
 
-    <HeroSection />
     <CategorySection />
     <CourseSection />
   </LayoutHomepage>
@@ -18,12 +17,11 @@
 import { ref, reactive, onMounted } from 'vue'
 import { notification } from 'ant-design-vue'
 import LayoutHomepage from '../layout/layoutHomepage.vue'
-import HeroSection from '@/components/customer/course/HeroSection.vue'
 import CategorySection from '@/components/customer/course/CategorySection.vue'
 import CourseSection from '@/components/customer/course/CourseSection.vue'
 import CourseSearchBar from '@/components/customer/search/CourseSearchBar.vue'
 import CourseList from '@/components/customer/course/CourseList.vue'
-import { customerCourseApi } from '@/api/customer/courseApi'
+import { courseApi } from '@/api/customer/courseApi'
 import type { CourseSearchPayload, CourseSearchParams } from '@/types/Course'
 import type { Course, PaginationCourse } from '@/types/Course'
 
@@ -58,7 +56,7 @@ const loadAllCourses = async () => {
     isSearching.value = false
     currentPage.value = 1
 
-    const response = await customerCourseApi.searchCourses({
+    const response = await courseApi.getAllCourses({
       page: currentPage.value,
       per_page: searchResults.per_page
     })
@@ -100,7 +98,7 @@ const handleSearch = async (payload: CourseSearchPayload) => {
       }
     })
 
-    const response = await customerCourseApi.searchCourses(params)
+    const response = await courseApi.getAllCourses(params)
     Object.assign(searchResults, response)
 
   } catch (error: any) {

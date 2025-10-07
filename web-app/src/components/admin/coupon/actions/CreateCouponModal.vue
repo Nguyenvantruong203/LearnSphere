@@ -128,7 +128,7 @@
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
 import { couponApi } from '@/api/admin/couponApi'
-import type { CreateCouponData } from '@/types/coupon'
+import type { CreateCouponData } from '@/types/Coupon'
 import { notification } from 'ant-design-vue'
 import type { Dayjs } from 'dayjs'
 

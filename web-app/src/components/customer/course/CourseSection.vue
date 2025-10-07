@@ -141,7 +141,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import CourseCard from './CourseCard.vue'
+import CourseCard from '@/components/customer/course/CourseCard.vue'
 
 const recommendedCourses = ref([
   {

@@ -1,4 +1,4 @@
-import type { User } from './user';
+import type { User } from './User';
 
 export interface Course {
   id: number;
@@ -86,7 +86,7 @@ export interface MappedCourse {
   description?: string
   price: string
   originalPrice?: string
-  image: string
+  thumbnail_url: string
   category: string
   duration: string
   progress?: string

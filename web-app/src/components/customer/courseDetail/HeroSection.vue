@@ -63,7 +63,7 @@
                             <div class="flex-1">
                                 <div class="flex items-center space-x-2 mb-1">
                                     <span class="text-xl font-bold text-slate-800">{{ course?.instructor?.name || 'Lina'
-                                    }}</span>
+                                        }}</span>
                                     <div class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
                                         Pro
                                     </div>
@@ -158,7 +158,7 @@
                                 <div class="text-center">
                                     <div class="flex items-center justify-center space-x-3 mb-2">
                                         <span class="text-4xl font-bold text-teal-600">{{ formatPrice(course?.price)
-                                        }}</span>
+                                            }}</span>
                                         <div class="text-right">
                                             <span class="text-lg font-semibold text-gray-400 line-through">$99.99</span>
                                         </div>
@@ -172,16 +172,26 @@
 
                                 <!-- CTA Buttons -->
                                 <div class="space-y-3">
-                                    <button
-                                        class="w-full h-14 bg-gradient-to-r from-teal-500 to-cyan-500 text-white font-bold text-lg rounded-xl hover:from-teal-600 hover:to-cyan-600 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
-                                        @click="buyNow">
-                                        Mua ngay
-                                    </button>
-                                    <button
-                                        class="w-full h-12 border-2 border-teal-500 text-teal-600 font-semibold rounded-xl hover:bg-teal-50 transition-all duration-300"
-                                        @click="addToCart">
-                                        Thêm vào giỏ hàng
-                                    </button>
+                                    <template v-if="hasAccess">
+                                        <button
+                                            class="w-full h-14 bg-gradient-to-r from-emerald-500 to-green-500 text-white font-bold text-lg rounded-xl hover:from-emerald-600 hover:to-green-600 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
+                                            @click="goToMyCourses">
+                                            Vào học ngay
+                                        </button>
+                                    </template>
+
+                                    <template v-else>
+                                        <button
+                                            class="w-full h-14 bg-gradient-to-r from-teal-500 to-cyan-500 text-white font-bold text-lg rounded-xl hover:from-teal-600 hover:to-cyan-600 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
+                                            @click="buyNow">
+                                            Mua ngay
+                                        </button>
+                                        <button
+                                            class="w-full h-12 border-2 border-teal-500 text-teal-600 font-semibold rounded-xl hover:bg-teal-50 transition-all duration-300"
+                                            @click="addToCart">
+                                            Thêm vào giỏ hàng
+                                        </button>
+                                    </template>
                                 </div>
 
                                 <!-- Course Includes -->
@@ -255,112 +265,105 @@ import { CheckOutlined, MobileOutlined, TrophyOutlined, BookOutlined } from '@an
 import { notification } from 'ant-design-vue'
 import type { Course } from '@/types/Course'
 import { useRouter } from 'vue-router'
-import { CartStorage } from '@/helpers/cartStorage'  
+import { CartStorage } from '@/helpers/cartStorage'
+import { ref, onMounted } from 'vue'
+import { courseApi } from '@/api/customer/courseApi'
 
 interface Props {
-  course?: Course
+    course?: Course
 }
 
 const props = defineProps<Props>()
 const router = useRouter()
+const hasAccess = ref(false)
 
+// --- helper lấy user ---
 const getUserId = (): string | null => {
-  const auth = JSON.parse(localStorage.getItem('client_auth') || '{}')
-  return auth?.user?.id ? String(auth.user.id) : null
+    const auth = JSON.parse(localStorage.getItem('client_auth') || '{}')
+    return auth?.user?.id ? String(auth.user.id) : null
 }
 
+// --- Thêm vào giỏ hàng ---
 const addToCart = () => {
-  if (!props.course) return
-  const userId = getUserId()
-  if (!userId) return
+    if (!props.course) return
+    const userId = getUserId()
+    if (!userId) {
+        notification.warning({ message: 'Vui lòng đăng nhập để thêm vào giỏ hàng' })
+        return
+    }
 
-  const currentCart = CartStorage.getCart(userId)
-  const exists = currentCart.find((c: any) => c.id === props.course?.id)
+    const currentCart = CartStorage.getCart(userId)
+    const exists = currentCart.find((c: any) => c.id === props.course?.id)
+    if (exists) {
+        notification.warning({
+            message: 'Khóa học đã có trong giỏ hàng',
+            description: `${props.course.title} đã có trong giỏ hàng của bạn.`
+        })
+        return
+    }
 
-  if (exists) {
-    notification.warning({
-      message: 'Khóa học đã có trong giỏ hàng',
-      description: `${props.course.title} đã có trong giỏ hàng của bạn.`
-    })
-    return
-  }
-
-  CartStorage.addItem(userId, {
-    id: props.course.id,
-    title: props.course.title,
-    price: props.course.price,
-    thumbnail_url: props.course.thumbnail_url,
-    quantity: 1,
-  })
-
-  notification.success({
-    message: 'Đã thêm vào giỏ hàng',
-    description: `${props.course.title} đã được thêm vào giỏ hàng của bạn.`
-  })
-}
-
-const buyNow = () => {
-  if (!props.course) return
-  const userId = getUserId()
-  if (!userId) return
-
-  const currentCart = CartStorage.getCart(userId)
-  const exists = currentCart.find((c: any) => c.id === props.course?.id)
-
-  if (!exists) {
     CartStorage.addItem(userId, {
-      id: props.course.id,
-      title: props.course.title,
-      price: props.course.price,
-      thumbnail_url: props.course.thumbnail_url,
-      quantity: 1,
+        id: props.course.id,
+        title: props.course.title,
+        price: props.course.price,
+        thumbnail_url: props.course.thumbnail_url,
+        quantity: 1,
     })
-  }
 
-  router.push('/cart')
+    notification.success({
+        message: 'Đã thêm vào giỏ hàng',
+        description: `${props.course.title} đã được thêm vào giỏ hàng của bạn.`
+    })
 }
-// Format giá
+
+// --- Mua ngay ---
+const buyNow = () => {
+    if (!props.course) return
+    const userId = getUserId()
+    if (!userId) {
+        notification.warning({ message: 'Vui lòng đăng nhập để mua khóa học' })
+        return
+    }
+
+    const currentCart = CartStorage.getCart(userId)
+    const exists = currentCart.find((c: any) => c.id === props.course?.id)
+    if (!exists) {
+        CartStorage.addItem(userId, {
+            id: props.course.id,
+            title: props.course.title,
+            price: props.course.price,
+            thumbnail_url: props.course.thumbnail_url,
+            quantity: 1,
+        })
+    }
+    router.push('/cart')
+}
+
+// --- Vào học ---
+const goToMyCourses = () => {
+    if (props.course?.id) {
+        router.push(`/learning/${props.course.id}`)
+    }
+}
+
+// --- Format giá ---
 const formatPrice = (price?: number) => {
-  if (!price) return '₫1,299,000'
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND'
-  }).format(price)
+    if (!price) return '₫1,299,000'
+    return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND'
+    }).format(price)
 }
+
+// ✅ Kiểm tra đã mua khóa học chưa
+onMounted(async () => {
+    const userId = getUserId()
+    if (!userId || !props.course?.id) return
+    try {
+        const res = await courseApi.checkAccess(props.course.id)
+        hasAccess.value = !!res?.hasAccess
+    } catch (err) {
+        console.error('checkAccess error', err)
+    }
+})
 </script>
-
-
-<style scoped>
-/* Custom shadows */
-.shadow-3xl {
-    box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25);
-}
-
-/* Enhanced animations */
-@keyframes float {
-
-    0%,
-    100% {
-        transform: translateY(0px);
-    }
-
-    50% {
-        transform: translateY(-20px);
-    }
-}
-
-.animate-float {
-    animation: float 6s ease-in-out infinite;
-}
-
-/* Improved hover effects */
-.group:hover .group-hover\:text-teal-600 {
-    color: #0d9488;
-}
-
-/* Sticky positioning support */
-.sticky {
-    position: -webkit-sticky;
-    position: sticky;
-}
-</style>

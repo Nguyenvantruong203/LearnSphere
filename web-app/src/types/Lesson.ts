@@ -1,4 +1,5 @@
 import type { Topic } from './Topic';
+import type { Quiz } from './Quiz';
 
 /**
  * Represents a lesson object from the API.
@@ -14,10 +15,14 @@ export interface Lesson {
   content?: string;
   order: number;
   duration_seconds?: number;
+  duration_minutes?: number;
   player_params?: Record<string, any>;
   created_at: string;
   updated_at: string;
   topic?: Topic;
+  quiz?: Quiz;
+  is_completed?: boolean;
+  status?: 'completed' | 'in-progress' | 'available' | 'locked';
 }
 
 /**
@@ -54,4 +59,41 @@ export interface PaginationLesson<T> {
   prev_page_url: string | null
   to: number
   total: number
+}
+
+/**
+ * Response structure for lesson list by course
+ * Author: Truong
+ */
+export interface LessonListResponse {
+  success: boolean;
+  data: {
+    course: {
+      id: number;
+      title: string;
+    };
+    topics: Topic[];
+  };
+}
+
+/**
+ * Response structure for lesson detail
+ * Author: Truong
+ */
+export interface LessonDetailResponse {
+  success: boolean;
+  data: {
+    id: number;
+    title: string;
+    video_provider: string;
+    video_id?: string;
+    video_url?: string;
+    content?: string;
+    duration_seconds?: number;
+    quiz?: Quiz;
+    course: {
+      id: number;
+      title: string;
+    };
+  };
 }

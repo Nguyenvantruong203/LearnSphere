@@ -65,7 +65,7 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive, watch } from 'vue'
 import { userApi } from '@/api/admin/userApi'
-import type { User, GetUsersParams } from '@/types/user'
+import type { User, GetUsersParams } from '@/types/User'
 import UserCell from './UserCell.vue'
 import FormatDate from './FormatDate.vue'
 import EditUserModal from './actions/EditUserModal.vue'

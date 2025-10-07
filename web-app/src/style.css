@@ -112,3 +112,13 @@ button:focus-visible {
   clip-path: ellipse(130% 100% at 50% 0%);
   will-change: clip-path; /* gợi ý GPU tối ưu */
 }
+
+.bg-client{
+  background-color: #49bbbd;
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -5,51 +5,64 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Course;
+use App\Models\UserCourse;
 
 class CourseController extends Controller
 {
+    /**
+     * Truy vấn mặc định cho tất cả các hàm trong controller
+     */
+    protected function baseQuery()
+    {
+        return Course::query()
+            ->with(['instructor:id,name,email,avatar_url'])
+            ->withCount(['topics as total_topics', 'lessons as total_lessons'])
+            ->published(); // chỉ hiển thị khóa học đã publish
+    }
+
+    /**
+     * Danh sách khóa học (có filter, search, sort)
+     */
     public function index(Request $request)
     {
-        $query = Course::query()
-            ->with(['instructor:id,name,email,avatar_url'])
-            ->published(); // chỉ hiển thị course đã publish
+        $query = $this->baseQuery();
 
         // Search
-        if ($request->has('search')) {
-            $searchTerm = $request->input('search');
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('title', 'like', "%{$searchTerm}%")
-                    ->orWhere('description', 'like', "%{$searchTerm}%");
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
         // Filter by subject
-        if ($request->has('subject')) {
-            $query->where('subject', $request->input('subject'));
+        if ($subject = $request->input('subject')) {
+            $query->where('subject', $subject);
         }
 
         // Filter by paid/free
-        if ($request->has('is_paid')) {
+        if (!is_null($request->input('is_paid'))) {
             $query->where('is_paid', filter_var($request->input('is_paid'), FILTER_VALIDATE_BOOLEAN));
         }
 
         // Filter by category
-        if ($request->has('category_id')) {
-            $query->where('category_id', $request->input('category_id'));
+        if ($categoryId = $request->input('category_id')) {
+            $query->where('category_id', $categoryId);
         }
 
         // Price range
-        if ($request->has('price_min')) {
-            $query->where('price', '>=', $request->input('price_min'));
+        if ($min = $request->input('price_min')) {
+            $query->where('price', '>=', $min);
         }
-        if ($request->has('price_max')) {
-            $query->where('price', '<=', $request->input('price_max'));
+        if ($max = $request->input('price_max')) {
+            $query->where('price', '<=', $max);
         }
 
         // Sorting
-        $sortBy = $request->input('sort_by', 'created_at');
-        $sortOrder = $request->input('sort_order', 'desc');
-        $query->orderBy($sortBy, $sortOrder);
+        $query->orderBy(
+            $request->input('sort_by', 'created_at'),
+            $request->input('sort_order', 'desc')
+        );
 
         // Pagination
         $courses = $query->paginate($request->input('per_page', 15));
@@ -57,22 +70,83 @@ class CourseController extends Controller
         return response()->json($courses);
     }
 
+    /**
+     * Chi tiết khóa học
+     */
     public function show($id)
     {
-        $course = Course::query()
-            ->with(['instructor:id,name,email,avatar_url'])
-            ->withCount(['topics as total_topics'])
-            ->withCount(['lessons as total_lessons'])
-            ->published()
-            ->find($id);
+        $course = $this->baseQuery()->find($id);
 
         if (!$course) {
             return response()->json([
                 'success' => false,
-                'message' => 'Course không tồn tại hoặc chưa được publish.'
+                'message' => 'Khóa học không tồn tại hoặc chưa được publish.'
             ], 404);
         }
 
-        return response()->json($course);
+        return response()->json([
+            'success' => true,
+            'data' => $course
+        ]);
+    }
+
+    /**
+     * Kiểm tra user có quyền truy cập khóa học hay chưa (đã mua)
+     */
+    public function checkAccess($courseId)
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return response()->json([
+                'success' => true,
+                'hasAccess' => false
+            ]);
+        }
+
+        $hasAccess = UserCourse::where('user_id', $user->id)
+            ->where('course_id', $courseId)
+            ->where('is_paid', true)
+            ->exists();
+
+        return response()->json([
+            'success' => true,
+            'hasAccess' => $hasAccess
+        ]);
+    }
+
+    /**
+     * Danh sách khóa học user đã mua
+     */
+    public function myCourses()
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn cần đăng nhập để xem danh sách khóa học đã mua.'
+            ], 401);
+        }
+
+        $courses = Course::query()
+            ->with(['instructor:id,name,avatar_url'])
+            ->join('user_courses', 'user_courses.course_id', '=', 'courses.id')
+            ->leftJoin('user_progress', function ($join) use ($user) {
+                $join->on('user_progress.course_id', '=', 'courses.id')
+                    ->where('user_progress.user_id', '=', $user->id);
+            })
+            ->where('user_courses.user_id', $user->id)
+            ->where('user_courses.is_paid', true)
+            ->select([
+                'courses.*',
+                'user_progress.progress_percent as progress',
+                'user_progress.last_updated as progress_updated_at',
+            ])
+            ->orderBy('courses.created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $courses
+        ]);
     }
 }

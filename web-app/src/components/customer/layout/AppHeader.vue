@@ -245,7 +245,7 @@ import { useClientAuthStore } from '@/stores/clientAuth'
 import { useRouter, useRoute } from 'vue-router'
 import { notification } from 'ant-design-vue'
 import type { MenuInfo } from 'ant-design-vue/es/menu/src/interface'
-import type { CartItem } from '@/types/order'
+import type { CartItem } from '@/types/Order'
 import { CartStorage } from '@/helpers/cartStorage'
 
 const authStore = useClientAuthStore()
@@ -343,7 +343,7 @@ async function onMenuClick(info: MenuInfo) {
   } else if (key === 'profile') {
     router.push('/profile')
   } else if (key === 'courses') {
-    router.push('/my-courses')
+    router.push('/my-courses/' + (authStore.user?.id || ''))
   } else if (key === 'settings') {
     router.push('/settings')
   }

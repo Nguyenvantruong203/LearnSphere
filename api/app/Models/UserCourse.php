@@ -3,9 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Database\Eloquent\Model;
 
-class UserCourse extends Pivot
+class UserCourse extends Model
 {
     use HasFactory;
 
@@ -25,16 +25,14 @@ class UserCourse extends Pivot
         'is_paid' => 'boolean',
     ];
 
-    public $incrementing = false;   // vì khóa chính là composite (user_id + course_id)
+    public $incrementing = false;
     protected $primaryKey = null;
 
-    // Quan hệ tới User
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // Quan hệ tới Course
     public function course()
     {
         return $this->belongsTo(Course::class);

@@ -5,7 +5,7 @@ import type {
   UpdateCouponData, 
   GetCouponsParams, 
   CouponsResponse 
-} from '@/types/coupon'
+} from '@/types/Coupon'
 
 export const couponApi = {
   // Lấy danh sách coupons

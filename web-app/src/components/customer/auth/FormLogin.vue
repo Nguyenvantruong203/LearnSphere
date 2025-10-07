@@ -67,14 +67,11 @@ const handleFinish = async () => {
   error.value = null
   try {
     await authStore.login(formData)
-
-    Modal.success({
-      title: 'Thành công',
-      content: 'Đăng nhập thành công!',
-      onOk() {
-        router.push('/') // hoặc /admin tùy role
-      }
+    notification.success({
+      message: 'Thành công',
+      description: 'Đăng nhập thành công!'
     })
+    router.push('/')
   } catch (err: any) {
     error.value = err.message || 'Email hoặc mật khẩu không chính xác.'
   } finally {

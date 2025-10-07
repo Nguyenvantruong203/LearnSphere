@@ -35,6 +35,12 @@ class Topic extends Model
         // Giữ thứ tự theo 'order' của lesson
         return $this->hasMany(Lesson::class)->orderBy('order');
     }
+    // 🔹 Quiz của topic
+    public function quiz()
+    {
+        return $this->hasOne(Quiz::class, 'topic_id', 'id')
+            ->whereNull('lesson_id'); // chỉ quiz của topic, không gắn lesson
+    }
 
     /* =========================
      |  Scopes
@@ -70,7 +76,7 @@ class Topic extends Model
             }
         });
     }
-        public function quizzes()
+    public function quizzes()
     {
         return $this->hasMany(Quiz::class)->orderBy('id');
     }

@@ -36,7 +36,7 @@ import RatingSection from '@/components/customer/courseDetail/RatingSection.vue'
 import MarketingArticles from '@/components/customer/courseDetail/MarketingArticles.vue'
 import FeatureSection from '@/components/customer/courseDetail/FeatureSection.vue'
 import PromotionalCards from '@/components/customer/courseDetail/PromotionalCards.vue'
-import { customerCourseApi } from '@/api/customer/courseApi'
+import { courseApi } from '@/api/customer/courseApi'
 import type { Course } from '@/types/Course'
 
 const route = useRoute()
@@ -55,7 +55,7 @@ const fetchCourse = async () => {
     error.value = null
 
     try {
-        course.value = await customerCourseApi.getCourse(courseId)
+        course.value = await courseApi.getCourse(courseId)
     } catch (err: any) {
         error.value = err?.message || 'Không thể tải thông tin khóa học'
         notification.error({

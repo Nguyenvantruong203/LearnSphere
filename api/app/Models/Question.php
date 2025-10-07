@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+
 class Question extends Model
 {
     protected $table = 'questions';
@@ -35,6 +36,10 @@ class Question extends Model
         return $this->belongsTo(Quiz::class);
     }
 
+    public function answers()
+    {
+        return $this->hasMany(QuizAttemptAnswer::class);
+    }
     /* =========================
      |  Scopes
      |=========================*/

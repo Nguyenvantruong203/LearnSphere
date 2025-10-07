@@ -13,18 +13,30 @@ return new class extends Migration
     {
         Schema::create('quiz_attempts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignId('quiz_id')->constrained('quizzes')->cascadeOnDelete();
-            $table->unsignedInteger('attempt_no')->default(1);
-            $table->string('status')->default('in_progress'); // in_progress|submitted|graded|abandoned
-            $table->decimal('score', 8, 2)->default(0);
-            $table->decimal('max_score', 8, 2)->default(0);
+
+            // Khóa ngoại
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('quiz_id')->constrained()->onDelete('cascade');
+
+            // Thông tin lượt làm bài
+            $table->unsignedInteger('attempt_no')->default(1)->comment('Số lần làm bài (1,2,3,...)');
+            $table->enum('status', ['in_progress', 'completed', 'expired'])->default('in_progress');
+
+            // Kết quả
+            $table->float('score')->nullable()->comment('Điểm đạt được');
+            $table->float('max_score')->nullable()->comment('Điểm tối đa');
+            $table->integer('correct_count')->nullable()->comment('Số câu đúng');
+            $table->integer('wrong_count')->nullable()->comment('Số câu sai');
+            $table->integer('duration_seconds')->nullable()->comment('Thời gian làm bài (giây)');
+
+            // Thời gian bắt đầu / nộp
             $table->timestamp('started_at')->nullable();
             $table->timestamp('submitted_at')->nullable();
+
             $table->timestamps();
 
-            $table->unique(['user_id', 'quiz_id', 'attempt_no']);
-            $table->index(['quiz_id', 'status']);
+            // Mỗi user có thể làm lại nhiều lần -> không unique (user_id, quiz_id)
+            $table->index(['user_id', 'quiz_id']);
         });
     }
 

@@ -71,8 +71,7 @@ invariants:  # Bất biến dữ liệu & nghiệp vụ
     rule: "weight >= 0."
   - name: attempts_monotonic
     rule: "quiz_attempts.attempt_no tăng dần theo (user_id, quiz_id)."
-  - name: snapshot_unique
-    rule: "quiz_results UNIQUE(user_id, quiz_id) nếu bảng này được dùng."
+
 
   # E-COMMERCE
   - name: order_totals_consistency
@@ -170,7 +169,6 @@ api:  # Hợp đồng tối thiểu cho AI
     effects:
       - "Tạo quiz_attempts(status=submitted, attempt_no=max+1)."
       - "Tạo quiz_attempt_answers cho từng câu."
-      - "(Optional) Upsert snapshot vào quiz_results."
       - "Phát event quiz.attempt.submitted."
     responses:
       200:
