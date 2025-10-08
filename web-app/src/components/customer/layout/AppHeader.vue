@@ -48,7 +48,7 @@
         <div class="flex items-center space-x-4">
 
           <!-- Notifications -->
-          <button
+          <button v-if="authStore.isLoggedIn"
             class="hidden md:flex items-center justify-center w-10 h-10 text-[#696984] hover:text-teal-600 hover:bg-gray-100 rounded-xl transition-all duration-300 group relative">
             <i class="fas fa-bell group-hover:scale-110 transition-transform duration-300"></i>
             <div class="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-orange-500 to-red-500 rounded-full">

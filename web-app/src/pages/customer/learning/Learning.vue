@@ -2,35 +2,38 @@
   <LayoutLearning>
     <div class="flex h-screen overflow-y-hidden">
       <!-- Left Sidebar -->
-      <div class="w-[350px] bg-white border-r overflow-y-auto">
+      <div class="w-[450px] bg-white border-r overflow-y-auto">
         <LessonList :course="courseData" :topics="topics" :currentLessonId="currentLessonId" :loading="isListLoading"
-          @select-lesson="handleSelectLesson" @open-quiz="goToQuiz" />
+          @select-lesson="handleSelectLesson" @open-quiz="handleOpenQuiz" />
       </div>
 
       <!-- Right Content Area -->
       <div class="flex-1 bg-info bg-opacity-20 overflow-y-auto">
-        <LessonPlayer :lesson="currentLessonData" :lessons="lessons" :loading="isLessonLoading" @open-quiz="goToQuiz" />
+        <LessonPlayer v-if="activeView === 'lesson'" :lesson="currentLessonData" :lessons="lessons"
+          :loading="isLessonLoading" @open-quiz="openQuiz" />
 
+        <QuizPlayer v-if="activeView === 'quiz'" :quiz-id="currentQuizId" @exit="activeView = 'lesson'" />
       </div>
+
     </div>
   </LayoutLearning>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { notification } from 'ant-design-vue'
-
 import LayoutLearning from '../layout/layoutLearning.vue'
 import LessonList from '@/components/customer/learning/LessonList.vue'
 import LessonPlayer from '@/components/customer/learning/LessonPlayer.vue'
 import { lessonApi } from '@/api/customer/lessonApi'
-
+import QuizPlayer from '@/components/customer/quiz/QuizPlayer.vue'
 import type { Lesson, LessonListResponse, LessonDetailResponse } from '@/types/Lesson'
 import type { Topic } from '@/types/Topic'
 
 const route = useRoute()
-const router = useRouter()
+const activeView = ref<'lesson' | 'quiz'>('lesson')
+const currentQuizId = ref<number | null>(null)
 
 // ===== STATE =====
 const courseData = ref<{ id: number; title: string } | null>(null)
@@ -54,7 +57,6 @@ const fetchLessonList = async () => {
     courseData.value = res.data.course
     topics.value = res.data.topics || []
 
-    // Flatten để dùng cho Player / điều hướng
     lessons.value = topics.value.flatMap((topic: Topic) =>
       (topic.lessons || []).map((lesson: Lesson) => ({
         ...lesson,
@@ -62,7 +64,6 @@ const fetchLessonList = async () => {
       }))
     )
 
-    // Lấy lesson ID từ localStorage hoặc bài đầu tiên
     const savedLessonId = Number(localStorage.getItem(`lastLesson_${courseId}`))
     const firstLesson = topics.value[0]?.lessons?.[0]
 
@@ -70,7 +71,7 @@ const fetchLessonList = async () => {
       await fetchLessonDetail(savedLessonId)
     } else if (firstLesson) {
       currentLessonId.value = firstLesson.id
-      fetchLessonDetail(firstLesson.id) // không await để UI hiển thị nhanh hơn
+      fetchLessonDetail(firstLesson.id) 
     }
   } catch (err: any) {
     console.error('fetchLessonList error:', err)
@@ -110,8 +111,9 @@ const handleSelectLesson = (lessonId: number) => {
   fetchLessonDetail(lessonId)
 }
 
-const goToQuiz = (quizId: number) => {
-  router.push(`/quiz/${quizId}`)
+const handleOpenQuiz = (quizId: number) => {
+  currentQuizId.value = quizId
+  activeView.value = 'quiz'
 }
 
 // ===== AUTO LOAD =====
@@ -126,6 +128,10 @@ watch(
     fetchLessonList()
   }
 )
+const openQuiz = (quizId: number) => {
+  currentQuizId.value = quizId
+  activeView.value = 'quiz'
+}
 </script>
 
 <style scoped>

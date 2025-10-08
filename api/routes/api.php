@@ -108,11 +108,11 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
     Route::delete('quizzes/{quiz}/questions/{question}', [LessonQuestionController::class, 'destroy']);
 
-            // Lấy danh sách tất cả coupon
-        Route::get('/coupons', [CouponController::class, 'index'])->name('coupons.index');
-        Route::post('/coupons', [CouponController::class, 'store'])->name('coupons.store');
-        Route::put('/coupons/{id}', [CouponController::class, 'update'])->name('coupons.update');
-        Route::delete('/coupons/{id}', [CouponController::class, 'destroy'])->name('coupons.destroy');
+    // Lấy danh sách tất cả coupon
+    Route::get('/coupons', [CouponController::class, 'index'])->name('coupons.index');
+    Route::post('/coupons', [CouponController::class, 'store'])->name('coupons.store');
+    Route::put('/coupons/{id}', [CouponController::class, 'update'])->name('coupons.update');
+    Route::delete('/coupons/{id}', [CouponController::class, 'destroy'])->name('coupons.destroy');
 });
 
 // Đặt lại mật khẩu

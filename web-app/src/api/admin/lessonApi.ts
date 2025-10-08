@@ -2,28 +2,30 @@ import { httpAdmin } from '@/helpers/http'
 import type { GetLessonsParams, Lesson, LessonPayload, PaginationLesson } from '@/types/Lesson'
 
 export const lessonApi = {
-  async getLessons(params: GetLessonsParams): Promise<PaginationLesson<Lesson>> {
-    const { topicId, ...restParams } = params
-    if (!topicId) {
-      throw new Error('topicId is required for getLessons')
-    }
-    const response = await httpAdmin(`/api/admin/topics/${topicId}/lessons`, {
+  async getLessons({ topicId, ...params }: GetLessonsParams): Promise<PaginationLesson<Lesson>> {
+    if (!topicId) throw new Error('Missing topicId')
+
+    const { data } = await httpAdmin(`/api/admin/topics/${topicId}/lessons`, {
       method: 'GET',
-      params: restParams
+      params,
     })
-    return response.data
+
+    return data
   },
 
   async createLesson(topicId: number, data: FormData): Promise<Lesson> {
     const response = await httpAdmin(`/api/admin/topics/${topicId}/lessons/upload`, {
       method: 'POST',
-      body: data
+      body: data,
     })
     return response.data
   },
 
   async updateLesson(lessonId: number, data: Partial<LessonPayload>): Promise<Lesson> {
-    const response = await httpAdmin(`/api/admin/lessons/${lessonId}`, { method: 'PATCH', body: data })
+    const response = await httpAdmin(`/api/admin/lessons/${lessonId}`, {
+      method: 'PATCH',
+      body: data,
+    })
     return response.data
   },
 

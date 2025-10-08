@@ -16,7 +16,7 @@ export const lessonApi = {
    * Dùng cho LessonPlayer bên phải
    */
   async getLessonDetail(lessonId: number) {
-    return await httpClient(`/api/client/lessons/${lessonId}/detail`, {
+    return await httpClient(`/api/client/lessons/${lessonId}/lesson-detail`, {
       method: 'GET',
     })
   },

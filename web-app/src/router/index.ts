@@ -20,7 +20,7 @@ import Cart from '@/pages/customer/cart/Cart.vue'
 import VNPayReturn from '@/pages/customer/payment/VNPayReturn.vue'
 import CouponList from '@/pages/admin/coupon/CouponList.vue'
 import MyCourses from '@/pages/customer/myCourses/MyCourses.vue'
-import Learning from '@/pages/customer/learning/learning.vue'
+import Learning from '@/pages/customer/learning/Learning.vue'
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -54,7 +54,7 @@ export const routes: RouteRecordRaw[] = [
     path: '/blog',
     name: 'Blog',
     component: Blog,
-    meta: { layout: 'public', title: 'Blog', requiresAuth: true, roles: ['student', 'instructor'] },
+    meta: { layout: 'public', title: 'Blog' },
   },
   {
     path: '/courses',
@@ -63,9 +63,13 @@ export const routes: RouteRecordRaw[] = [
     meta: {
       layout: 'public',
       title: 'Courses',
-      requiresAuth: true,
-      roles: ['student', 'instructor'],
     },
+  },
+  {
+    path: '/about',
+    name: 'About',
+    component: About,
+    meta: { layout: 'public', title: 'About Us' },
   },
   {
     path: '/courses/:id',
@@ -74,8 +78,6 @@ export const routes: RouteRecordRaw[] = [
     meta: {
       layout: 'public',
       title: 'Course Detail',
-      requiresAuth: true,
-      roles: ['student', 'instructor'],
     },
   },
   {
@@ -109,7 +111,7 @@ export const routes: RouteRecordRaw[] = [
       roles: ['student', 'instructor'],
     },
   },
-    {
+  {
     path: '/learning/:courseId',
     name: 'Learning',
     component: Learning,
@@ -119,12 +121,6 @@ export const routes: RouteRecordRaw[] = [
       requiresAuth: true,
       roles: ['student', 'instructor'],
     },
-  },
-  {
-    path: '/about',
-    name: 'About',
-    component: About,
-    meta: { layout: 'public', title: 'About Us' },
   },
   // --- Admin Pages ---
   {

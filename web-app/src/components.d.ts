@@ -105,6 +105,7 @@ declare module 'vue' {
     PromotionalCards: typeof import('./components/customer/courseDetail/PromotionalCards.vue')['default']
     QuestionsTable: typeof import('./components/admin/question/QuestionsTable.vue')['default']
     QuizDrawer: typeof import('./components/admin/quiz/QuizDrawer.vue')['default']
+    QuizPlayer: typeof import('./components/customer/quiz/QuizPlayer.vue')['default']
     RatingBar: typeof import('./components/customer/courseDetail/RatingBar.vue')['default']
     RatingSection: typeof import('./components/customer/courseDetail/RatingSection.vue')['default']
     RelatedBlog: typeof import('./components/customer/blog/RelatedBlog.vue')['default']
