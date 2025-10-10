@@ -39,7 +39,7 @@ import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Form, FormItem, Input, Button, notification, Alert } from 'ant-design-vue'
 import type { Rule } from 'ant-design-vue/es/form'
-import LayoutLoginAdmin from '@/pages/customer/layout/layoutLoginAdmin.vue'
+import LayoutLoginAdmin from '@/pages/admin/layout/layoutLoginAdmin.vue'
 import { MailOutlined, LockOutlined } from '@ant-design/icons-vue';
 import { useAdminAuthStore } from '@/stores/adminAuth';
 

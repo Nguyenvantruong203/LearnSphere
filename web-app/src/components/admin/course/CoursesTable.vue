@@ -1,66 +1,65 @@
 <template>
   <div class="p-4">
+    <!-- 🔹 Header -->
     <div class="flex items-center justify-between mb-3">
       <h2 class="text-xl font-semibold">Courses → Topics → Lessons</h2>
-      <a-button type="primary" @click="openCreateCourse">+ Course</a-button>
+      <div class="flex items-center gap-3">
+        <a-input-search placeholder="Search courses..." class="w-64" v-model:value="searchQuery"
+          @search="fetchCourses" />
+        <a-button type="primary" @click="openCreateCourse"><span class="flex justify-center items-center"><PlusOutlined /> Course</span></a-button>
+      </div>
     </div>
 
-    <div class="flex flex-col h-[calc(100vh-180px)]">
-      <!-- Collapse + Tables -->
+    <div class="flex flex-col h-[calc(100vh-160px)]">
       <div class="flex-1 overflow-y-auto">
         <a-collapse v-model:activeKey="activeCourseKeys" accordion>
-          <a-collapse-panel v-for="course in courses" :key="course.id" :header="course.title">
+          <a-collapse-panel v-for="course in filteredCourses" :key="course.id" :header="course.title">
             <div class="flex items-center justify-between mb-2">
-              <div class="text-gray-500">Course ID: {{ course.id }}</div>
+              <div class="text-gray-500"></div>
               <div class="space-x-2">
                 <a-button size="small" @click="openEditCourse(course)">Edit Course</a-button>
-                <a-button size="small" danger @click="confirmRemoveCourse(course)">Delete Course</a-button>
+                <a-button size="small" danger @click="confirmRemoveCourse(course)">Delete</a-button>
                 <a-button size="small" type="primary" @click="openCreateTopic(course.id)">+ Topic</a-button>
               </div>
             </div>
 
             <a-table :columns="columns" :data-source="treeByCourse[course.id] || []" row-key="key"
               :loading="loading[course.id]" :pagination="false" sticky table-layout="fixed"
-              :scroll="{ y: 'calc(100vh - 160px)', x: '100%' }" :expandable="{
+              :scroll="{ y: 'calc(100vh - 160px)', x: 'auto' }" :expandable="{
                 childrenColumnName: 'children',
                 expandRowByClick: false,
                 defaultExpandAllRows: false
               }" @expand="(expanded, record) => onExpand(expanded, record, course.id)" />
-
           </a-collapse-panel>
         </a-collapse>
       </div>
 
-      <div class="mt-4 flex justify-center">
+      <div class="mt-2 flex justify-center">
         <a-pagination :current="pagination.current" :page-size="pagination.pageSize" :total="pagination.total"
           show-size-changer :show-total="pagination.showTotal" @change="onPageChange" @showSizeChange="onPageChange" />
       </div>
     </div>
-    <!-- Modals -->
+
     <CreateCourseModal v-model:open="createCourse.open" @finish="onCreatedCourse" />
     <EditCourseModal v-model:open="editCourse.open" :course="editCourse.course" @finish="onEditedCourse" />
 
     <CreateTopicModal v-model:open="createTopic.open" :course-id="createTopic.courseId" @finish="onCreatedTopic" />
-
     <EditTopicModal v-model:open="editTopic.open" :topic="editTopic.topic" @finish="onEditedTopic" />
 
     <CreateLessonModal v-model:open="createLesson.open" :topic-id="createLesson.topicId"
       :course-id="createLesson.courseId" :youtube-connected="youtubeConnected" @finish="onCreatedLesson" />
-
     <EditLessonModal v-model:open="editLesson.open" :lesson="editLesson.lesson" @finish="onEditedLesson" />
     <CreateQuizModal v-model:open="createQuiz.open" :lesson-id="createQuiz.lessonId" :topic-id="createQuiz.topicId"
       :scope="createQuiz.scope" @finish="onCreatedQuiz" />
     <EditQuizModal v-model:open="editQuiz.open" :quiz="editQuiz.quiz" @finish="onEditedQuiz" />
     <QuizDrawer v-model:open="quizDrawer.open" :quiz="quizDrawer.quiz" />
-
-
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, h, onMounted, watch, nextTick, reactive } from 'vue'
-import { Button, Space, message, Popconfirm, Tag, Modal, notification } from 'ant-design-vue'
-
+import { ref, h, onMounted, watch, nextTick, reactive, computed } from 'vue'
+import { Button, Space, Popconfirm, Tag, Modal, notification } from 'ant-design-vue'
+import { SearchOutlined } from '@ant-design/icons-vue'
 import { courseApi } from '@/api/admin/courseApi'
 import { topicApi } from '@/api/admin/topicApi'
 import { lessonApi } from '@/api/admin/lessonApi'
@@ -96,14 +95,20 @@ type TreeNode =
   | { key: string; type: "loading"; title: string; order: number; lesson_id?: number }
 
 const courses = ref<Course[]>([])
+const searchQuery = ref('')
+
+const filteredCourses = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase()
+  if (!q) return courses.value
+  return courses.value.filter(course => course.title.toLowerCase().includes(q))
+})
 const pagination = reactive({
   current: 1,
   pageSize: 10,
   total: 0,
-  showTotal: (total: number) => `Tổng ${total} khóa học`
+  showTotal: (total: number) => `Total ${total} courses`
 })
 const loadingCourses = ref(false)
-
 const activeCourseKeys = ref<(string | number)[]>([])
 const treeByCourse = reactive<Record<number, TreeNode[]>>({})
 const loading = ref<Record<number, boolean>>({})
@@ -111,9 +116,9 @@ const loading = ref<Record<number, boolean>>({})
 // ====== Course Modals ======
 const createCourse = ref<{ open: boolean }>({ open: false })
 const editCourse = ref<{ open: boolean; course: Course | null }>({ open: false, course: null })
+const youtubeConnected = ref(false)
 
 const openCreateCourse = () => { createCourse.value.open = true }
-const youtubeConnected = ref(false)
 
 const onCreatedCourse = async () => {
   await fetchCourses()
@@ -128,27 +133,27 @@ const onEditedCourse = async () => {
 
 const confirmRemoveCourse = (course: Course) => {
   Modal.confirm({
-    title: `Xoá khóa học: ${course.title}?`,
-    okText: 'Xoá',
-    cancelText: 'Hủy',
-    onOk: () => removeCourse(course.id),
-  });
-};
+    title: `Delete course: ${course.title}?`,
+    okText: 'Delete',
+    cancelText: 'Cancel',
+    onOk: () => removeCourse(course.id)
+  })
+}
 
 const removeCourse = async (courseId: number) => {
   try {
-    await courseApi.deleteCourse(courseId);
-    notification.success({ message: 'Đã xoá Course' });
-    await fetchCourses();
+    await courseApi.deleteCourse(courseId)
+    notification.success({ message: 'Course deleted successfully.' })
+    await fetchCourses()
   } catch (error: any) {
-    notification.error({ message: error.message || 'Xoá Course thất bại' });
+    notification.error({ message: error.message || 'Failed to delete course.' })
   }
-};
+}
 
 // ====== Columns (action gài +Lesson / Edit / Delete) ======
 const columns = [
   {
-    title: 'Loại',
+    title: 'Type',
     key: 'type',
     width: 110,
     customRender: ({ record }: any) => {
@@ -160,20 +165,16 @@ const columns = [
     }
   },
   {
-    title: 'Tiêu đề',
+    title: 'Title',
     key: 'title',
-    ellipsis: true,    
+    ellipsis: true,
     customRender: ({ record }: any) => {
       if (record.type === 'quiz') {
         return h(
           'a',
           {
-            style: {
-              textDecoration: 'underline', 
-              cursor: 'pointer',
-              color: '#1677ff' 
-            },
-            onClick: () => openQuizDrawer(record),
+            style: { textDecoration: 'underline', cursor: 'pointer', color: '#1677ff' },
+            onClick: () => openQuizDrawer(record)
           },
           record.title
         )
@@ -182,55 +183,42 @@ const columns = [
     }
   },
   {
-    title: 'Thứ tự / Thời lượng',
+    title: 'Order / Duration',
     key: 'order',
     width: 160,
     customRender: ({ record }: any) => {
       if (record.type === 'lesson') return record.order
-      if (record.type === 'quiz') return `${record.duration_minutes ?? 0} phút`
+      if (record.type === 'quiz') return `${record.duration_minutes ?? 0} min`
       return record.order
     }
   },
   {
-    title: 'Hành động',
+    title: 'Actions',
     key: 'action',
     width: 320,
     customRender: ({ record }: any) => {
       if (record.type === 'topic') {
         return h(Space, {}, () => [
-          h(Button, {
-            type: 'link',
-            onClick: () => openCreateLesson(record.id, Number(activeCourseKeys.value[0]))
-          }, () => '+ Lesson'),
-          h(Button, {
-            type: 'link',
-            onClick: () => openCreateQuiz(record)
-          }, () => '+ Quiz'),
-          h(Button, { type: 'link', onClick: () => openEditTopic(record) }, () => 'Sửa'),
-          h(Popconfirm,
-            { title: 'Xoá topic này?', onConfirm: () => removeTopic(record) },
-            { default: () => h(Button, { type: 'link', danger: true }, () => 'Xoá') }
-          )
+          h(Button, { type: 'link', onClick: () => openCreateLesson(record.id, Number(activeCourseKeys.value[0])) }, () => '+ Lesson'),
+          h(Button, { type: 'link', onClick: () => openCreateQuiz(record) }, () => '+ Quiz'),
+          h(Button, { type: 'link', onClick: () => openEditTopic(record) }, () => 'Edit'),
+          h(Popconfirm, { title: 'Delete this topic?', onConfirm: () => removeTopic(record) },
+            { default: () => h(Button, { type: 'link', danger: true }, () => 'Delete') })
         ])
       }
       if (record.type === 'lesson') {
         return h(Space, {}, () => [
-          h(Button, {
-            type: 'link',
-            onClick: () => openCreateQuiz(record)
-          }, () => '+ Quiz'),
-          h(Button, { type: 'link', onClick: () => openEditLesson(record) }, () => 'Sửa'),
-          h(Popconfirm,
-            { title: 'Xoá bài học này?', onConfirm: () => removeLesson(record) },
-            { default: () => h(Button, { type: 'link', danger: true }, () => 'Xoá') })
+          h(Button, { type: 'link', onClick: () => openCreateQuiz(record) }, () => '+ Quiz'),
+          h(Button, { type: 'link', onClick: () => openEditLesson(record) }, () => 'Edit'),
+          h(Popconfirm, { title: 'Delete this lesson?', onConfirm: () => removeLesson(record) },
+            { default: () => h(Button, { type: 'link', danger: true }, () => 'Delete') })
         ])
       }
       if (record.type === 'quiz') {
         return h(Space, {}, () => [
-          h(Button, { type: 'link', onClick: () => openEditQuiz(record) }, () => 'Sửa'),
-          h(Popconfirm,
-            { title: 'Xoá quiz này?', onConfirm: () => removeQuiz(record) },
-            { default: () => h(Button, { type: 'link', danger: true }, () => 'Xoá') })
+          h(Button, { type: 'link', onClick: () => openEditQuiz(record) }, () => 'Edit'),
+          h(Popconfirm, { title: 'Delete this quiz?', onConfirm: () => removeQuiz(record) },
+            { default: () => h(Button, { type: 'link', danger: true }, () => 'Delete') })
         ])
       }
       return null
@@ -272,8 +260,8 @@ const fetchCourses = async () => {
     const res = await courseApi.getCourses({
       page: pagination.current,
       per_page: pagination.pageSize,
+      search: searchQuery.value || undefined
     })
-
     courses.value = res.data
     pagination.total = res.total
     pagination.current = res.current_page
@@ -545,7 +533,7 @@ const onEditedTopic = async (payload?: { id?: number; courseId?: number }) => {
 const removeLesson = async (lessonRow: any) => {
   try {
     await lessonApi.deleteLesson(lessonRow.lesson_id)
-    notification.success({ message: 'Đã xoá Lesson' })
+    notification.success({ message: 'Delete successful' })
     const topicId = findTopicIdOfLesson(lessonRow)
     const cid = Number(activeCourseKeys.value[0])
     if (cid && topicId) {
@@ -560,7 +548,7 @@ const removeLesson = async (lessonRow: any) => {
       await fetchTopicContent(cid, topicId)
     }
   } catch (e: any) {
-    notification.error({ message: e?.message || 'Xoá thất bại' })
+    notification.error({ message: e?.message || 'Delete failed' })
   }
 }
 
@@ -654,13 +642,12 @@ const onEditedQuiz = async ({ lessonId, topicId }: { lessonId?: number; topicId?
 const removeQuiz = async (quizRow: any) => {
   try {
     await quizApi.deleteQuiz(quizRow.quiz_id)
-    notification.success({ message: 'Đã xoá Quiz' })
+    notification.success({ message: 'Delete successful' })
 
     const topicId = findTopicIdOfLesson(quizRow)
     const cid = Number(activeCourseKeys.value[0])
 
     if (cid && topicId) {
-      // Mark topic as not loaded and refresh
       const currentTree = treeByCourse[cid] || []
       treeByCourse[cid] = currentTree.map(node => {
         if (node.type === 'topic' && node.id === topicId) {
@@ -672,7 +659,7 @@ const removeQuiz = async (quizRow: any) => {
       await fetchTopicContent(cid, topicId)
     }
   } catch (e: any) {
-    notification.error({ message: e?.message || 'Xoá Quiz thất bại' })
+    notification.error({ message: e?.message || 'Delete failed' })
   }
 }
 </script>

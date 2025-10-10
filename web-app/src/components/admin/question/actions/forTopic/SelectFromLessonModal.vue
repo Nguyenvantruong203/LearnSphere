@@ -1,6 +1,6 @@
 <template>
-    <a-modal v-model:open="innerOpen" title="Chọn câu hỏi từ Lesson" @ok="handleSave" :confirm-loading="loading"
-        width="800px">
+    <a-modal v-model:open="innerOpen" title="Select Questions from Lesson" ok-text="Add Selected" cancel-text="Cancel"
+        @ok="handleSave" :confirm-loading="loading" width="800px">
         <a-table row-key="id" :columns="columns" :data-source="pool" :loading="loading" :row-selection="rowSelection"
             size="middle" :pagination="{ pageSize: 10 }" />
     </a-modal>
@@ -21,7 +21,7 @@ const emit = defineEmits<{
     (e: 'published'): void
 }>()
 
-// ✅ innerOpen để dùng v-model:open
+// ✅ innerOpen for v-model:open
 const innerOpen = computed({
     get: () => props.open,
     set: (val: boolean) => emit('update:open', val),
@@ -33,9 +33,9 @@ const loading = ref(false)
 
 const columns = [
     { title: '#', key: 'index', customRender: ({ index }: any) => index + 1 },
-    { title: 'Câu hỏi', dataIndex: 'text' },
-    { title: 'Loại', dataIndex: 'type' },
-    { title: 'Điểm', dataIndex: 'weight' },
+    { title: 'Question Text', dataIndex: 'text' },
+    { title: 'Type', dataIndex: 'type' },
+    { title: 'Points', dataIndex: 'weight' },
 ]
 
 const rowSelection = computed(() => ({

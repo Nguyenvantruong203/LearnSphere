@@ -1,59 +1,65 @@
 <template>
   <a-modal
     :open="visible"
-    title="Thêm câu hỏi mới"
-    ok-text="Tạo"
-    cancel-text="Hủy"
+    title="Add New Question"
+    ok-text="Create"
+    cancel-text="Cancel"
     :confirm-loading="submitting"
     @ok="handleSubmit"
     @cancel="$emit('close')"
     destroy-on-close
   >
     <a-form :model="form" layout="vertical">
-      <a-form-item label="Loại câu hỏi" required>
-        <a-select v-model:value="form.type" placeholder="Chọn loại câu hỏi">
-          <a-select-option value="single">Một đáp án</a-select-option>
-          <a-select-option value="multiple">Nhiều đáp án</a-select-option>
-          <a-select-option value="true_false">Đúng / Sai</a-select-option>
-          <a-select-option value="essay">Tự luận</a-select-option>
+      <a-form-item label="Question Type" required>
+        <a-select v-model:value="form.type" placeholder="Select question type">
+          <a-select-option value="single">Single Choice</a-select-option>
+          <a-select-option value="multiple">Multiple Choice</a-select-option>
+          <a-select-option value="true_false">True / False</a-select-option>
+          <a-select-option value="essay">Essay</a-select-option>
         </a-select>
       </a-form-item>
 
-      <a-form-item label="Nội dung câu hỏi" required>
-        <a-textarea v-model:value="form.text" rows="3" />
+      <a-form-item label="Question Text" required>
+        <a-textarea v-model:value="form.text" rows="3" placeholder="Enter question content" />
       </a-form-item>
 
-      <!-- Với single/multiple -->
+      <!-- For single/multiple -->
       <template v-if="['single', 'multiple'].includes(form.type)">
-        <a-form-item label="Các đáp án">
+        <a-form-item label="Answer Options">
           <div
             v-for="([key, label], idx) in Object.entries(form.options)"
             :key="idx"
             class="flex items-center gap-2 mb-2"
           >
-            <a-input v-model:value="form.options[key]" :placeholder="`Đáp án ${key}`" />
+            <a-input v-model:value="form.options[key]" :placeholder="`Option ${key}`" />
             <a-checkbox
               :checked="form.correct_options.includes(key)"
               @change="toggleCorrectOption(key, $event.target.checked)"
             >
-              Đúng
+              Correct
             </a-checkbox>
           </div>
         </a-form-item>
       </template>
 
-      <!-- Với true_false -->
+      <!-- For true/false -->
       <template v-else-if="form.type === 'true_false'">
-        <a-form-item label="Đáp án đúng">
+        <a-form-item label="Correct Answer">
           <a-radio-group v-model:value="form.correct_options[0]">
-            <a-radio value="A">Đúng</a-radio>
-            <a-radio value="B">Sai</a-radio>
+            <a-radio value="A">True</a-radio>
+            <a-radio value="B">False</a-radio>
           </a-radio-group>
         </a-form-item>
       </template>
 
-      <a-form-item label="Điểm số">
-        <a-input-number v-model:value="form.weight" :min="1" :step="0.5" style="width: 100%" />
+      <a-form-item label="Points">
+        <a-input-number
+          v-model:value="form.weight"
+          :min="1"
+          :step="0.5"
+          style="width: 100%"
+          placeholder="Enter points"
+        />
       </a-form-item>
     </a-form>
   </a-modal>
@@ -89,7 +95,7 @@ const form = ref({
   weight: 1,
 })
 
-// reset mỗi khi mở
+// Reset form each time modal opens
 watch(
   () => props.visible,
   (val) => {

@@ -1,15 +1,17 @@
 <template>
-  <section class="py-24 bg-gradient-to-br from-gray-50 to-gray-100">
+  <section class="pt-32 pb-20">
     <div class="container mx-auto px-6 text-center">
       <div v-motion
         class="mb-16"
         :initial="{ opacity: 0, y: 40 }"
         :enter="{ opacity: 1, y: 0, transition: { duration: 0.8 } }">
+        
         <h2 class="text-4xl lg:text-5xl font-bold text-[#2F327D] mb-6">
-          Phần mềm đám mây tất cả trong một
+          The All-in-One Cloud Learning Platform
         </h2>
         <p class="text-xl text-[#696984] max-w-4xl mx-auto leading-relaxed">
-          LearnSphere là bộ phần mềm trực tuyến mạnh mẽ kết hợp tất cả các công cụ cần thiết để vận hành một trường học hoặc văn phòng thành công.
+          LearnSphere brings together every tool you need to build, sell, and manage online courses — 
+          from video lessons and quizzes to payments, analytics, and community engagement — all in one secure platform.
         </p>
       </div>
 
@@ -44,22 +46,25 @@ import { ref } from 'vue'
 
 const features = ref([
   {
-    title: 'Thanh toán & Hóa đơn trực tuyến',
-    description: 'Kiểm soát đơn giản và bảo mật các giao dịch tài chính và pháp lý của tổ chức bạn. Gửi hóa đơn và hợp đồng tùy chỉnh.',
-    icon: 'fas fa-file-invoice-dollar',
-    bgColor: 'bg-gradient-to-br from-blue-500 to-blue-600'
+    title: 'Smart Course Management',
+    description:
+      'Easily create, organize, and update your online courses with videos, quizzes, flashcards, and certificates — all synchronized in one place.',
+    icon: 'fas fa-graduation-cap',
+    bgColor: 'bg-gradient-to-br from-blue-500 to-blue-600',
   },
   {
-    title: 'Lập lịch & Theo dõi điểm danh dễ dàng',
-    description: 'Lên lịch và đặt phòng học tại một hoặc nhiều cơ sở. Giữ hồ sơ chi tiết về việc điểm danh của học sinh.',
-    icon: 'fas fa-calendar-check',
-    bgColor: 'bg-gradient-to-br from-red-500 to-red-600'
+    title: 'Seamless Payments & Enrollment',
+    description:
+      'Accept secure payments, manage orders, and provide instant access to paid or free courses with automated enrollment tracking.',
+    icon: 'fas fa-credit-card',
+    bgColor: 'bg-gradient-to-br from-teal-500 to-cyan-600',
   },
   {
-    title: 'Theo dõi khách hàng',
-    description: 'Tự động hóa và theo dõi email gửi đến cá nhân hoặc nhóm. Hệ thống tích hợp của LearnSphere giúp tổ chức của bạn có trật tự.',
-    icon: 'fas fa-users-cog',
-    bgColor: 'bg-gradient-to-br from-green-500 to-green-600'
-  }
-]);
+    title: 'Interactive Learning Community',
+    description:
+      'Enable learners to chat with instructors, discuss lessons, and share experiences through integrated messaging and community blogs.',
+    icon: 'fas fa-comments',
+    bgColor: 'bg-gradient-to-br from-purple-500 to-indigo-600',
+  },
+])
 </script>

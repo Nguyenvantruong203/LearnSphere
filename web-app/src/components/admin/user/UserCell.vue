@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import type { User } from '@/types/user'
+import type { User } from '@/types/User'
 import { UserOutlined } from '@ant-design/icons-vue'
 
 interface Props {

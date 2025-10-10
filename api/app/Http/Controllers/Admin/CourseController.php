@@ -12,15 +12,6 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 class CourseController extends Controller
 {
     use AuthorizesRequests;
-    /**
-     * @author Truong
-     */
-    /**
-     * Display a listing of the resource.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
     // GET /admin/courses
     public function index(Request $request)
     {
@@ -33,7 +24,6 @@ class CourseController extends Controller
             $q->where('title', 'like', "%{$kw}%");
         }
 
-        // Phân trang đồng bộ per_page
         $courses = $q->paginate($request->integer('per_page', 10));
 
         return response()->json($courses);

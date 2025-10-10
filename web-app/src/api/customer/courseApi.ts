@@ -10,10 +10,10 @@ export const courseApi = {
   },
 
   async getCourse(courseId: string): Promise<Course> {
-    const response =  await httpClient(`/api/client/courses/${courseId}`, {
+    const response = await httpClient(`/api/client/courses/${courseId}`, {
       method: 'GET',
     })
-    return response.data || response 
+    return response.data || response
   },
 
   async getPopularCourses(limit: number = 6): Promise<Course[]> {
@@ -32,7 +32,9 @@ export const courseApi = {
     return response
   },
   async checkAccess(courseId: number) {
-    const response = await httpClient(`/api/client/courses/${courseId}/check-access`, { method: 'GET' })
+    const response = await httpClient(`/api/client/courses/${courseId}/check-access`, {
+      method: 'GET',
+    })
     return response
   },
 
@@ -41,5 +43,12 @@ export const courseApi = {
       method: 'GET',
     })
     return response.data || response
-  }
+  },
+  /** 🟢 Ghi danh vào khóa học (dùng cho free course) */
+  async enroll(courseId: number) {
+    const response = await httpClient(`/api/client/courses/${courseId}/enroll`, {
+      method: 'POST',
+    })
+    return response.data || response
+  },
 }

@@ -4,8 +4,9 @@
             <a-input-search placeholder="Tìm kiếm theo mã, mô tả..." class="w-72" v-model:value="searchQuery"
                 @search="fetchCoupons"></a-input-search>
             <a-button type="primary" @click="showCreateModal">
-                <PlusOutlined />
-                Thêm mã giảm giá
+                <span class="flex justify-center items-center">
+                    <PlusOutlined /> Thêm mã giảm giá
+                </span>
             </a-button>
         </div>
 
@@ -107,7 +108,7 @@
 import { ref, onMounted, reactive, watch } from 'vue'
 import { couponApi } from '@/api/admin/couponApi'
 import type { Coupon, GetCouponsParams } from '@/types/Coupon'
-import FormatDate from './FormatDate.vue'
+import FormatDate from '@/components/common/FormatDate.vue'
 import CreateCouponModal from './actions/CreateCouponModal.vue'
 import EditCouponModal from './actions/EditCouponModal.vue'
 import DeleteCouponModal from './actions/DeleteCouponModal.vue'

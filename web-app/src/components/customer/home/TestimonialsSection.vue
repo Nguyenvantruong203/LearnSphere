@@ -5,19 +5,20 @@
         class="text-center mb-16"
         :initial="{ opacity: 0, y: 40 }"
         :enter="{ opacity: 1, y: 0, transition: { duration: 0.8 } }">
+        
         <p class="text-[#525596] font-semibold tracking-widest mb-4 text-sm uppercase">
-          ĐÁNH GIÁ KHÁCH HÀNG
+          CUSTOMER REVIEWS
         </p>
         <h2 class="text-4xl lg:text-5xl font-bold text-[#2F327D] mb-6">
-          Họ nói gì về chúng tôi?
+          What do they say about us?
         </h2>
         <p class="text-lg text-[#696984] max-w-3xl mx-auto leading-relaxed">
-          LearnSphere đã nhận được hơn 100k đánh giá tích cực từ người dùng trên khắp thế giới.
+          LearnSphere has received positive feedback from users around the world.
         </p>
       </div>
 
       <div class="relative max-w-6xl mx-auto">
-        <!-- Main testimonial card -->
+        <!-- 🔹 Thẻ đánh giá chính -->
         <div v-motion
           :initial="{ opacity: 0, scale: 0.9 }"
           :enter="{ opacity: 1, scale: 1, transition: { delay: 0.2, duration: 0.8 } }"
@@ -30,8 +31,8 @@
               <div class="relative z-20 p-8">
                 <div class="aspect-square bg-gradient-to-br from-teal-400 to-cyan-500 rounded-2xl flex items-center justify-center">
                   <div class="text-center text-white">
-                    <div class="text-6xl mb-4">👩‍💼</div>
-                    <p class="font-semibold">Gloria Rose</p>
+                    <div class="text-6xl mb-4">{{ currentTestimonial.emoji }}</div>
+                    <p class="font-semibold">{{ currentTestimonial.name }}</p>
                   </div>
                 </div>
               </div>
@@ -46,29 +47,31 @@
               
               <!-- Testimonial text -->
               <blockquote class="text-xl text-[#5F5F7E] leading-relaxed mb-8 font-light">
-                "Cảm ơn rất nhiều vì sự giúp đỡ của bạn. Đây chính xác là những gì tôi đang tìm kiếm. Bạn sẽ không hối hận về điều này. Nó thực sự giúp tôi tiết kiệm thời gian và công sức. LearnSphere chính xác là những gì doanh nghiệp của chúng tôi đang thiếu."
+                "{{ currentTestimonial.content }}"
               </blockquote>
               
               <!-- Author info -->
               <div class="flex items-center justify-between">
                 <div>
-                  <h4 class="text-2xl font-bold text-[#5F5F7E] mb-2">Gloria Rose</h4>
-                  <p class="text-[#80819A] font-medium">Giám đốc Marketing, TechCorp</p>
+                  <h4 class="text-2xl font-bold text-[#5F5F7E] mb-2">{{ currentTestimonial.name }}</h4>
+                  <p class="text-[#80819A] font-medium">
+                    {{ currentTestimonial.position }}, {{ currentTestimonial.company }}
+                  </p>
                 </div>
                 
                 <!-- Rating and reviews -->
                 <div class="text-right">
                   <div class="flex items-center justify-end space-x-1 mb-2">
-                    <span v-for="i in 5" :key="i" class="text-yellow-400 text-xl">★</span>
+                    <span v-for="i in currentTestimonial.rating" :key="i" class="text-yellow-400 text-xl">★</span>
                   </div>
-                  <p class="text-[#80819A] text-sm">12 đánh giá trên Yelp</p>
+                  <p class="text-[#80819A] text-sm">{{ currentTestimonial.reviews }} reviews on Yelp</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
         
-        <!-- Navigation arrows -->
+        <!-- 🔹 Nút chuyển slide -->
         <button
           @click="previousTestimonial"
           class="absolute top-1/2 -translate-y-1/2 -left-6 w-12 h-12 bg-white rounded-full shadow-xl border border-gray-100 flex items-center justify-center text-xl text-[#49BBBD] hover:bg-[#49BBBD] hover:text-white transition-all duration-300 group">
@@ -81,7 +84,7 @@
           <i class="fas fa-chevron-right group-hover:translate-x-0.5 transition-transform"></i>
         </button>
         
-        <!-- Dots indicator -->
+        <!-- 🔹 Dấu chấm điều hướng -->
         <div class="flex justify-center mt-8 space-x-3">
           <button 
             v-for="(testimonial, index) in testimonials" 
@@ -96,45 +99,16 @@
           </button>
         </div>
       </div>
-      
-      <!-- Stats cards -->
-      <div v-motion
-        :initial="{ opacity: 0, y: 50 }"
-        :enter="{ opacity: 1, y: 0, transition: { delay: 0.6, duration: 0.8 } }"
-        class="grid md:grid-cols-3 gap-8 mt-20">
-        
-        <div class="text-center group">
-          <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-            <i class="fas fa-users text-white text-2xl"></i>
-          </div>
-          <h3 class="text-3xl font-bold text-[#2F327D] mb-2">100K+</h3>
-          <p class="text-[#696984]">Người dùng hài lòng</p>
-        </div>
-        
-        <div class="text-center group">
-          <div class="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-            <i class="fas fa-star text-white text-2xl"></i>
-          </div>
-          <h3 class="text-3xl font-bold text-[#2F327D] mb-2">4.9/5</h3>
-          <p class="text-[#696984]">Đánh giá trung bình</p>
-        </div>
-        
-        <div class="text-center group">
-          <div class="w-20 h-20 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-            <i class="fas fa-award text-white text-2xl"></i>
-          </div>
-          <h3 class="text-3xl font-bold text-[#2F327D] mb-2">50+</h3>
-          <p class="text-[#696984]">Giải thưởng nhận được</p>
-        </div>
-      </div>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { notification } from 'ant-design-vue'
+import { ref, computed } from 'vue'
 
+// ==========================
+// ✅ Dữ liệu đánh giá khách hàng
+// ==========================
 interface Testimonial {
   name: string
   position: string
@@ -150,38 +124,44 @@ const currentIndex = ref(0)
 const testimonials = ref<Testimonial[]>([
   {
     name: 'Gloria Rose',
-    position: 'Giám đốc Marketing',
+    position: 'Marketing Director',
     company: 'TechCorp',
-    content: 'Cảm ơn rất nhiều vì sự giúp đỡ của bạn. Đây chính xác là những gì tôi đang tìm kiếm. Bạn sẽ không hối hận về điều này. Nó thực sự giúp tôi tiết kiệm thời gian và công sức. LearnSphere chính xác là những gì doanh nghiệp của chúng tôi đang thiếu.',
+    content:
+      'Thank you so much for your help! This is exactly what I was looking for. It really saves me time and effort. LearnSphere is exactly what our business was missing.',
     rating: 5,
     reviews: 12,
-    emoji: '👩‍💼'
+    emoji: '👩‍💼',
   },
   {
     name: 'John Smith',
     position: 'CEO',
     company: 'StartupXYZ',
-    content: 'LearnSphere đã thay đổi cách chúng tôi đào tạo nhân viên. Giao diện thân thiện, tính năng phong phú và hỗ trợ tuyệt vời. Tôi khuyên dùng cho mọi doanh nghiệp muốn cải thiện chất lượng đào tạo.',
+    content:
+      'LearnSphere has transformed the way we train our team. The platform is easy to use, packed with useful features, and the support is outstanding. Highly recommended for anyone running online training.',
     rating: 5,
     reviews: 28,
-    emoji: '👨‍💻'
+    emoji: '👨‍💻',
   },
   {
     name: 'Sarah Johnson',
-    position: 'Trưởng phòng HR',
+    position: 'HR Manager',
     company: 'GlobalCorp',
-    content: 'Tôi đã thử nhiều nền tảng học trực tuyến, nhưng LearnSphere là tốt nhất. Khả năng theo dõi tiến độ học viên và tính năng báo cáo chi tiết giúp chúng tôi quản lý đào tạo hiệu quả hơn rất nhiều.',
+    content:
+      'I have tried many LMS platforms, but LearnSphere is by far the best. The progress tracking and detailed reporting features help us manage employee training more effectively than ever.',
     rating: 5,
     reviews: 45,
-    emoji: '👩‍🎓'
-  }
+    emoji: '👩‍🎓',
+  },
 ])
+
+const currentTestimonial = computed(() => testimonials.value[currentIndex.value])
 
 const nextTestimonial = () => {
   currentIndex.value = (currentIndex.value + 1) % testimonials.value.length
 }
 
 const previousTestimonial = () => {
-  currentIndex.value = currentIndex.value === 0 ? testimonials.value.length - 1 : currentIndex.value - 1
+  currentIndex.value =
+    currentIndex.value === 0 ? testimonials.value.length - 1 : currentIndex.value - 1
 }
 </script>

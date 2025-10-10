@@ -27,7 +27,7 @@
             </div>
             <div class="flex justify-between">
               <span class="text-gray-600">Số tiền:</span>
-              <span class="font-medium text-green-600">{{ formatPrice(paymentResult.data?.amount || 0) }}</span>
+              <FormatPrice :price="paymentResult.data?.amount || 0" class="font-medium text-green-600" />
             </div>
             <div v-if="paymentResult.data?.transactionNo" class="flex justify-between">
               <span class="text-gray-600">Mã GD VNPay:</span>
@@ -98,9 +98,6 @@ const route = useRoute()
 const loading = ref(true)
 const paymentResult = ref<PaymentReturnResponse | null>(null)
 const firstPaidCourseId = ref<number | null>(null)
-
-const formatPrice = (price: number) =>
-  new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)
 
 const goToCourses = () => {
   localStorage.removeItem('cart_data')

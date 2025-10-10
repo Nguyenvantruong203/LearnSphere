@@ -85,7 +85,6 @@ export interface MappedCourse {
   title: string
   description?: string
   price: string
-  originalPrice?: string
   thumbnail_url: string
   category: string
   duration: string

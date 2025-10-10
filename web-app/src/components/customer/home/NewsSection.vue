@@ -79,10 +79,6 @@
                   <i class="fas fa-calendar-alt"></i>
                   <span>{{ article.date }}</span>
                 </span>
-                <span class="flex items-center space-x-1">
-                  <i class="fas fa-clock"></i>
-                  <span>{{ article.readTime }} phút đọc</span>
-                </span>
               </div>
             </div>
           </div>
@@ -95,10 +91,10 @@
         :enter="{ opacity: 1, y: 0, transition: { delay: 0.8, duration: 0.8 } }"
         class="text-center mt-16">
         <button class="group px-10 py-4 bg-gradient-to-r from-[#49BBBD] to-cyan-500 text-white rounded-full font-semibold text-lg hover:from-[#2F327D] hover:to-[#49BBBD] transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl">
-          <span class="flex items-center space-x-2">
+          <router-link to="/blog" class="flex items-center space-x-2">
             <span>Xem tất cả tin tức</span>
             <i class="fas fa-newspaper group-hover:rotate-12 transition-transform duration-300"></i>
-          </span>
+          </router-link>
         </button>
       </div>
     </div>
@@ -112,7 +108,6 @@ interface Article {
   title: string
   category: string
   date: string
-  readTime: number
   icon: string
   bgColor: string
 }
@@ -122,7 +117,6 @@ const articles = ref<Article[]>([
     title: 'Class Technologies Inc. hoàn thành vòng gọi vốn Series A trị giá 30 triệu đô la',
     category: 'BÁO CHÍ',
     date: '15 Tháng 9, 2024',
-    readTime: 5,
     icon: 'fas fa-dollar-sign',
     bgColor: 'bg-gradient-to-br from-green-400 to-emerald-500'
   },
@@ -130,7 +124,6 @@ const articles = ref<Article[]>([
     title: 'Các nhà đầu tư sớm nhất của Zoom đang đầu tư hàng triệu vào một Zoom tốt hơn cho trường học',
     category: 'TIN TỨC',
     date: '10 Tháng 9, 2024',
-    readTime: 7,
     icon: 'fas fa-video',
     bgColor: 'bg-gradient-to-br from-blue-400 to-cyan-500'
   },
@@ -138,7 +131,6 @@ const articles = ref<Article[]>([
     title: 'Cựu CEO Blackboard huy động 16 triệu đô la để đưa tính năng LMS vào lớp học Zoom',
     category: 'TIN TỨC',
     date: '5 Tháng 9, 2024',
-    readTime: 6,
     icon: 'fas fa-chalkboard-teacher',
     bgColor: 'bg-gradient-to-br from-purple-400 to-pink-500'
   },
@@ -146,7 +138,6 @@ const articles = ref<Article[]>([
     title: 'LearnSphere công bố tính năng AI mới giúp cá nhân hóa trải nghiệm học tập',
     category: 'CÔNG NGHỆ',
     date: '1 Tháng 9, 2024',
-    readTime: 4,
     icon: 'fas fa-robot',
     bgColor: 'bg-gradient-to-br from-orange-400 to-red-500'
   }

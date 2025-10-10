@@ -1,5 +1,5 @@
 <template>
-  <div class="p-14 w-full text-base">
+  <div class="w-full text-base">
     <Form layout="vertical" :model="formData" @finish="handleFinish" class="space-y-1">
       <Alert v-if="error" :message="error" type="error" show-icon class="mb-4" />
 

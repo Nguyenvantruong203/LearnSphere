@@ -1,11 +1,14 @@
 <template>
-  <div class="w-screen h-screen grid lg:grid-cols-2">
-    <div class="relative hidden lg:block p-8">
-      <img :src="loginImageUrl" class="rounded-am w-full h-full object-cover" />
-    </div>
-
-    <div class="flex items-center justify-center p-6">
-      <slot />
+  <div class="relative w-screen h-screen">
+    <img
+      :src="loginImageUrl"
+      alt="Login Background"
+      class="absolute inset-0 w-full h-full object-cover"
+    />
+    <div class="absolute inset-0 flex items-center justify-center">
+      <div class="bg-white/95 rounded-xl p-8 shadow-lg w-full max-w-md">
+        <slot />
+      </div>
     </div>
   </div>
 </template>

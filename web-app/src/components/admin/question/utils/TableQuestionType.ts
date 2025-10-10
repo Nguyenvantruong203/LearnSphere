@@ -1,26 +1,23 @@
-// Màu hiển thị cho từng loại câu hỏi
 export const getQuestionTypeColor = (type: string): string => ({
   single: 'blue',
-  multiple: 'green',
+  multiple_choice: 'green',
   essay: 'orange',
   true_false: 'purple',
   fill_blank: 'cyan',
 }[type] || 'default')
 
-// Icon cho từng loại câu hỏi
 export const getQuestionTypeIcon = (type: string): string => ({
-  single: '🔘',
-  multiple: '☑️',
-  essay: '📝',
-  true_false: '✅',
-  fill_blank: '📄',
+  single: '🔘',          // Single choice
+  multiple_choice: '☑️', // Multiple choice
+  essay: '📝',           // Essay / writing
+  true_false: '✅',      // True/False
+  fill_blank: '📄',      // Fill in the blanks
 }[type] || '❓')
 
-// Nhãn (label) hiển thị cho từng loại câu hỏi
 export const getQuestionTypeLabel = (type: string): string => ({
-  single: 'Một đáp án',
-  multiple: 'Nhiều đáp án',
-  essay: 'Tự luận',
-  true_false: 'Đúng/Sai',
-  fill_blank: 'Điền khuyết',
-}[type] || 'Không xác định')
+  single: 'Single Choice',
+  multiple_choice: 'Multiple Choice',
+  essay: 'Essay',
+  true_false: 'True / False',
+  fill_blank: 'Fill in the Blank',
+}[type] || 'Unknown Type')

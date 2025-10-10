@@ -19,8 +19,8 @@
         <div class="hidden md:block">
           <div class="flex items-center space-x-1">
             <router-link to="/"
-              class="group relative px-4 py-2 font-semibold text-base transition-all duration-300 rounded-xl"
-              :class="isActive('/') ? 'text-teal-60' : 'text-[#2F327D] hover:text-teal-600 hover:bg-gradient-to-r hover:from-teal-50 hover:to-cyan-50'">
+              class="group relative px-4 py-2 font-medium text-base transition-all duration-300 rounded-xl"
+              :class="isActive('/') ? 'text-teal-600' : 'text-[#696984] hover:text-teal-600 hover:bg-gradient-to-r hover:from-teal-50 hover:to-cyan-50'">
               Home
             </router-link>
 
@@ -106,7 +106,7 @@
 
                       <div class="flex-1 min-w-0">
                         <h4 class="text-sm font-medium text-gray-900 truncate">{{ item.title }}</h4>
-                        <p class="text-sm text-teal-600 font-semibold mt-1">{{ formatPrice(item.price) }}</p>
+                        <FormatPrice :price="item.price" class="text-sm text-teal-600 font-semibold mt-1" />
                       </div>
 
                       <button @click="removeFromCart(item.id)"
@@ -121,7 +121,7 @@
                 <div v-if="cartItems.length > 0" class="px-6 py-4 bg-gray-50 border-t border-gray-100">
                   <div class="flex items-center justify-between mb-3">
                     <span class="text-sm font-medium text-gray-600">Tổng cộng:</span>
-                    <span class="text-lg font-bold text-teal-600">{{ formatPrice(cartTotal) }}</span>
+                    <FormatPrice :price="cartTotal" class="text-lg font-bold text-teal-600" />
                   </div>
                   <router-link to="/cart"
                     class="block w-full bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-center font-semibold py-3 rounded-xl hover:from-teal-600 hover:to-cyan-600 transition-all duration-300 transform hover:scale-105">
@@ -283,14 +283,6 @@ const cartItemsCount = computed(() => cartItems.value.length)
 const cartTotal = computed(() => {
   return cartItems.value.reduce((sum, item) => sum + (item.price || 0), 0)
 })
-
-// Format price
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND'
-  }).format(price)
-}
 
 // Remove item from cart
 const removeFromCart = (courseId: number) => {

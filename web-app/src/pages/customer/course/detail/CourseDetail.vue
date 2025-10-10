@@ -19,9 +19,7 @@
         <div v-else-if="course">
             <HeroSection :course="course" />
             <RatingSection />
-            <MarketingArticles />
             <FeatureSection />
-            <PromotionalCards />
         </div>
     </LayoutHomepage>
 </template>
@@ -33,9 +31,7 @@ import { notification } from 'ant-design-vue'
 import LayoutHomepage from '@/pages/customer/layout/layoutHomepage.vue'
 import HeroSection from '@/components/customer/courseDetail/HeroSection.vue'
 import RatingSection from '@/components/customer/courseDetail/RatingSection.vue'
-import MarketingArticles from '@/components/customer/courseDetail/MarketingArticles.vue'
 import FeatureSection from '@/components/customer/courseDetail/FeatureSection.vue'
-import PromotionalCards from '@/components/customer/courseDetail/PromotionalCards.vue'
 import { courseApi } from '@/api/customer/courseApi'
 import type { Course } from '@/types/Course'
 

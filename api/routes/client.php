@@ -26,7 +26,7 @@ Route::get('/client/courses/{id}', [CourseController::class, 'show']);
 
 Route::middleware('auth:sanctum')->prefix('client')->group(function () {
 
-
+    Route::post('/courses/{id}/enroll', [CourseController::class, 'enroll']);
     Route::get('/courses/{id}/check-access', [CourseController::class, 'checkAccess']);
     Route::get('/my-courses', [CourseController::class, 'myCourses']);
 

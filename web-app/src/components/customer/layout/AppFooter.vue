@@ -18,7 +18,7 @@
               <img src="@/assets/images/logoFooter.png" alt="LearnSphere Logo" class="h-12 w-auto" />
             </div>
             <p class="text-gray-300 leading-relaxed">
-              Nền tảng học trực tuyến hàng đầu Việt Nam, mang đến trải nghiệm học tập hiện đại và hiệu quả cho mọi người.
+              Vietnam’s leading online learning platform, delivering a modern and effective learning experience for everyone.
             </p>
             <!-- Social Media -->
             <div class="flex space-x-4">
@@ -39,60 +39,60 @@
 
           <!-- Quick Links -->
           <div class="space-y-6">
-            <h4 class="text-xl font-bold text-white mb-4">Liên kết nhanh</h4>
+            <h4 class="text-xl font-bold text-white mb-4">Quick Links</h4>
             <div class="space-y-3">
               <a href="/" class="block text-gray-300 hover:text-teal-400 transition-colors duration-300 hover:translate-x-1 transform">
-                <i class="fas fa-home mr-2"></i>Trang chủ
+                <i class="fas fa-home mr-2"></i>Home
               </a>
               <a href="/courses" class="block text-gray-300 hover:text-teal-400 transition-colors duration-300 hover:translate-x-1 transform">
-                <i class="fas fa-graduation-cap mr-2"></i>Khóa học
+                <i class="fas fa-graduation-cap mr-2"></i>Courses
               </a>
               <a href="/blog" class="block text-gray-300 hover:text-teal-400 transition-colors duration-300 hover:translate-x-1 transform">
                 <i class="fas fa-blog mr-2"></i>Blog
               </a>
               <a href="/about" class="block text-gray-300 hover:text-teal-400 transition-colors duration-300 hover:translate-x-1 transform">
-                <i class="fas fa-info-circle mr-2"></i>Về chúng tôi
+                <i class="fas fa-info-circle mr-2"></i>About Us
               </a>
-              <a href="/contact" class="block text-gray-300 hover:text-teal-400 transition-colors duration-300 hover:translate-x-1 transform">
-                <i class="fas fa-envelope mr-2"></i>Liên hệ
+              <a href="" class="block text-gray-300 hover:text-teal-400 transition-colors duration-300 hover:translate-x-1 transform">
+                <i class="fas fa-envelope mr-2"></i>Contact
               </a>
             </div>
           </div>
 
           <!-- Categories -->
           <div class="space-y-6">
-            <h4 class="text-xl font-bold text-white mb-4">Danh mục khóa học</h4>
+            <h4 class="text-xl font-bold text-white mb-4">Course Categories</h4>
             <div class="space-y-3">
               <a href="#" class="block text-gray-300 hover:text-teal-400 transition-colors duration-300 hover:translate-x-1 transform">
-                <i class="fas fa-code mr-2"></i>Lập trình
+                <i class="fas fa-code mr-2"></i>Programming
               </a>
               <a href="#" class="block text-gray-300 hover:text-teal-400 transition-colors duration-300 hover:translate-x-1 transform">
-                <i class="fas fa-paint-brush mr-2"></i>Thiết kế
+                <i class="fas fa-paint-brush mr-2"></i>Design
               </a>
               <a href="#" class="block text-gray-300 hover:text-teal-400 transition-colors duration-300 hover:translate-x-1 transform">
                 <i class="fas fa-chart-line mr-2"></i>Marketing
               </a>
               <a href="#" class="block text-gray-300 hover:text-teal-400 transition-colors duration-300 hover:translate-x-1 transform">
-                <i class="fas fa-briefcase mr-2"></i>Kinh doanh
+                <i class="fas fa-briefcase mr-2"></i>Business
               </a>
               <a href="#" class="block text-gray-300 hover:text-teal-400 transition-colors duration-300 hover:translate-x-1 transform">
-                <i class="fas fa-camera mr-2"></i>Nhiếp ảnh
+                <i class="fas fa-camera mr-2"></i>Photography
               </a>
             </div>
           </div>
 
           <!-- Newsletter -->
           <div class="space-y-6">
-            <h4 class="text-xl font-bold text-white mb-4">Đăng ký nhận tin</h4>
+            <h4 class="text-xl font-bold text-white mb-4">Subscribe to Newsletter</h4>
             <p class="text-gray-300 leading-relaxed">
-              Nhận thông tin về các khóa học mới và ưu đãi đặc biệt qua email
+              Get updates about new courses and exclusive offers straight to your inbox.
             </p>
             
             <div class="relative">
               <input 
                 v-model="email" 
                 type="email" 
-                placeholder="Nhập email của bạn"
+                placeholder="Enter your email"
                 class="w-full px-4 py-3 bg-white/10 backdrop-blur-sm text-white placeholder-gray-400 rounded-xl border border-white/20 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all duration-300"
               />
               <button 
@@ -107,7 +107,7 @@
             <div class="space-y-3 pt-4">
               <div class="flex items-center space-x-3 text-gray-300">
                 <i class="fas fa-map-marker-alt text-teal-400"></i>
-                <span class="text-sm">123 Nguyễn Văn Cừ, Q.5, TP.HCM</span>
+                <span class="text-sm">123 Nguyen Van Cu, District 5, Ho Chi Minh City</span>
               </div>
               <div class="flex items-center space-x-3 text-gray-300">
                 <i class="fas fa-phone text-teal-400"></i>
@@ -125,19 +125,19 @@
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 py-12 border-t border-white/10">
           <div class="text-center group">
             <div class="text-3xl font-bold text-teal-400 mb-2 group-hover:scale-110 transition-transform duration-300">50K+</div>
-            <div class="text-gray-300 text-sm">Học viên</div>
+            <div class="text-gray-300 text-sm">Students</div>
           </div>
           <div class="text-center group">
             <div class="text-3xl font-bold text-cyan-400 mb-2 group-hover:scale-110 transition-transform duration-300">1000+</div>
-            <div class="text-gray-300 text-sm">Khóa học</div>
+            <div class="text-gray-300 text-sm">Courses</div>
           </div>
           <div class="text-center group">
             <div class="text-3xl font-bold text-purple-400 mb-2 group-hover:scale-110 transition-transform duration-300">200+</div>
-            <div class="text-gray-300 text-sm">Giảng viên</div>
+            <div class="text-gray-300 text-sm">Instructors</div>
           </div>
           <div class="text-center group">
             <div class="text-3xl font-bold text-pink-400 mb-2 group-hover:scale-110 transition-transform duration-300">98%</div>
-            <div class="text-gray-300 text-sm">Hài lòng</div>
+            <div class="text-gray-300 text-sm">Satisfaction</div>
           </div>
         </div>
 
@@ -146,25 +146,25 @@
           <div class="flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0">
             <!-- Copyright -->
             <p class="text-gray-400 text-sm">
-              © 2024 LearnSphere. Tất cả quyền được bảo lưu.
+              © 2024 LearnSphere. All rights reserved.
             </p>
 
             <!-- Legal Links -->
             <div class="flex flex-wrap justify-center items-center space-x-6 text-sm">
               <a href="#" class="text-gray-400 hover:text-teal-400 transition-colors duration-300">
-                Chính sách bảo mật
+                Privacy Policy
               </a>
               <span class="text-gray-600">•</span>
               <a href="#" class="text-gray-400 hover:text-teal-400 transition-colors duration-300">
-                Điều khoản sử dụng
+                Terms of Use
               </a>
               <span class="text-gray-600">•</span>
               <a href="#" class="text-gray-400 hover:text-teal-400 transition-colors duration-300">
-                Cơ hội nghề nghiệp
+                Careers
               </a>
               <span class="text-gray-600">•</span>
               <a href="#" class="text-gray-400 hover:text-teal-400 transition-colors duration-300">
-                Hỗ trợ
+                Support
               </a>
             </div>
 
@@ -172,7 +172,7 @@
             <div class="flex items-center space-x-4">
               <div class="flex items-center space-x-2 bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full">
                 <i class="fas fa-shield-alt text-green-400"></i>
-                <span class="text-xs text-gray-300">Chứng nhận ISO</span>
+                <span class="text-xs text-gray-300">ISO Certified</span>
               </div>
               <div class="flex items-center space-x-2 bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full">
                 <i class="fas fa-award text-yellow-400"></i>
@@ -208,18 +208,15 @@ const emit = defineEmits<{
 
 function subscribe() {
   if (email.value.trim()) {
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email.value)) {
-      // Show error notification here
       console.error('Invalid email format')
       return
     }
-    
+
     emit('subscribe', email.value)
     email.value = ''
-    
-    // Show success notification
+
     console.log('Successfully subscribed!')
   }
 }

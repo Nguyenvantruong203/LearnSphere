@@ -1,12 +1,30 @@
 <template>
   <LayoutHomepage>
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 mb-12 relative z-10">
-      <CourseSearchBar @search="handleSearch" />
-    </div>
+    <div class="relative bg-gradient-to-br from-indigo-50 via-blue-50 to-violet-100 overflow-hidden">
+      <!-- Background gradient -->
+      <div class="absolute inset-0 opacity-10">
+        <div class="absolute left-20 w-40 h-40 bg-gradient-to-r from-indigo-400 to-blue-400 rounded-full blur-3xl"></div>
+        <div
+          class="absolute bottom-20 right-20 w-32 h-32 bg-gradient-to-r from-violet-400 to-purple-400 rounded-full blur-3xl">
+        </div>
+        <div
+          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-sky-300 to-indigo-300 rounded-full blur-3xl opacity-5">
+        </div>
+      </div>
 
-    <CourseList ref="courseList" :title="isSearching ? 'Kết quả tìm kiếm' : 'Tất cả khóa học'" :subtitle="isSearching && currentSearchPayload?.searchText ?
-      searchResults.total + ' kết quả cho ' + currentSearchPayload.searchText : ''"
-      :filters="isSearching ? currentSearchPayload?.filters : {}" emptyText="Không tìm thấy khóa học" />
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 mb-12 relative z-10">
+        <CourseSearchBar @search="handleSearch" />
+      </div>
+
+      <CourseList
+        :title="isSearching ? 'Search Results' : 'All Courses'"
+        :subtitle="isSearching && searchResults.total ? `${searchResults.total} results` : ''"
+        :courses="searchResults.data"
+        :total="searchResults.total"
+        :loading="loading"
+        emptyText="No courses found"
+      />
+    </div>
 
     <CategorySection />
     <CourseSection />
@@ -22,89 +40,66 @@ import CourseSection from '@/components/customer/course/CourseSection.vue'
 import CourseSearchBar from '@/components/customer/search/CourseSearchBar.vue'
 import CourseList from '@/components/customer/course/CourseList.vue'
 import { courseApi } from '@/api/customer/courseApi'
-import type { CourseSearchPayload, CourseSearchParams } from '@/types/Course'
-import type { Course, PaginationCourse } from '@/types/Course'
+import type { CourseSearchPayload, Course, PaginationCourse } from '@/types/Course'
 
 const loading = ref(false)
 const isSearching = ref(false)
-const currentPage = ref(1)
 const currentSearchPayload = ref<CourseSearchPayload | null>(null)
 
 const searchResults = reactive<PaginationCourse<Course>>({
   current_page: 1,
   data: [],
-  first_page_url: '',
-  from: 0,
+  per_page: 12,
+  total: 0,
   last_page: 1,
-  last_page_url: '',
+  from: 0,
+  to: 0,
+  path: '',
   links: [],
   next_page_url: null,
-  path: '',
-  per_page: 12,
   prev_page_url: null,
-  to: 0,
-  total: 0
+  first_page_url: null,
+  last_page_url: null,
 })
 
-onMounted(async () => {
-  await loadAllCourses()
-})
+onMounted(loadAllCourses)
 
-const loadAllCourses = async () => {
+async function loadAllCourses() {
   try {
     loading.value = true
     isSearching.value = false
-    currentPage.value = 1
-
     const response = await courseApi.getAllCourses({
-      page: currentPage.value,
-      per_page: searchResults.per_page
+      page: 1,
+      per_page: searchResults.per_page,
     })
     Object.assign(searchResults, response)
-  } catch (error: any) {
+  } catch (e: any) {
     notification.error({
-      message: 'Lỗi tải khóa học',
-      description: error?.message || 'Không thể tải danh sách khóa học'
+      message: 'Failed to load courses',
+      description: e?.message || 'Unable to fetch the course list',
     })
   } finally {
     loading.value = false
   }
 }
 
-const handleSearch = async (payload: CourseSearchPayload) => {
+async function handleSearch(payload: CourseSearchPayload) {
   try {
     loading.value = true
     isSearching.value = true
-    currentPage.value = 1
     currentSearchPayload.value = payload
 
-    const params: CourseSearchParams = {
-      search: payload.searchText || undefined,
-      subject: payload.filters?.subject,
-      level: payload.filters?.level,
-      language: payload.filters?.language,
-      is_paid: payload.filters?.availability === 'paid'
-        ? true
-        : payload.filters?.availability === 'free'
-          ? false
-          : undefined,
-      page: currentPage.value,
-      per_page: searchResults.per_page
-    }
-
-    Object.keys(params).forEach(key => {
-      if (params[key as keyof CourseSearchParams] === undefined) {
-        delete params[key as keyof CourseSearchParams]
-      }
+    const response = await courseApi.getAllCourses({
+      page: 1,
+      per_page: searchResults.per_page,
+      search: payload.search || undefined,
+      ...payload.filters,
     })
-
-    const response = await courseApi.getAllCourses(params)
     Object.assign(searchResults, response)
-
-  } catch (error: any) {
+  } catch (e: any) {
     notification.error({
-      message: 'Lỗi tìm kiếm',
-      description: error?.message || 'Không thể tìm kiếm khóa học'
+      message: 'Search error',
+      description: e?.message || 'Unable to perform search',
     })
   } finally {
     loading.value = false

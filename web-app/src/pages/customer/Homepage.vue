@@ -16,9 +16,6 @@
       <!-- Features Section -->
       <FeaturesSection />
       
-      <!-- Explore Courses Section -->
-      <ExploreCoursesSection />
-      
       <!-- Testimonials Section -->
       <TestimonialsSection />
       
@@ -37,7 +34,6 @@ import AllInOneSection from '@/components/customer/home/AllInOneSection.vue';
 import WhatIsSection from '@/components/customer/home/WhatIsSection.vue';
 import SuccessSection from '@/components/customer/home/SuccessSection.vue';
 import FeaturesSection from '@/components/customer/home/FeaturesSection.vue';
-import ExploreCoursesSection from '@/components/customer/home/ExploreCoursesSection.vue';
 import TestimonialsSection from '@/components/customer/home/TestimonialsSection.vue';
 import NewsSection from '@/components/customer/home/NewsSection.vue';
 

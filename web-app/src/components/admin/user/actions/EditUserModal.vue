@@ -1,52 +1,73 @@
 <template>
-    <a-modal :visible="visible" title="Chỉnh sửa người dùng" @cancel="handleCancel" :footer="null">
-        <a-form :model="formState" @finish="handleFinish" layout="vertical">
-            <a-form-item label="Họ và tên" name="name">
+    <a-modal 
+        :visible="visible" 
+        title="Edit User" 
+        @cancel="handleCancel" 
+        :footer="null"
+    >
+        <a-form 
+            :model="formState" 
+            @finish="handleFinish" 
+            layout="vertical"
+        >
+            <a-form-item label="Full Name" name="name">
                 <a-input v-model:value="formState.name" />
             </a-form-item>
 
-            <a-form-item label="Email" name="email" :rules="[{ required: true, type: 'email', message: 'Email không hợp lệ!' }]">
+            <a-form-item 
+                label="Email" 
+                name="email" 
+                :rules="[{ required: true, type: 'email', message: 'Invalid email address!' }]"
+            >
                 <a-input v-model:value="formState.email" />
             </a-form-item>
 
-            <a-form-item label="Số điện thoại" name="phone">
+            <a-form-item label="Phone Number" name="phone">
                 <a-input v-model:value="formState.phone" />
             </a-form-item>
 
-            <a-form-item label="Địa chỉ" name="address">
+            <a-form-item label="Address" name="address">
                 <a-input v-model:value="formState.address" />
             </a-form-item>
 
-            <a-form-item label="Ngày sinh" name="birth_date">
-                <a-date-picker v-model:value="formState.birth_date" class="w-full" format="YYYY-MM-DD" />
+            <a-form-item label="Date of Birth" name="birth_date">
+                <a-date-picker 
+                    v-model:value="formState.birth_date" 
+                    class="w-full" 
+                    format="YYYY-MM-DD" 
+                />
             </a-form-item>
 
-            <a-form-item label="Giới tính" name="gender">
+            <a-form-item label="Gender" name="gender">
                 <a-select v-model:value="formState.gender">
-                    <a-select-option value="male">Nam</a-select-option>
-                    <a-select-option value="female">Nữ</a-select-option>
-                    <a-select-option value="other">Khác</a-select-option>
+                    <a-select-option value="male">Male</a-select-option>
+                    <a-select-option value="female">Female</a-select-option>
+                    <a-select-option value="other">Other</a-select-option>
                 </a-select>
             </a-form-item>
 
-            <a-form-item label="Vai trò" name="role">
+            <a-form-item label="Role" name="role">
                 <a-select v-model:value="formState.role">
-                    <a-select-option value="student">Người dùng</a-select-option>
-                    <a-select-option value="instructor">Giảng viên</a-select-option>
+                    <a-select-option value="student">User</a-select-option>
+                    <a-select-option value="instructor">Instructor</a-select-option>
                 </a-select>
             </a-form-item>
 
-            <a-form-item label="Trạng thái" name="status">
+            <a-form-item label="Status" name="status">
                 <a-select v-model:value="formState.status">
-                    <a-select-option value="pending">Đang chờ</a-select-option>
-                    <a-select-option value="approved">Đã duyệt</a-select-option>
-                    <a-select-option value="rejected">Từ chối</a-select-option>
+                    <a-select-option value="pending">Pending</a-select-option>
+                    <a-select-option value="approved">Approved</a-select-option>
+                    <a-select-option value="rejected">Rejected</a-select-option>
                 </a-select>
             </a-form-item>
 
             <a-form-item>
-                <a-button type="primary" html-type="submit" :loading="loading">Lưu thay đổi</a-button>
-                <a-button style="margin-left: 10px" @click="handleCancel">Hủy</a-button>
+                <a-button type="primary" html-type="submit" :loading="loading">
+                    Save Changes
+                </a-button>
+                <a-button style="margin-left: 10px" @click="handleCancel">
+                    Cancel
+                </a-button>
             </a-form-item>
         </a-form>
     </a-modal>
@@ -87,11 +108,11 @@ const handleFinish = async (values: any) => {
             birth_date: values.birth_date ? values.birth_date.format('YYYY-MM-DD') : null,
         };
         await userApi.updateUser(props.user.id, payload);
-        notification.success({ message: 'Cập nhật người dùng thành công!' });
+        notification.success({ message: 'User updated successfully!' });
         emit('finish');
         emit('update:visible', false);
     } catch (error: any) {
-        notification.error({ message: error.message || 'Cập nhật thất bại.' });
+        notification.error({ message: error.message || 'Update failed.' });
     } finally {
         loading.value = false;
     }

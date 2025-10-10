@@ -57,7 +57,6 @@
         <div class="space-y-1">
           <div class="flex items-center space-x-2">
             <span class="text-teal-600 text-2xl font-bold">{{ currentPrice }}</span>
-            <span class="text-gray-400 text-sm line-through">{{ originalPrice }}</span>
           </div>
           <div class="flex items-center space-x-1 text-yellow-400">
             <i class="fas fa-star text-xs"></i>
@@ -87,7 +86,6 @@ interface Props {
   description: string
   author: string
   avatar: string
-  originalPrice: string
   currentPrice: string
   duration: string
 }

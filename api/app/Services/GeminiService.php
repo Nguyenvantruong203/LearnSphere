@@ -16,17 +16,27 @@ class GeminiService
 
     public function generateQuestions(string $content, int $num = 5, string $language = 'vi'): array
     {
+        // Câu hỏi đã có (nếu có)
+        $existingQuestions = $previousQuestions ?? []; // Mảng các câu hỏi đã lưu
+
+        // Gộp lại thành string để đưa vào prompt
+        $existingList = json_encode($existingQuestions, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+
         // Xác định mô tả ngôn ngữ
         $langInstruction = $language === 'en'
             ? "Write all questions and options in English."
             : "Viết tất cả câu hỏi và đáp án bằng tiếng Việt.";
 
+        // Prompt thông minh tránh trùng lặp
         $prompt = "
 Bạn là một AI chuyên tạo quiz.
-Hãy đọc nội dung sau và tạo chính xác $num câu hỏi trắc nghiệm.
+Hãy đọc nội dung sau và tạo CHÍNH XÁC $num câu hỏi trắc nghiệm MỚI, KHÔNG được trùng hoặc gần giống với các câu hỏi đã có.
 
 Nội dung:
 \"$content\"
+
+Các câu hỏi đã có:
+$existingList
 
 Yêu cầu:
 1. Mỗi câu hỏi là một JSON object.
@@ -39,8 +49,9 @@ Yêu cầu:
    - Có các trường: type, question, options, answers.
    - options luôn là {\"A\": \"Đúng\", \"B\": \"Sai\"}.
    - answers là [\"A\"] nếu đúng, hoặc [\"B\"] nếu sai.
-5. Trả về duy nhất một mảng JSON hợp lệ (bắt đầu bằng [ và kết thúc bằng ]).
-6. KHÔNG giải thích, KHÔNG thêm text ngoài JSON.
+5. Chỉ tạo các câu hỏi mới, không trùng hoặc gần giống với danh sách ở trên.
+6. Trả về duy nhất một mảng JSON hợp lệ (bắt đầu bằng [ và kết thúc bằng ]).
+7. KHÔNG giải thích, KHÔNG thêm text ngoài JSON.
 
 Ngôn ngữ: $langInstruction
 ";
