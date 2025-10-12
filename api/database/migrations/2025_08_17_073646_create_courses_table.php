@@ -29,6 +29,8 @@ return new class extends Migration
             $t->enum('level', ['beginner', 'intermediate', 'advanced'])->default('beginner');
             $t->string('language', 5)->default('vi');
 
+            $t->boolean('is_featured')->default(false);
+
             $t->foreignId('created_by')->constrained('users')->cascadeOnDelete();
             $t->timestamps();
             $t->softDeletes();

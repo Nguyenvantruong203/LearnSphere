@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-admin">
+  <div class="min-h-screen flex flex-col bg-admin">
     <div class="flex">
       <!-- Sidebar -->
       <Sidebar />

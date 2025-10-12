@@ -203,4 +203,17 @@ class CourseController extends Controller
             'data' => $courses
         ]);
     }
+    public function recommended()
+    {
+        $courses = Course::where('status', 'published')
+            ->where('is_featured', true)
+            ->orderByDesc('publish_at')
+            ->take(8)
+            ->get(['id', 'title', 'slug', 'thumbnail_url', 'short_description', 'price', 'subject']);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $courses
+        ]);
+    }
 }

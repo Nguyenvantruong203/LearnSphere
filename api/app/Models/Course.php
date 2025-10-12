@@ -31,6 +31,7 @@ class Course extends Model
         'currency',     // VND
         'level',        // beginner|intermediate|advanced
         'language',     // vi
+        'is_featured',
         'subject',
 
         'created_by',
@@ -54,6 +55,7 @@ class Course extends Model
         'currency'   => 'VND',
         'level'      => 'beginner',
         'language'   => 'vi',
+        'is_featured' => false,
     ];
 
     /**

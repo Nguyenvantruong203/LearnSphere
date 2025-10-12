@@ -332,6 +332,10 @@ async function onMenuClick(info: MenuInfo) {
   const key = info.key as string
   if (key === 'logout') {
     await authStore.logout()
+    notification.success({
+      message: 'Logout Successful',
+      description: 'See you next time!',
+    })
   } else if (key === 'profile') {
     router.push('/profile')
   } else if (key === 'courses') {

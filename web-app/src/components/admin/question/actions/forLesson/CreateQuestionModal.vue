@@ -1,14 +1,6 @@
 <template>
-  <a-modal
-    :open="visible"
-    title="Add New Question"
-    ok-text="Create"
-    cancel-text="Cancel"
-    :confirm-loading="submitting"
-    @ok="handleSubmit"
-    @cancel="$emit('close')"
-    destroy-on-close
-  >
+  <a-modal :open="visible" title="Add New Question" ok-text="Create" cancel-text="Cancel" :confirm-loading="submitting"
+    @ok="handleSubmit" @cancel="$emit('close')" destroy-on-close>
     <a-form :model="form" layout="vertical">
       <a-form-item label="Question Type" required>
         <a-select v-model:value="form.type" placeholder="Select question type">
@@ -26,16 +18,11 @@
       <!-- For single/multiple -->
       <template v-if="['single', 'multiple'].includes(form.type)">
         <a-form-item label="Answer Options">
-          <div
-            v-for="([key, label], idx) in Object.entries(form.options)"
-            :key="idx"
-            class="flex items-center gap-2 mb-2"
-          >
+          <div v-for="([key, label], idx) in Object.entries(form.options)" :key="idx"
+            class="flex items-center gap-2 mb-2">
             <a-input v-model:value="form.options[key]" :placeholder="`Option ${key}`" />
-            <a-checkbox
-              :checked="form.correct_options.includes(key)"
-              @change="toggleCorrectOption(key, $event.target.checked)"
-            >
+            <a-checkbox :checked="form.correct_options.includes(key)"
+              @change="toggleCorrectOption(key, $event.target.checked)">
               Correct
             </a-checkbox>
           </div>
@@ -53,13 +40,8 @@
       </template>
 
       <a-form-item label="Points">
-        <a-input-number
-          v-model:value="form.weight"
-          :min="1"
-          :step="0.5"
-          style="width: 100%"
-          placeholder="Enter points"
-        />
+        <a-input-number v-model:value="form.weight" :min="1" :step="0.25" style="width: 100%" placeholder="Enter points"
+          :formatter="formatPoints" :parser="parsePoints" />
       </a-form-item>
     </a-form>
   </a-modal>
@@ -92,7 +74,7 @@ const form = ref({
     D: '',
   } as Record<string, string>,
   correct_options: [] as string[],
-  weight: 1,
+  weight: undefined,
 })
 
 // Reset form each time modal opens
@@ -105,7 +87,7 @@ watch(
         text: '',
         options: { A: '', B: '', C: '', D: '' },
         correct_options: [],
-        weight: 1,
+        weight: undefined,
       }
     }
   },
@@ -131,5 +113,16 @@ const toggleCorrectOption = (key: string, checked: boolean) => {
   } else {
     form.value.correct_options = form.value.correct_options.filter((x) => x !== key)
   }
+}
+
+const formatPoints = (value?: number | string) => {
+  if (value === undefined || value === null || value === '') return ''
+  const num = Number(value)
+  if (Number.isInteger(num)) return String(num)
+  return String(num)
+}
+
+const parsePoints = (value: string) => {
+  return parseFloat(value.replace(/[^\d.]/g, ''))
 }
 </script>

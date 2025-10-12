@@ -1,18 +1,23 @@
 <template>
-  <aside class="fixed left-0 top-0 h-screen w-64 z-10 px-8">
+  <aside class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-gray-50 to-white z-10 px-6">
     <!-- Logo -->
-    <div class="flex items-center justify-center pt-5 pb-3">
-      <router-link to="/">
+    <div class="flex items-center justify-center pt-6 pb-8">
+      <router-link to="/" class="transform transition-transform duration-300 hover:scale-105">
         <img 
           src="@/assets/images/logo.png" alt="LearnSphere Logo"
-          class="w-32 h-20 object-contain"
+          class="w-36 h-22 object-contain drop-shadow-md"
         />
       </router-link>
     </div>
     
     <!-- Navigation -->
-    <nav class="border-t border-gray-200 pt-5">
-      <router-link v-for="item in mainNavigation" :key="item.label" :to="item.path">
+    <nav class="space-y-1">
+      <router-link 
+        v-for="item in mainNavigation" 
+        :key="item.label" 
+        :to="item.path"
+        class="block"
+      >
         <SidebarItem 
           :icon="item.icon"
           :label="item.label"
@@ -20,13 +25,18 @@
         />
       </router-link>
       
-      <div class="mt-8 mb-4">
-        <p class="text-xs font-bold text-gray-700 uppercase tracking-wider px-4">
-          Account Pages
+      <div class="pt-6 pb-3">
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-widest px-4">
+          Account
         </p>
       </div>
       
-      <router-link v-for="item in accountPages" :key="item.label" :to="item.path">
+      <router-link 
+        v-for="item in accountPages" 
+        :key="item.label" 
+        :to="item.path"
+        class="block"
+      >
         <SidebarItem 
           :icon="item.icon"
           :label="item.label"

@@ -6,7 +6,7 @@
           <span class="text-gray-400">Pages</span>
         </a-breadcrumb-item>
         <a-breadcrumb-item>
-          <span class="text-gray-700 font-bold">Mã giảm giá</span>
+          <span class="text-gray-700 font-bold">Coupons</span>
         </a-breadcrumb-item>
       </a-breadcrumb>
     </HeaderAdmin>

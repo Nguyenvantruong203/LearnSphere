@@ -1,23 +1,32 @@
 <template>
   <a-modal
     v-model:open="open"
-    title="Chỉnh sửa bài học"
-    ok-text="Lưu"
-    cancel-text="Hủy"
+    title="Edit Lesson"
+    ok-text="Save"
+    cancel-text="Cancel"
     :confirm-loading="loading"
     @ok="handleSubmit"
   >
     <a-form :model="form" :rules="rules" ref="formRef" layout="vertical">
-      <a-form-item label="Tiêu đề" name="title" required>
-        <a-input v-model:value="form.title" placeholder="Nhập tiêu đề bài học" />
+      <a-form-item label="Title" name="title" required>
+        <a-input v-model:value="form.title" placeholder="Enter lesson title" />
       </a-form-item>
 
-      <a-form-item label="Nội dung" name="content">
-        <a-textarea v-model:value="form.content" placeholder="Nhập nội dung bài học" rows="4" />
+      <a-form-item label="Content" name="content">
+        <a-textarea
+          v-model:value="form.content"
+          placeholder="Enter lesson content"
+          rows="4"
+        />
       </a-form-item>
 
-      <a-form-item label="Thứ tự" name="order">
-        <a-input-number v-model:value="form.order" :min="1" />
+      <a-form-item label="Order" name="order">
+        <a-input-number
+          v-model:value="form.order"
+          :min="1"
+          style="width: 100%"
+          placeholder="Enter display order"
+        />
       </a-form-item>
     </a-form>
   </a-modal>
@@ -46,7 +55,7 @@ const emit = defineEmits<{
   (e: 'finish', payload: { topicId: number; courseId?: number }): void
 }>()
 
-// proxy open prop để không mutate trực tiếp
+// Proxy for v-model binding
 const open = computed({
   get: () => props.open,
   set: (val: boolean) => emit('update:open', val),
@@ -59,14 +68,22 @@ const form = ref({
 })
 
 const rules = {
-  title: [{ required: true, message: 'Tiêu đề không được để trống', trigger: 'blur' }],
+  title: [{ required: true, message: 'Title cannot be empty', trigger: 'blur' }],
+  content: [
+    {
+      required: true,
+      message: 'Please enter the lesson content!',
+      trigger: 'blur',
+      type: 'string',
+    },
+  ],
   order: [
     {
       required: true,
       type: 'number',
       min: 1,
-      message: 'Thứ tự phải lớn hơn 0',
-      trigger: 'change',
+      message: 'Order must be greater than 0!',
+      trigger: 'blur',
     },
   ],
 }
@@ -91,12 +108,12 @@ watch(
 const handleSubmit = async () => {
   try {
     await formRef.value?.validate()
-    if (!props.lesson?.id) throw new Error('Thiếu ID bài học')
+    if (!props.lesson?.id) throw new Error('Missing lesson ID')
 
     loading.value = true
     await lessonApi.updateLesson(props.lesson.id, form.value)
 
-    notification.success({ message: 'Cập nhật bài học thành công!' })
+    notification.success({ message: 'Lesson updated successfully!' })
     if (props.lesson.topic_id) {
       emit('finish', { topicId: props.lesson.topic_id })
     } else {
@@ -105,7 +122,7 @@ const handleSubmit = async () => {
     open.value = false
   } catch (error: any) {
     notification.error({
-      message: error?.message || 'Cập nhật bài học thất bại.',
+      message: error?.message || 'Failed to update lesson.',
     })
   } finally {
     loading.value = false

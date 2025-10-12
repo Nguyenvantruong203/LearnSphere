@@ -11,7 +11,7 @@
         </div>
 
         <!-- 📋 Table -->
-        <div class="table-container" style="height: 700px; overflow-y: auto;">
+        <div class="table-container h-[calc(100vh-245px)]">
             <a-table 
                 :columns="columns" 
                 :data-source="users" 
@@ -74,11 +74,12 @@
         </div>
 
         <!-- 📄 Pagination -->
-        <div class="mt-6 flex justify-end">
+        <div class="mt-6 flex justify-center">
             <a-pagination 
                 v-model:current="pagination.current" 
                 v-model:pageSize="pagination.pageSize"
                 :total="pagination.total" 
+                :show-total="total => `Total ${total} users`"
                 :show-size-changer="pagination.showSizeChanger"
                 :page-size-options="pagination.pageSizeOptions" 
                 @change="handlePageChange" 

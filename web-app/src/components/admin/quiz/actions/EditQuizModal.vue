@@ -1,18 +1,25 @@
 <template>
   <a-modal
     v-model:open="localOpen"
-    title="Sửa Quiz"
+    title="Edit Quiz"
+    ok-text="Save"
+    cancel-text="Cancel"
     @ok="handleSubmit"
     @cancel="handleCancel"
     destroyOnClose
   >
     <a-form :model="form" layout="vertical">
-      <a-form-item label="Tiêu đề" name="title" required>
-        <a-input v-model:value="form.title" />
+      <a-form-item label="Title" name="title" required>
+        <a-input v-model:value="form.title" placeholder="Enter quiz title" />
       </a-form-item>
 
-      <a-form-item label="Thời gian (phút)" name="duration_minutes">
-        <a-input-number v-model:value="form.duration_minutes" :min="0" />
+      <a-form-item label="Duration (minutes)" name="duration_minutes">
+        <a-input-number
+          v-model:value="form.duration_minutes"
+          :min="0"
+          style="width: 100%"
+          placeholder="Enter duration in minutes"
+        />
       </a-form-item>
 
       <a-form-item>
@@ -28,10 +35,15 @@
       </a-form-item>
 
       <a-form-item
-        label="Số lần làm tối đa (0 = không giới hạn)"
+        label="Maximum Attempts (0 = Unlimited)"
         name="max_attempts"
       >
-        <a-input-number v-model:value="form.max_attempts" :min="0" />
+        <a-input-number
+          v-model:value="form.max_attempts"
+          :min="0"
+          style="width: 100%"
+          placeholder="Enter maximum attempts"
+        />
       </a-form-item>
     </a-form>
   </a-modal>
@@ -40,7 +52,7 @@
 <script setup lang="ts">
 import { ref, watch, nextTick } from 'vue'
 import { quizApi } from '@/api/admin/quizApi'
-import { message, notification } from 'ant-design-vue'
+import { notification } from 'ant-design-vue'
 
 // Props
 const props = defineProps<{
@@ -51,20 +63,21 @@ const props = defineProps<{
 // Emits
 const emit = defineEmits(['update:open', 'finish'])
 
-// State
+// Local modal state
 const localOpen = ref(false)
 
+// Default form data
 const defaultForm = () => ({
   title: '',
   duration_minutes: 0,
-  shuffle_questions: false, // Sử dụng boolean
-  shuffle_options: false,   // Sử dụng boolean
+  shuffle_questions: false,
+  shuffle_options: false,
   max_attempts: 0,
 })
 
 const form = ref(defaultForm())
 
-// Populate form từ props.quiz
+// Populate form from props.quiz
 const populateForm = () => {
   if (!props.quiz) {
     form.value = defaultForm()
@@ -74,8 +87,8 @@ const populateForm = () => {
   form.value = {
     title: props.quiz.title ?? '',
     duration_minutes: props.quiz.duration_minutes ?? 0,
-    shuffle_questions: !!props.quiz.shuffle_questions, // Ép về boolean
-    shuffle_options: !!props.quiz.shuffle_options,   // Ép về boolean
+    shuffle_questions: !!props.quiz.shuffle_questions,
+    shuffle_options: !!props.quiz.shuffle_options,
     max_attempts: props.quiz.max_attempts ?? 0,
   }
 }
@@ -85,7 +98,7 @@ const resetForm = () => {
   form.value = defaultForm()
 }
 
-// Đồng bộ prop.open → localOpen
+// Sync prop.open → localOpen
 watch(
   () => props.open,
   async (val) => {
@@ -98,13 +111,13 @@ watch(
   { immediate: true }
 )
 
-// Đồng bộ localOpen → emit update:open
+// Sync localOpen → emit update:open
 watch(localOpen, (val) => {
   emit('update:open', val)
   if (!val) resetForm()
 })
 
-// Nếu quiz thay đổi khi modal đang mở → cập nhật form
+// Update form if quiz changes while modal is open
 watch(
   () => props.quiz,
   (newQuiz) => {
@@ -115,7 +128,7 @@ watch(
   { deep: true }
 )
 
-// Handle cancel
+// Cancel
 const handleCancel = () => {
   localOpen.value = false
 }
@@ -123,30 +136,30 @@ const handleCancel = () => {
 // Submit
 const handleSubmit = async () => {
   if (!props.quiz) {
-    notification.error({ message: 'Không có quiz để cập nhật.' })
+    notification.error({ message: 'No quiz available to update.' })
     return
   }
 
-  const payload = {
-    ...form.value,
-  }
+  const payload = { ...form.value }
 
   try {
     const quizId = props.quiz.id ?? props.quiz.quiz_id
     if (!quizId) {
-      notification.error({ message: 'Không tìm thấy ID của quiz để cập nhật.' })
+      notification.error({ message: 'Quiz ID not found for update.' })
       return
     }
 
     await quizApi.updateQuiz(quizId, payload)
-    notification.success({ message: 'Cập nhật quiz thành công' })
+    notification.success({ message: 'Quiz updated successfully!' })
     emit('finish', {
       lessonId: props.quiz.lesson_id,
       topicId: props.quiz.topic_id,
     })
     localOpen.value = false
   } catch (err: any) {
-    notification.error({ message: err.message || 'Lỗi khi cập nhật quiz' })
+    notification.error({
+      message: err.message || 'Failed to update quiz.',
+    })
   }
 }
 </script>

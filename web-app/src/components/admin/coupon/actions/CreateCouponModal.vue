@@ -1,124 +1,79 @@
 <template>
-  <a-modal
-    v-model:visible="visible"
-    title="Tạo mã giảm giá mới"
-    :footer="null"
-    :width="600"
-    @cancel="handleCancel"
-  >
-    <a-form
-      :model="form"
-      :rules="rules"
-      layout="vertical"
-      @finish="handleSubmit"
-      ref="formRef"
-    >
+  <a-modal v-model:visible="visible" title="Create New Coupon" :footer="null" :width="600" @cancel="handleCancel">
+    <a-form :model="form" :rules="rules" layout="vertical" @finish="handleSubmit" ref="formRef">
       <a-row :gutter="16">
         <a-col :span="12">
-          <a-form-item name="code" label="Mã coupon">
-            <a-input 
-              v-model:value="form.code" 
-              placeholder="Nhập mã coupon"
-              :disabled="loading"
-            />
+          <a-form-item name="code" label="Coupon Code">
+            <a-input v-model:value="form.code" placeholder="Enter coupon code" :disabled="loading" />
           </a-form-item>
         </a-col>
+
         <a-col :span="12">
-          <a-form-item name="type" label="Loại giảm giá">
-            <a-select v-model:value="form.type" placeholder="Chọn loại giảm giá" :disabled="loading">
-              <a-select-option value="percent">Phần trăm (%)</a-select-option>
-              <a-select-option value="fixed">Cố định (VND)</a-select-option>
-            </a-select>
+          <a-form-item name="value" label="Discount">
+            <a-space-compact class="w-full">
+              <a-select v-model:value="form.type" :disabled="loading" style="width: 40%;">
+                <a-select-option value="percent">%</a-select-option>
+                <a-select-option value="fixed">VND</a-select-option>
+              </a-select>
+
+              <a-input-number v-model:value="form.value" :min="0" :max="form.type === 'percent' ? 100 : undefined"
+                :precision="0" class="w-full" :disabled="loading" placeholder="Enter discount value"
+                :formatter="formatter" :parser="parser" />
+
+            </a-space-compact>
           </a-form-item>
         </a-col>
       </a-row>
 
       <a-row :gutter="16">
         <a-col :span="12">
-          <a-form-item name="value" label="Giá trị">
-            <a-input-number
-              v-model:value="form.value"
-              :min="0"
-              :max="form.type === 'percent' ? 100 : undefined"
-              :precision="form.type === 'percent' ? 0 : 0"
-              class="w-full"
-              :disabled="loading"
-              :formatter="form.type === 'percent' ? (value) => `${value}%` : (value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
-              :parser="form.type === 'percent' ? (value) => value.replace('%', '') : (value) => value.replace(/\$\s?|(,*)/g, '')"
-            />
+          <a-form-item name="usage_limit" label="Usage Limit">
+            <a-input-number v-model:value="form.usage_limit" :min="1" placeholder="Unlimited" class="w-full"
+              :disabled="loading" />
           </a-form-item>
         </a-col>
         <a-col :span="12">
-          <a-form-item name="usage_limit" label="Giới hạn sử dụng">
-            <a-input-number
-              v-model:value="form.usage_limit"
-              :min="1"
-              placeholder="Không giới hạn"
-              class="w-full"
-              :disabled="loading"
-            />
+          <a-form-item name="min_order_amount" label="Minimum Order Value">
+            <a-input-number v-model:value="form.min_order_amount" :min="0" placeholder="No minimum required"
+              class="w-full" :disabled="loading"
+              :formatter="(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
+              :parser="(value) => value.replace(/\$\s?|(,*)/g, '')" />
+          </a-form-item>
+        </a-col>
+      </a-row>
+      
+      <a-row :gutter="16">
+        <a-col :span="12">
+          <a-form-item name="valid_from" label="Start Date">
+            <a-date-picker v-model:value="form.valid_from" class="w-full" format="DD/MM/YYYY" :disabled="loading" />
+          </a-form-item>
+        </a-col>
+        <a-col :span="12">
+          <a-form-item name="valid_to" label="End Date">
+            <a-date-picker v-model:value="form.valid_to" class="w-full" format="DD/MM/YYYY" :disabled="loading"
+              :disabled-date="disabledEndDate" />
           </a-form-item>
         </a-col>
       </a-row>
 
-      <a-form-item name="min_order_amount" label="Giá trị đơn hàng tối thiểu">
-        <a-input-number
-          v-model:value="form.min_order_amount"
-          :min="0"
-          placeholder="Không yêu cầu"
-          class="w-full"
-          :disabled="loading"
-          :formatter="(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
-          :parser="(value) => value.replace(/\$\s?|(,*)/g, '')"
-        />
+      <a-form-item name="description" label="Description">
+        <a-textarea v-model:value="form.description" :rows="3" placeholder="Enter a description for this coupon"
+          :disabled="loading" />
       </a-form-item>
 
-      <a-row :gutter="16">
-        <a-col :span="12">
-          <a-form-item name="valid_from" label="Ngày bắt đầu">
-            <a-date-picker
-              v-model:value="form.valid_from"
-              class="w-full"
-              format="DD/MM/YYYY"
-              :disabled="loading"
-            />
-          </a-form-item>
-        </a-col>
-        <a-col :span="12">
-          <a-form-item name="valid_to" label="Ngày kết thúc">
-            <a-date-picker
-              v-model:value="form.valid_to"
-              class="w-full"
-              format="DD/MM/YYYY"
-              :disabled="loading"
-              :disabled-date="disabledEndDate"
-            />
-          </a-form-item>
-        </a-col>
-      </a-row>
-
-      <a-form-item name="description" label="Mô tả">
-        <a-textarea
-          v-model:value="form.description"
-          :rows="3"
-          placeholder="Nhập mô tả cho mã giảm giá"
-          :disabled="loading"
-        />
-      </a-form-item>
-
-      <a-form-item name="is_active" label="Trạng thái">
+      <a-form-item name="is_active" label="Status">
         <a-switch v-model:checked="form.is_active" :disabled="loading">
-          <template #checkedChildren>Hoạt động</template>
-          <template #unCheckedChildren>Tạm dừng</template>
+          <template #checkedChildren>Active</template>
+          <template #unCheckedChildren>Paused</template>
         </a-switch>
       </a-form-item>
 
       <div class="flex justify-end gap-2 mt-6">
         <a-button @click="handleCancel" :disabled="loading">
-          Hủy
+          Cancel
         </a-button>
         <a-button type="primary" html-type="submit" :loading="loading">
-          Tạo mã giảm giá
+          Create Coupon
         </a-button>
       </div>
     </a-form>
@@ -126,7 +81,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, computed } from 'vue'
 import { couponApi } from '@/api/admin/couponApi'
 import type { CreateCouponData } from '@/types/Coupon'
 import { notification } from 'ant-design-vue'
@@ -151,7 +106,7 @@ const formRef = ref()
 const form = reactive<CreateCouponData & { valid_from?: Dayjs; valid_to?: Dayjs }>({
   code: '',
   type: 'percent',
-  value: 0,
+  value: undefined,
   usage_limit: undefined,
   min_order_amount: undefined,
   valid_from: undefined,
@@ -162,17 +117,34 @@ const form = reactive<CreateCouponData & { valid_from?: Dayjs; valid_to?: Dayjs 
 
 const rules = {
   code: [
-    { required: true, message: 'Vui lòng nhập mã coupon' },
-    { min: 3, message: 'Mã coupon phải có ít nhất 3 ký tự' }
+    { required: true, message: 'Please enter a coupon code' },
+    { min: 3, message: 'Coupon code must be at least 3 characters long' }
   ],
   type: [
-    { required: true, message: 'Vui lòng chọn loại giảm giá' }
+    { required: true, message: 'Please select a discount type' }
   ],
   value: [
-    { required: true, message: 'Vui lòng nhập giá trị' },
-    { validator: (_: any, value: number) => value > 0 ? Promise.resolve() : Promise.reject('Giá trị phải lớn hơn 0') }
+    { required: true, message: 'Please enter a value' },
+    { validator: (_: any, value: number) => value > 0 ? Promise.resolve() : Promise.reject('Value must be greater than 0') }
   ]
 }
+
+const formatter = computed(() => {
+  if (form.type === 'percent') {
+    return (value: string | number | undefined) =>
+      value ? `${value}%` : ''
+  }
+  return (value: string | number | undefined) =>
+    value ? `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : ''
+})
+
+const parser = computed(() => {
+  if (form.type === 'percent') {
+    return (value: string) => value.replace('%', '')
+  }
+  return (value: string) => value.replace(/\$\s?|(,*)/g, '')
+})
+
 
 const disabledEndDate = (endValue: Dayjs) => {
   if (!form.valid_from || !endValue) {
@@ -197,13 +169,13 @@ const handleSubmit = async () => {
     }
 
     await couponApi.createCoupon(data)
-    notification.success({ message: 'Tạo mã giảm giá thành công!' })
+    notification.success({ message: 'Coupon created successfully!' })
     handleCancel()
     emit('finish')
   } catch (e: any) {
-    notification.error({ 
-      message: 'Lỗi tạo mã giảm giá', 
-      description: e.message || 'Có lỗi xảy ra khi tạo mã giảm giá'
+    notification.error({
+      message: 'Coupon creation failed',
+      description: e.message || 'An error occurred while creating the coupon'
     })
   } finally {
     loading.value = false
@@ -215,7 +187,7 @@ const handleCancel = () => {
   Object.assign(form, {
     code: '',
     type: 'percent',
-    value: 0,
+    value: undefined,
     usage_limit: undefined,
     min_order_amount: undefined,
     valid_from: undefined,

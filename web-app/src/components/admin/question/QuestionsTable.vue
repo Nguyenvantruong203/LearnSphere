@@ -20,7 +20,7 @@
         </div>
 
         <div class="flex items-center gap-2">
-          <a-input-number v-model:value="numQuestions" :min="1" :max="50" style="width: 60px" size="small" />
+          <a-input-number v-model:value="numQuestions" :min="1" :max="20" style="width: 60px" size="small" />
 
           <!-- Action buttons -->
           <a-button v-if="mode === 'lesson'" type="dashed" @click="handleGenerate" :loading="loading"
@@ -108,7 +108,7 @@
     </a-table>
 
     <!-- Empty State -->
-    <a-empty v-else-if="!loading" description="No questions yet">
+    <a-empty v-else-if="!loading" description="No questions yet" class="flex items-center justify-center flex-col gap-4 py-10">
       <template #image>
         <div class="text-3xl">❓</div>
       </template>
@@ -238,8 +238,10 @@ const handleGenerate = async () => {
   try {
     const res = await lessonQuestionApi.generateQuestions(props.quizId, numQuestions.value)
     questions.value = [...questions.value, ...res.questions]
+    notification.success({ message: 'AI questions generated successfully' })
     emit('update:questions', [...questions.value])
   } finally {
+    notification.error
     loading.value = false
   }
 }
@@ -250,6 +252,7 @@ const handleSuggest = async () => {
   try {
     const res = await topicQuestionApi.suggestQuestions(props.quizId, numQuestions.value)
     questions.value = res ?? []
+    notification.success({ message: 'AI questions suggested successfully' })
     emit('update:questions', [...questions.value])
   } finally {
     loading.value = false

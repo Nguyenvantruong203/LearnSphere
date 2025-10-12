@@ -1,19 +1,25 @@
 <template>
   <a-modal
-    title="Tạo chủ đề mới"
+    title="Create New Topic"
     :open="open"
     :confirm-loading="loading"
-    ok-text="Tạo"
-    cancel-text="Hủy"
+    ok-text="Create"
+    cancel-text="Cancel"
     @ok="handleFinish"
     @cancel="handleCancel"
   >
     <a-form ref="formRef" :model="formState" :rules="rules" layout="vertical">
-      <a-form-item label="Tiêu đề" name="title">
-        <a-input v-model:value="formState.title" />
+      <a-form-item label="Title" name="title">
+        <a-input v-model:value="formState.title" placeholder="Enter topic title" />
       </a-form-item>
-      <a-form-item label="Thứ tự (tùy chọn)" name="order">
-        <a-input-number v-model:value="formState.order" :min="1" style="width: 100%" />
+
+      <a-form-item label="Order" name="order">
+        <a-input-number
+          v-model:value="formState.order"
+          :min="1"
+          style="width: 100%"
+          placeholder="Enter display order"
+        />
       </a-form-item>
     </a-form>
   </a-modal>
@@ -30,6 +36,7 @@ interface Props {
   open: boolean
   courseId: number
 }
+
 const props = defineProps<Props>()
 const emit = defineEmits(['update:open', 'finish'])
 
@@ -54,7 +61,7 @@ watch(
 )
 
 const rules: Record<string, Rule[]> = {
-  title: [{ required: true, message: 'Vui lòng nhập tiêu đề!' }],
+  title: [{ required: true, message: 'Please enter the topic title!' }],
 }
 
 const handleFinish = async () => {
@@ -62,11 +69,11 @@ const handleFinish = async () => {
     await formRef.value.validate()
     loading.value = true
     await topicApi.createTopic(formState as TopicPayload)
-    notification.success({ message: 'Tạo chủ đề thành công!' })
+    notification.success({ message: 'Topic created successfully!' })
     emit('finish')
     handleCancel()
   } catch (error: any) {
-    notification.error({ message: error.message || 'Tạo chủ đề thất bại.' })
+    notification.error({ message: error.message || 'Failed to create topic.' })
   } finally {
     loading.value = false
   }

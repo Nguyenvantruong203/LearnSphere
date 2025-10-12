@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4">
+  <div class="bg-white rounded-2xl shadow-sm p-6">
     <!-- 🔹 Header -->
     <div class="flex items-center justify-between mb-3">
       <h2 class="text-xl font-semibold">Courses → Topics → Lessons</h2>
@@ -10,7 +10,7 @@
       </div>
     </div>
 
-    <div class="flex flex-col h-[calc(100vh-160px)]">
+    <div class="flex flex-col h-[calc(100vh-176px)]">
       <div class="flex-1 overflow-y-auto">
         <a-collapse v-model:activeKey="activeCourseKeys" accordion>
           <a-collapse-panel v-for="course in filteredCourses" :key="course.id" :header="course.title">
@@ -25,7 +25,7 @@
 
             <a-table :columns="columns" :data-source="treeByCourse[course.id] || []" row-key="key"
               :loading="loading[course.id]" :pagination="false" sticky table-layout="fixed"
-              :scroll="{ y: 'calc(100vh - 160px)', x: 'auto' }" :expandable="{
+              :scroll="{ y: 'calc(100vh - 300px)', x: 'auto' }" :expandable="{
                 childrenColumnName: 'children',
                 expandRowByClick: false,
                 defaultExpandAllRows: false
@@ -59,7 +59,6 @@
 <script setup lang="ts">
 import { ref, h, onMounted, watch, nextTick, reactive, computed } from 'vue'
 import { Button, Space, Popconfirm, Tag, Modal, notification } from 'ant-design-vue'
-import { SearchOutlined } from '@ant-design/icons-vue'
 import { courseApi } from '@/api/admin/courseApi'
 import { topicApi } from '@/api/admin/topicApi'
 import { lessonApi } from '@/api/admin/lessonApi'
@@ -133,9 +132,11 @@ const onEditedCourse = async () => {
 
 const confirmRemoveCourse = (course: Course) => {
   Modal.confirm({
-    title: `Delete course: ${course.title}?`,
+    icon: h(ExclamationCircleOutlined),
+    content: `Are you sure you want to delete the course "${course.title}"? This action cannot be undone.`,
     okText: 'Delete',
     cancelText: 'Cancel',
+    title: `Delete course: ${course.title}?`,
     onOk: () => removeCourse(course.id)
   })
 }

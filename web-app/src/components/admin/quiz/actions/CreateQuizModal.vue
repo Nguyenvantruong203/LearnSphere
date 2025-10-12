@@ -1,26 +1,42 @@
 <template>
   <a-modal
     :open="open"
-    title="Tạo Quiz"
+    title="Create Quiz"
+    ok-text="Create"
+    cancel-text="Cancel"
     @ok="handleSubmit"
     @cancel="handleCancel"
     @update:open="emit('update:open', $event)"
   >
     <a-form :model="form" layout="vertical">
-      <a-form-item label="Tiêu đề" name="title" required>
-        <a-input v-model:value="form.title" />
+      <a-form-item label="Title" name="title" required>
+        <a-input v-model:value="form.title" placeholder="Enter quiz title" />
       </a-form-item>
-      <a-form-item label="Thời gian (phút)" name="duration_minutes">
-        <a-input-number v-model:value="form.duration_minutes" :min="0" />
+
+      <a-form-item label="Duration (minutes)" name="duration_minutes">
+        <a-input-number
+          v-model:value="form.duration_minutes"
+          :min="0"
+          style="width: 100%"
+          placeholder="Enter duration in minutes"
+        />
       </a-form-item>
+
       <a-form-item>
         <a-checkbox v-model:checked="form.shuffle_questions">Shuffle Questions</a-checkbox>
       </a-form-item>
+
       <a-form-item>
         <a-checkbox v-model:checked="form.shuffle_options">Shuffle Options</a-checkbox>
       </a-form-item>
-      <a-form-item label="Số lần làm tối đa (0 = không giới hạn)" name="max_attempts">
-        <a-input-number v-model:value="form.max_attempts" :min="0" />
+
+      <a-form-item label="Maximum Attempts (0 = Unlimited)" name="max_attempts">
+        <a-input-number
+          v-model:value="form.max_attempts"
+          :min="0"
+          style="width: 100%"
+          placeholder="Enter maximum attempts"
+        />
       </a-form-item>
     </a-form>
   </a-modal>
@@ -29,7 +45,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { quizApi } from '@/api/admin/quizApi'
-import { message, notification } from 'ant-design-vue'
+import { notification } from 'ant-design-vue'
 
 const props = defineProps<{
   open: boolean
@@ -66,14 +82,18 @@ const handleSubmit = async () => {
     } else if (props.scope === 'topic' && props.topicId) {
       await quizApi.createQuizForTopic(props.topicId, form.value)
     } else {
-      throw new Error('Thiếu topicId hoặc lessonId')
+      throw new Error('Missing topicId or lessonId')
     }
-    notification.success({ message: 'Tạo quiz thành công' })
+
+    notification.success({ message: 'Quiz created successfully!' })
     emit('finish', { topicId: props.topicId, lessonId: props.lessonId })
     emit('update:open', false)
   } catch (err: any) {
-    notification.error({ message: err.message || 'Lỗi khi tạo quiz' })
+    notification.error({
+      message: err.message || 'Failed to create quiz.',
+    })
   }
 }
+
 const handleCancel = () => emit('update:open', false)
 </script>

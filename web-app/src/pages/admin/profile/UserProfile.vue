@@ -11,7 +11,7 @@
       </a-breadcrumb>
     </HeaderAdmin>
 
-    <div class="bg-white rounded-2xl overflow-hidden">
+    <div class="bg-white rounded-2xl overflow-hidden h-full">
       <!-- Header -->
       <div class="bg-white px-8 py-4 border-b border-gray-100">
         <div class="flex items-center justify-between">
