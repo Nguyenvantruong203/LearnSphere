@@ -51,7 +51,7 @@
         </a-button>
       </div>
 
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+      <div v-else class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8 mb-12">
         <div v-for="(course, index) in courses" :key="course.id"
           v-motion
           :initial="{ opacity: 0, y: 50, scale: 0.9 }"

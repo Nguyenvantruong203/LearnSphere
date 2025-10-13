@@ -6,6 +6,7 @@ use App\Http\Controllers\Client\VNPayController;
 use App\Http\Controllers\Client\CouponController;
 use App\Http\Controllers\Client\LessonController;
 use App\Http\Controllers\Client\QuizController;
+use App\Http\Controllers\Client\ProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,6 +26,10 @@ Route::get('/client/courses', [CourseController::class, 'index']);
 Route::get('/client/courses/{id}', [CourseController::class, 'show']);
 
 Route::middleware('auth:sanctum')->prefix('client')->group(function () {
+    Route::post('/profile/update', [ProfileController::class, 'updateProfile']);
+    Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar']);
+
+
     Route::get('/courses/recommended', [CourseController::class, 'recommended']);
     Route::post('/courses/{id}/enroll', [CourseController::class, 'enroll']);
     Route::get('/courses/{id}/check-access', [CourseController::class, 'checkAccess']);
@@ -39,14 +44,13 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
     Route::get('/quizzes/{quizId}/quiz-detail', [QuizController::class, 'getQuizDetail']);
 
     // 🧩 Bắt đầu một lượt làm quiz (tạo record quiz_attempts)
-    Route::post('/quizzes/{quizId}/start', [QuizController::class, 'startQuizAttempt'])
-        ->middleware('auth:sanctum');
+    Route::post('/quizzes/{quizId}/start', [QuizController::class, 'startQuizAttempt']);
 
     // 🧩 Nộp bài quiz (lưu câu trả lời & chấm điểm)
-    Route::post('/quizzes/{quizId}/submit', [QuizController::class, 'submitQuizAttempt'])
-        ->middleware('auth:sanctum');
+    Route::post('/quizzes/{quizId}/submit', [QuizController::class, 'submitQuizAttempt']);
 
     // 🧩 Xem lại kết quả bài làm (review)
-    Route::get('/quizzes/{quizId}/review', [QuizController::class, 'getQuizReview'])
-        ->middleware('auth:sanctum');
+    Route::get('/quizzes/{quizId}/review/{attemptId}', [QuizController::class, 'getQuizReview']);
+
+    Route::get('/quizzes/{quizId}/attempts', [QuizController::class, 'getQuizAttempts']);
 });

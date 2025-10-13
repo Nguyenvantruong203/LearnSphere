@@ -21,6 +21,8 @@ import VNPayReturn from '@/pages/customer/payment/VNPayReturn.vue'
 import CouponList from '@/pages/admin/coupon/CouponList.vue'
 import MyCourses from '@/pages/customer/myCourses/MyCourses.vue'
 import Learning from '@/pages/customer/learning/Learning.vue'
+import QuizReview from '@/pages/customer/quiz/QuizReview.vue'
+import StudentProfile from '@/pages/customer/profile/StudentProfile.vue'
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -88,7 +90,7 @@ export const routes: RouteRecordRaw[] = [
       layout: 'public',
       title: 'Cart',
       requiresAuth: true,
-      roles: ['student', 'instructor'],
+      roles: ['student'],
     },
   },
   {
@@ -108,7 +110,18 @@ export const routes: RouteRecordRaw[] = [
       layout: 'public',
       title: 'Danh sách khóa học của tôi',
       requiresAuth: true,
-      roles: ['student', 'instructor'],
+      roles: ['student'],
+    },
+  },
+  {
+    path: '/profile/:id',
+    name: 'Profile',
+    component: StudentProfile,
+    meta: {
+      layout: 'public',
+      title: 'Hồ sơ của tôi',
+      requiresAuth: true,
+      roles: ['student'],
     },
   },
   {
@@ -119,7 +132,18 @@ export const routes: RouteRecordRaw[] = [
       layout: 'public',
       title: 'Learning',
       requiresAuth: true,
-      roles: ['student', 'instructor'],
+      roles: ['student'],
+    },
+  },
+  {
+    path: '/quiz/:id/review/:attemptId',
+    name: 'QuizReview',
+    component: QuizReview,
+    meta: {
+      layout: 'public',
+      title: 'Quiz Review',
+      requiresAuth: true,
+      roles: ['student'],
     },
   },
   // --- Admin Pages ---
@@ -131,31 +155,31 @@ export const routes: RouteRecordRaw[] = [
   },
   {
     path: '/admin',
-    meta: { layout: 'admin', requiresAuth: true, roles: ['admin'] },
+    meta: { layout: 'admin', requiresAuth: true, roles: ['admin', 'instructor'] },
     children: [
       {
         path: 'users',
         name: 'admin-users',
         component: ListUsers,
-        meta: { title: 'Quản lý người dùng' },
+        meta: { title: 'User Management', roles: ['admin'] },
       },
       {
         path: 'profile',
         name: 'admin-profile',
         component: UserProfile,
-        meta: { title: 'Hồ sơ của tôi' },
+        meta: { title: 'My Profile', roles: ['admin', 'instructor'] },
       },
       {
         path: 'courses',
         name: 'admin-courses',
         component: ListCourses,
-        meta: { title: 'Quản lý khóa học' },
+        meta: { title: 'Course Management', roles: ['instructor'] },
       },
       {
         path: 'coupons',
         name: 'admin-coupons',
         component: CouponList,
-        meta: { title: 'Quản lý mã giảm giá' },
+        meta: { title: 'Coupon Management', roles: ['admin'] },
       },
     ],
   },

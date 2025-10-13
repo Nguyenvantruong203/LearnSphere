@@ -1,25 +1,11 @@
 <template>
-  <a-modal
-    title="Edit Course"
-    :open="open"
-    :confirm-loading="loading"
-    ok-text="Update"
-    cancel-text="Cancel"
-    @ok="handleFinish"
-    @cancel="handleCancel"
-    width="800px"
-  >
+  <a-modal title="Edit Course" :open="open" :confirm-loading="loading" ok-text="Update" cancel-text="Cancel"
+    @ok="handleFinish" @cancel="handleCancel" width="800px">
     <a-form v-if="formState" ref="formRef" :model="formState" :rules="rules" layout="vertical">
       <!-- Thumbnail -->
       <a-form-item label="Course Thumbnail" name="thumbnail">
-        <a-upload
-          v-model:file-list="fileList"
-          list-type="picture-card"
-          :before-upload="() => false"
-          @change="handleThumbnailChange"
-          @preview="handlePreview"
-          :max-count="1"
-        >
+        <a-upload v-model:file-list="fileList" list-type="picture-card" :before-upload="() => false"
+          @change="handleThumbnailChange" @preview="handlePreview" :max-count="1">
           <div v-if="fileList.length < 1">
             <plus-outlined />
             <div style="margin-top: 8px">Upload</div>
@@ -37,12 +23,7 @@
 
         <a-col :span="6">
           <a-form-item label="Subject" name="subject">
-            <a-select
-              v-model:value="formState.subject"
-              placeholder="Select subject"
-              style="width: 100%"
-              allowClear
-            >
+            <a-select v-model:value="formState.subject" placeholder="Select subject" style="width: 100%" allowClear>
               <a-select-option value="it">IT</a-select-option>
               <a-select-option value="design">Design</a-select-option>
               <a-select-option value="development">Development</a-select-option>
@@ -56,38 +37,21 @@
 
         <a-col :span="6">
           <a-form-item label="Price" name="price">
-            <a-input-number
-              v-model:value="formState.price"
-              style="width: 100%"
-              :min="0"
-              placeholder="Enter course price"
-            />
+            <a-input-number v-model:value="formState.price" style="width: 100%" :min="0"
+              placeholder="Enter course price" :formatter="(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
+              :parser="(value) => value.replace(/\$\s?|(,*)/g, '')" />
           </a-form-item>
         </a-col>
       </a-row>
 
       <!-- Short Description -->
       <a-form-item label="Short Description" name="short_description">
-        <a-textarea
-          v-model:value="formState.short_description"
-          :rows="3"
-          placeholder="Enter a short description"
-        />
+        <a-textarea v-model:value="formState.short_description" :rows="3" placeholder="Enter a short description" />
       </a-form-item>
 
       <!-- Status / Level / Language -->
       <a-row :gutter="16">
-        <a-col :span="8">
-          <a-form-item label="Status" name="status">
-            <a-select v-model:value="formState.status" placeholder="Select status">
-              <a-select-option value="draft">Draft</a-select-option>
-              <a-select-option value="published">Published</a-select-option>
-              <a-select-option value="archived">Archived</a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-
-        <a-col :span="8">
+        <a-col :span="12">
           <a-form-item label="Level" name="level">
             <a-select v-model:value="formState.level" placeholder="Select level">
               <a-select-option value="beginner">Beginner</a-select-option>
@@ -97,7 +61,7 @@
           </a-form-item>
         </a-col>
 
-        <a-col :span="8">
+        <a-col :span="12">
           <a-form-item label="Language" name="language">
             <a-select v-model:value="formState.language" placeholder="Select language">
               <a-select-option value="vi">Vietnamese</a-select-option>
@@ -112,12 +76,7 @@
     <a-skeleton v-else active />
 
     <!-- Image Preview -->
-    <a-modal
-      :open="previewVisible"
-      :title="previewTitle"
-      :footer="null"
-      @cancel="handlePreviewCancel"
-    >
+    <a-modal :open="previewVisible" :title="previewTitle" :footer="null" @cancel="handlePreviewCancel">
       <img alt="Course thumbnail preview" style="width: 100%" :src="previewImage" />
     </a-modal>
   </a-modal>
@@ -205,13 +164,13 @@ watch(
       // Show current thumbnail if available
       fileList.value = newCourse.thumbnail_url
         ? [
-            {
-              uid: '-1',
-              name: 'thumbnail.png',
-              status: 'done',
-              url: newCourse.thumbnail_url,
-            },
-          ]
+          {
+            uid: '-1',
+            name: 'thumbnail.png',
+            status: 'done',
+            url: newCourse.thumbnail_url,
+          },
+        ]
         : []
 
       await nextTick()

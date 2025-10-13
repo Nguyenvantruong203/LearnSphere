@@ -9,7 +9,7 @@ export interface Course {
   description?: string;
   status: 'draft' | 'published' | 'archived';
   publish_at?: string;
-  price: number;
+  price?: number;
   currency: string;
   subject?: string;
   level: 'beginner' | 'intermediate' | 'advanced';

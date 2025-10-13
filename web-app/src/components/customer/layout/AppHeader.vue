@@ -171,12 +171,6 @@
                         <span>My Courses</span>
                       </div>
                     </a-menu-item>
-                    <a-menu-item key="settings">
-                      <div class="flex items-center space-x-3 py-2">
-                        <i class="fas fa-cog text-teal-600"></i>
-                        <span>Settings</span>
-                      </div>
-                    </a-menu-item>
                     <a-menu-divider />
                     <a-menu-item key="logout">
                       <div class="flex items-center space-x-3 py-2">
@@ -337,7 +331,7 @@ async function onMenuClick(info: MenuInfo) {
       description: 'See you next time!',
     })
   } else if (key === 'profile') {
-    router.push('/profile')
+    router.push('/profile/' + (authStore.user?.id || ''))
   } else if (key === 'courses') {
     router.push('/my-courses/' + (authStore.user?.id || ''))
   } else if (key === 'settings') {

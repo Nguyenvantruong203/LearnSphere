@@ -18,6 +18,9 @@ return new class extends Migration
             $table->longText('content');
             $table->string('cover_image')->nullable();
             $table->timestamp('published_at')->nullable();
+            $table->enum('status', ['draft', 'pending', 'approved', 'rejected'])->default('draft');
+            $table->foreignId('approved_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('approved_at')->nullable();
             $table->timestamps();
 
             $table->index(['user_id', 'published_at']);

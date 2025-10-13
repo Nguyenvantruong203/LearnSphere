@@ -18,13 +18,27 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'name' => 'Truong Admin',
             'username' => 'admin',
-            'email' => 'truongcon02112003@gmail.com',
+            'email' => 'truongn12345678@gmail.com',
             'password' => '12345678',
             'phone' => '0987654321',
             'address' => '123 Admin Street, District 1, HCMC',
             'birth_date' => '1990-01-01',
             'gender' => 'male',
             'role' => 'admin',
+            'status' => 'approved',
+            'email_verified_at' => now(),
+        ]);
+
+        User::factory()->create([
+            'name' => 'Giang Instructor',
+            'username' => 'instructor',
+            'email' => 'truongcon02112003@gmail.com',
+            'password' => '12345678',
+            'phone' => '0905123456',
+            'address' => '45 Teacher Avenue, District 3, HCMC',
+            'birth_date' => '1993-07-20',
+            'gender' => 'female',
+            'role' => 'instructor',
             'status' => 'approved',
             'email_verified_at' => now(),
         ]);

@@ -1,5 +1,5 @@
 <template>
-  <section class="py-24 bg-gradient-to-br from-white to-gray-50">
+  <section class="py-24 bg-gray-50">
     <div class="max-w-7xl mx-auto px-6 lg:px-20">
       <div v-motion
         class="text-center mb-16"

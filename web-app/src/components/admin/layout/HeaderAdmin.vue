@@ -69,13 +69,6 @@
                       <span class="text-gray-700">Profile</span>
                     </a-menu-item>
 
-                    <a-menu-item key="settings" class="hover:bg-blue-50">
-                      <template #icon>
-                        <SettingOutlined class="text-blue-600" />
-                      </template>
-                      <span class="text-gray-700">Settings</span>
-                    </a-menu-item>
-
                     <a-menu-divider class="my-1" />
 
                     <a-menu-item key="logout" @click="handleLogout" class="hover:bg-red-50">

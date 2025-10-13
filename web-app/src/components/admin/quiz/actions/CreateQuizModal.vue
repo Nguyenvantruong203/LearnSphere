@@ -57,20 +57,20 @@ const emit = defineEmits(['update:open', 'finish'])
 
 const form = ref({
   title: '',
-  duration_minutes: 0,
+  duration_minutes: null,
   shuffle_questions: false,
   shuffle_options: false,
-  max_attempts: 0,
+  max_attempts: null,
 })
 
 watch(() => props.open, (val) => {
   if (val) {
     form.value = {
       title: '',
-      duration_minutes: 0,
+      duration_minutes: null,
       shuffle_questions: false,
       shuffle_options: false,
-      max_attempts: 0,
+      max_attempts: null,
     }
   }
 })

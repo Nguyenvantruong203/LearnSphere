@@ -1,187 +1,211 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex flex-col">
+  <div class="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex flex-col">
     <!-- Header -->
-    <header class="bg-white/90 backdrop-blur-sm border-b border-gray-200/50 shadow-sm sticky top-0 z-40">
-      <div class="px-8 py-6">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center">
-              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div>
-              <h1 class="text-2xl font-bold text-gray-800">{{ quiz?.title || 'Quiz' }}</h1>
-              <p class="text-gray-600">Kiểm tra kiến thức của bạn</p>
-            </div>
-          </div>
-          
-          <button
-            class="px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-colors"
-            @click="$emit('exit')"
-          >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-      </div>
-    </header>
+    <QuizHeader :title="quiz?.title || 'Quiz'" @exit="$emit('exit')" />
 
     <!-- Main Content -->
     <main class="flex-1 overflow-y-auto">
-      <div class="max-w-4xl mx-auto p-8">
+      <div class="max-w-5xl mx-auto p-6 md:p-8">
         <!-- ⏳ Khi chưa bắt đầu -->
-        <div v-if="!started" class="bg-white rounded-3xl p-10 shadow-xl border border-gray-200/60 text-center">
-          <div class="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-6">
-            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-            </svg>
-          </div>
-          
-          <h2 class="text-3xl font-bold text-gray-800 mb-4">Sẵn sàng làm bài?</h2>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 text-left">
-            <div class="flex items-center gap-3 p-4 bg-indigo-50 rounded-2xl">
-              <div class="w-8 h-8 bg-indigo-500 rounded-xl flex items-center justify-center">
-                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <p class="font-semibold text-gray-800">Thời gian</p>
-                <p class="text-gray-600">{{ quiz?.duration_minutes || 'Không giới hạn' }} phút</p>
-              </div>
-            </div>
-            
-            <div class="flex items-center gap-3 p-4 bg-purple-50 rounded-2xl">
-              <div class="w-8 h-8 bg-purple-500 rounded-xl flex items-center justify-center">
-                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <div>
-                <p class="font-semibold text-gray-800">Số câu hỏi</p>
-                <p class="text-gray-600">{{ questions.length || quiz?.total_questions || 0 }} câu</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="flex gap-4 justify-center">
-            <button
-              class="px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-2xl font-semibold text-lg hover:shadow-lg hover:shadow-indigo-500/25 hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-3"
-              @click="startQuiz" 
-              :disabled="loading"
-            >
-              <svg v-if="loading" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1.01M15 10h1.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              {{ loading ? 'Đang tải...' : 'Bắt đầu làm bài' }}
-            </button>
-          </div>
-        </div>
+        <QuizIntro v-if="!started" :quiz="quiz || { duration_minutes: 0, total_questions: 0 }" :loading="loading"
+          @start="startQuiz" />
 
         <!-- 🧠 Khi đang làm bài -->
         <div v-else class="space-y-8">
-          <!-- Timer & Progress -->
-          <div class="bg-white rounded-3xl p-6 shadow-xl border border-gray-200/60">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-4">
-                <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-teal-600 rounded-2xl flex items-center justify-center">
-                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+          <!-- Timer & Progress - Enhanced Design -->
+          <div
+            class="bg-gradient-to-r from-white via-blue-50/30 to-purple-50/30 rounded-3xl p-8 shadow-2xl border border-gray-200/60 backdrop-blur-sm">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+              <!-- Timer Section -->
+              <div class="flex items-center gap-6 flex-1">
+                <div class="relative">
+                  <div
+                    class="absolute inset-0 bg-gradient-to-br from-green-400 to-teal-500 rounded-3xl animate-pulse opacity-20">
+                  </div>
+                  <div
+                    class="relative w-16 h-16 bg-gradient-to-br from-green-500 to-teal-600 rounded-3xl flex items-center justify-center shadow-lg">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
                 </div>
                 <div>
-                  <p class="text-sm text-gray-600">Thời gian còn lại</p>
-                  <p class="text-2xl font-bold text-gray-800">{{ formattedTime }}</p>
+                  <p class="text-sm text-gray-500 font-medium mb-1">⏰ Thời gian còn lại</p>
+                  <p
+                    class="text-3xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
+                    {{ formattedTime }}
+                  </p>
                 </div>
               </div>
-              
-              <div class="text-right">
-                <p class="text-sm text-gray-600">Tiến độ</p>
-                <p class="text-lg font-semibold text-indigo-600">{{ answeredCount }}/{{ questions.length }}</p>
+
+              <!-- Progress Section -->
+              <div class="flex items-center gap-6 flex-1 justify-end">
+                <div class="text-right">
+                  <p class="text-sm text-gray-500 font-medium mb-1">📊 Tiến độ hoàn thành</p>
+                  <p
+                    class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    {{ answeredCount }}/{{ questions.length }}
+                  </p>
+                </div>
+                <div class="relative">
+                  <div
+                    class="absolute inset-0 bg-gradient-to-br from-blue-400 to-purple-500 rounded-3xl animate-pulse opacity-20">
+                  </div>
+                  <div
+                    class="relative w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-lg">
+                    <span class="text-white font-bold text-lg">{{ Math.round((answeredCount / questions.length) * 100)
+                    }}%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="mt-6">
+              <div class="flex justify-between text-sm text-gray-600 mb-2">
+                <span>Tiến độ</span>
+                <span>{{ answeredCount }}/{{ questions.length }} câu đã trả lời</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-3 shadow-inner">
+                <div
+                  class="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-500 shadow-sm"
+                  :style="{ width: `${(answeredCount / questions.length) * 100}%` }"></div>
               </div>
             </div>
           </div>
 
-          <!-- Questions -->
-          <div v-if="questions.length" class="space-y-6">
-            <div
-              v-for="(q, index) in questions"
-              :key="q.id"
-              class="bg-white rounded-3xl p-8 shadow-xl border border-gray-200/60"
-            >
-              <div class="flex items-start gap-4 mb-6">
-                <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0 mt-1">
-                  <span class="text-white font-bold text-sm">{{ index + 1 }}</span>
-                </div>
-                <h3 class="text-xl font-semibold text-gray-800 leading-relaxed">
-                  {{ q.text }}
-                </h3>
+          <!-- Questions - Enhanced Design -->
+          <div v-if="questions.length" class="space-y-8">
+            <div v-for="(q, index) in questions" :key="q.id"
+              class="group bg-gradient-to-br from-white via-blue-50/20 to-purple-50/20 rounded-3xl p-8 shadow-2xl border border-gray-200/60 hover:shadow-3xl hover:border-blue-300/50 transition-all duration-300 relative overflow-hidden">
+              <!-- Background decoration -->
+              <div
+                class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-blue-100/30 to-purple-100/30 rounded-full -translate-y-16 translate-x-16">
               </div>
 
-              <div class="space-y-3 ml-12">
-                <div
-                  v-for="(opt, i) in q.options"
-                  :key="i"
-                  @click="selectAnswer(q.id, i)"
-                  class="group p-4 rounded-2xl border-2 cursor-pointer transition-all duration-300"
-                  :class="{
-                    'border-indigo-500 bg-indigo-50 shadow-md': answers[q.id] === i,
-                    'border-gray-200 hover:border-indigo-300 hover:bg-indigo-50/50': answers[q.id] !== i
-                  }"
-                >
-                  <div class="flex items-center gap-4">
-                    <div 
-                      class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors"
-                      :class="{
-                        'border-indigo-500 bg-indigo-500': answers[q.id] === i,
-                        'border-gray-300 group-hover:border-indigo-400': answers[q.id] !== i
-                      }"
-                    >
-                      <svg v-if="answers[q.id] === i" class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                      </svg>
+              <div class="relative z-10">
+                <div class="flex items-start gap-6 mb-8">
+                  <div class="relative">
+                    <div
+                      class="absolute inset-0 bg-gradient-to-br from-blue-400 to-purple-500 rounded-2xl animate-pulse opacity-20">
                     </div>
-                    <span class="text-sm font-bold text-gray-500 w-6">{{ String.fromCharCode(65 + i) }}.</span>
-                    <span class="text-gray-800 font-medium">{{ opt }}</span>
+                    <div
+                      class="relative w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                      <span class="text-white font-bold text-lg">{{ index + 1 }}</span>
+                    </div>
+                  </div>
+                  <div class="flex-1">
+                    <h3 class="text-xl md:text-2xl font-bold text-gray-800 leading-relaxed mb-3">{{ q.text }}</h3>
+                    <div class="flex items-center gap-2">
+                      <div class="px-3 py-1 bg-gradient-to-r from-gray-100 to-gray-200 rounded-full">
+                        <p class="text-sm font-medium text-gray-600">
+                          {{ q.type === 'multiple_choice' ? '🔘 Chọn nhiều đáp án' :
+                            q.type === 'single' ? '🔴 Chọn một đáp án' :
+                              '🔘 Chọn một đáp án' }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="space-y-4 ml-18">
+                  <div v-for="(opt, i) in q.options" :key="i" @click="selectAnswer(q.id, i)"
+                    class="group/option relative p-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+                    :class="{
+                      'border-blue-500 bg-gradient-to-r from-blue-50 to-purple-50 shadow-md': isAnswerSelected(q.id, i),
+                      'border-gray-200 hover:border-blue-300 hover:bg-blue-50/30': !isAnswerSelected(q.id, i)
+                    }">
+                    <div class="flex items-center gap-4">
+                      <div class="relative">
+                        <div
+                          class="w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all duration-300"
+                          :class="{
+                            'border-blue-500 bg-blue-500 shadow-lg': isAnswerSelected(q.id, i),
+                            'border-gray-300 group-hover/option:border-blue-400': !isAnswerSelected(q.id, i)
+                          }">
+                          <svg v-if="isAnswerSelected(q.id, i)" class="w-4 h-4 text-white" fill="currentColor"
+                            viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clip-rule="evenodd" />
+                          </svg>
+                        </div>
+                      </div>
+                      <div class="flex items-center gap-3 flex-1">
+                        <span class="text-lg font-bold text-gray-500 min-w-[32px]">{{ String.fromCharCode(65 + i)
+                        }}.</span>
+                        <span class="text-gray-800 font-medium text-lg">{{ opt }}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Submit Section -->
-          <div class="bg-white rounded-3xl p-8 shadow-xl border border-gray-200/60 text-center">
-            <h3 class="text-2xl font-bold text-gray-800 mb-4">Hoàn thành bài thi</h3>
-            <p class="text-gray-600 mb-8">Bạn đã trả lời {{ answeredCount }}/{{ questions.length }} câu hỏi</p>
-            
-            <div class="flex gap-4 justify-center">
-              <button
-                class="px-6 py-3 text-gray-600 border border-gray-300 rounded-2xl font-semibold hover:bg-gray-50 transition-colors"
-                @click="$emit('exit')"
-              >
-                Thoát
-              </button>
-              <button
-                class="px-8 py-3 bg-gradient-to-r from-green-500 to-teal-600 text-white rounded-2xl font-semibold hover:shadow-lg hover:shadow-green-500/25 hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-3"
-                @click="submitQuiz" 
-                :disabled="submitting"
-              >
-                <svg v-if="submitting" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          <!-- Submit Section - Enhanced Design -->
+          <div
+            class="bg-gradient-to-br from-white via-green-50/20 to-teal-50/20 rounded-3xl p-10 shadow-2xl border border-gray-200/60 text-center relative overflow-hidden">
+            <!-- Background decoration -->
+            <div
+              class="absolute top-0 left-0 w-40 h-40 bg-gradient-to-br from-green-200/20 to-teal-200/20 rounded-full -translate-y-20 -translate-x-20">
+            </div>
+            <div
+              class="absolute bottom-0 right-0 w-32 h-32 bg-gradient-to-tl from-green-200/20 to-blue-200/20 rounded-full translate-y-16 translate-x-16">
+            </div>
+
+            <div class="relative z-10">
+              <div
+                class="w-20 h-20 bg-gradient-to-br from-green-500 to-teal-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
+                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ submitting ? 'Đang nộp bài...' : 'Nộp bài' }}
-              </button>
+              </div>
+
+              <h3
+                class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-4">
+                🎯 Hoàn thành bài thi
+              </h3>
+              <div class="mb-8">
+                <p class="text-lg text-gray-600 mb-2">Tiến độ hoàn thành của bạn</p>
+                <p class="text-2xl font-bold text-green-600">
+                  {{ answeredCount }}/{{ questions.length }}
+                  <span class="text-lg text-gray-500">({{ Math.round((answeredCount / questions.length) * 100)
+                  }}%)</span>
+                </p>
+              </div>
+
+              <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <button
+                  class="px-8 py-3 text-gray-600 border-2 border-gray-300 rounded-2xl font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 hover:shadow-md"
+                  @click="$emit('exit')">
+                  ← Thoát khỏi bài thi
+                </button>
+                <button
+                  class="group relative px-10 py-4 bg-gradient-to-r from-green-500 to-teal-600 text-white rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl hover:shadow-green-500/25 hover:-translate-y-1 transition-all duration-300 flex items-center gap-3 overflow-hidden"
+                  @click="submitQuiz" :disabled="submitting">
+                  <!-- Background animation -->
+                  <div
+                    class="absolute inset-0 bg-gradient-to-r from-green-600 to-teal-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  </div>
+
+                  <div class="relative z-10 flex items-center gap-3">
+                    <svg v-if="submitting" class="w-6 h-6 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                      <path class="opacity-75" fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    <svg v-else class="w-6 h-6 group-hover:scale-110 transition-transform duration-300" fill="none"
+                      stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                    <span>{{ submitting ? 'Đang nộp bài...' : '🚀 Nộp bài ngay' }}</span>
+                  </div>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -191,36 +215,38 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, onUnmounted } from 'vue'
+import { ref, onMounted, computed, onUnmounted, nextTick, h } from 'vue'
 import { quizApi } from '@/api/customer/quizApi'
 import type { Quiz } from '@/types/Quiz'
 import type { Question } from '@/types/Question'
+import { notification, Modal } from 'ant-design-vue'
+import QuizHeader from '@/components/customer/quiz/QuizHeader.vue'
+import QuizIntro from '@/components/customer/quiz/QuizIntro.vue'
+import { useRouter } from 'vue-router'
+const router = useRouter()
 
+// Props & Emits
 const props = defineProps<{ quizId: number }>()
 const emit = defineEmits(['exit'])
 
-// Types
-interface QuizData {
-  id: number
-  title: string
-  duration_minutes: number
-  total_questions: number
-  questions: Question[]
-}
-
-const quiz = ref<QuizData | null>(null)
+// States
+const quiz = ref<Quiz | null>(null)
 const questions = ref<Question[]>([])
 const loading = ref(false)
 const submitting = ref(false)
 const started = ref(false)
 const timeLeft = ref(0)
 const timer = ref<number | null>(null)
-const answers = ref<Record<number, number | null>>({})
+const answers = ref<Record<number, number | number[] | null>>({})
+const attemptId = ref<number | null>(null)
 
 // Computed
-const answeredCount = computed(() => {
-  return Object.values(answers.value).filter(answer => answer !== null).length
-})
+const answeredCount = computed(() =>
+  Object.values(answers.value).filter(ans => {
+    if (Array.isArray(ans)) return ans.length > 0
+    return ans !== null
+  }).length
+)
 
 const formattedTime = computed(() => {
   const m = Math.floor(timeLeft.value / 60)
@@ -228,72 +254,177 @@ const formattedTime = computed(() => {
   return `${m}:${s.toString().padStart(2, '0')}`
 })
 
-// Methods
+// ===== Mounted: Load Quiz Info =====
 onMounted(async () => {
   loading.value = true
   try {
     const res = await quizApi.getQuizDetail(props.quizId)
     if (res.success && res.data) {
-      quiz.value = res.data as QuizData
+      quiz.value = res.data.quiz
       questions.value = res.data.questions || []
+    } else {
+      notification.error({
+        message: 'Không thể tải quiz',
+        description: res.message || 'Vui lòng thử lại sau.',
+      })
     }
   } catch (error) {
-    console.error('Failed to load quiz:', error)
+    console.error('❌ Failed to load quiz:', error)
+    notification.error({
+      message: 'Lỗi tải quiz',
+      description: 'Đã xảy ra lỗi khi tải thông tin bài quiz. Vui lòng thử lại.',
+    })
   } finally {
     loading.value = false
   }
 })
 
-function startQuiz() {
-  started.value = true
-  timeLeft.value = (quiz.value?.duration_minutes || 10) * 60
-
-  // Khởi tạo answer rỗng cho mỗi câu hỏi
-  answers.value = Object.fromEntries(questions.value.map((q: Question) => [q.id, null]))
-
-  timer.value = window.setInterval(() => {
-    if (timeLeft.value > 0) {
-      timeLeft.value--
-    } else {
-      if (timer.value) clearInterval(timer.value)
-      submitQuiz()
-    }
-  }, 1000)
-}
-
-function selectAnswer(questionId: number, optionIndex: number) {
-  answers.value[questionId] = optionIndex
-}
-
-async function submitQuiz() {
-  submitting.value = true
+// ===== Bắt đầu làm bài =====
+async function startQuiz() {
+  loading.value = true
   try {
-    // Chuyển đổi answers thành format đúng cho API
-    const formattedAnswers = Object.entries(answers.value).map(([questionId, answerIndex]) => ({
-      question_id: parseInt(questionId),
-      selected_options: answerIndex !== null ? [answerIndex.toString()] : []
-    }))
+    const res = await quizApi.startQuizAttempt(props.quizId)
+    if (res.success && res.data) {
+      started.value = true
+      quiz.value = res.data.quiz
+      questions.value = res.data.questions || []
+      attemptId.value = res.data.attempt.id
 
-    const payload = {
-      attempt_id: 1, // Temporary - should be from startQuizAttempt
-      answers: formattedAnswers
+      notification.success({
+        message: 'Bắt đầu làm bài 🎯',
+        description: `Bạn có ${quiz.value?.duration_minutes || 'không giới hạn'} phút để hoàn thành ${questions.value.length} câu hỏi.`,
+      })
+
+      timeLeft.value = (quiz.value?.duration_minutes || 10) * 60
+      await nextTick()
+
+      answers.value = Object.fromEntries(questions.value.map((q: Question) => [q.id, null]))
+
+      timer.value = window.setInterval(() => {
+        if (timeLeft.value > 0) {
+          timeLeft.value--
+        } else {
+          clearInterval(timer.value!)
+          notification.warning({
+            message: 'Hết thời gian ⏰',
+            description: 'Hệ thống sẽ tự động nộp bài của bạn.',
+          })
+          submitQuiz()
+        }
+      }, 1000)
+    } else {
+      notification.error({
+        message: 'Không thể bắt đầu quiz',
+        description: res.message || 'Vui lòng thử lại sau.',
+      })
     }
-    
-    const res = await quizApi.submitQuizAttempt(props.quizId, payload)
-    if (res.success) {
-      alert('Bài làm của bạn đã được nộp!')
-      started.value = false
-      emit('exit')
-    }
-  } catch (err) {
-    console.error('Submit quiz error:', err)
-    alert('Có lỗi xảy ra khi nộp bài!')
+  } catch (error: any) {
+    console.error('❌ Error starting quiz:', error)
+    notification.error({
+      message: 'Không thể bắt đầu quiz',
+      description: error.message || 'Vui lòng thử lại sau.',
+    })
   } finally {
-    submitting.value = false
-    if (timer.value) clearInterval(timer.value)
+    loading.value = false
   }
 }
 
+// ===== Helper Functions =====
+function isAnswerSelected(questionId: number, optionIndex: number): boolean {
+  const answer = answers.value[questionId]
+  if (Array.isArray(answer)) {
+    return answer.includes(optionIndex)
+  }
+  return answer === optionIndex
+}
+
+// ===== Chọn đáp án =====
+function selectAnswer(questionId: number, optionIndex: number) {
+  const question = questions.value.find(q => q.id === questionId)
+  if (!question) return
+
+  if (question.type === 'multiple_choice') {
+    const current = Array.isArray(answers.value[questionId]) ? answers.value[questionId] as number[] : []
+    const exists = current.includes(optionIndex)
+    answers.value[questionId] = exists ? current.filter(i => i !== optionIndex) : [...current, optionIndex]
+  } else {
+    answers.value[questionId] = optionIndex
+  }
+}
+
+// ===== Nộp bài =====
+async function submitQuiz() {
+  if (!attemptId.value) {
+    notification.warning({
+      message: 'Không tìm thấy lượt làm bài!',
+      description: 'Vui lòng tải lại trang hoặc bắt đầu lại.',
+    })
+    return
+  }
+
+  submitting.value = true
+  try {
+    const formattedAnswers = Object.entries(answers.value).map(([questionId, answerValue]) => ({
+      question_id: parseInt(questionId),
+      selected_options: Array.isArray(answerValue)
+        ? answerValue.map(i => i.toString())
+        : (answerValue !== null ? [answerValue.toString()] : [])
+    }))
+
+    const payload = {
+      attempt_id: attemptId.value,
+      answers: formattedAnswers,
+    }
+
+    const res = await quizApi.submitQuizAttempt(props.quizId, payload)
+    if (res.success && res.data) {
+      // 🟢 Hiện modal kết quả trung tâm
+      Modal.info({
+        title: '🎉 Kết quả bài quiz',
+        width: 500,
+        centered: true,
+        okText: 'Xem chi tiết',
+        cancelText: 'Đóng',
+        closable: true,
+        content: h('div', { class: 'space-y-3 text-gray-700 mt-4' }, [
+          h('p', { class: 'text-lg font-semibold text-center text-indigo-600' },
+            `Điểm: ${res.data.score}/${res.data.max_score}`),
+          h('p', { class: 'text-center' },
+            `✅ Số câu đúng: ${res.data.correct_count} / ❌ Sai: ${res.data.wrong_count}`),
+          h('p', { class: 'text-center text-gray-500 text-sm' },
+            `Thời gian nộp: ${new Date(res.data.submitted_at).toLocaleString('vi-VN')}`)
+        ]),
+        onOk() {
+
+          router.push(`/quiz/${props.quizId}/review/${res.data.attempt_id}`)
+        },
+
+        onCancel() {
+          emit('exit')
+        }
+      })
+
+      // ✅ Reset trạng thái
+      started.value = false
+      if (timer.value) clearInterval(timer.value)
+    } else {
+      notification.error({
+        message: 'Nộp bài thất bại ❌',
+        description: res.message || 'Có lỗi xảy ra khi nộp bài.',
+      })
+    }
+  } catch (err) {
+    console.error('Submit quiz error:', err)
+    notification.error({
+      message: 'Lỗi nộp bài ❌',
+      description: 'Đã xảy ra lỗi không mong muốn. Vui lòng thử lại sau.',
+    })
+  } finally {
+    submitting.value = false
+  }
+}
+
+// Cleanup
 onUnmounted(() => {
   if (timer.value) clearInterval(timer.value)
 })

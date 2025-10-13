@@ -10,7 +10,7 @@
       </div>
     </div>
 
-    <div class="flex flex-col h-[calc(100vh-176px)]">
+    <div class="flex flex-col h-[calc(100vh-180px)]">
       <div class="flex-1 overflow-y-auto">
         <a-collapse v-model:activeKey="activeCourseKeys" accordion>
           <a-collapse-panel v-for="course in filteredCourses" :key="course.id" :header="course.title">
@@ -25,7 +25,7 @@
 
             <a-table :columns="columns" :data-source="treeByCourse[course.id] || []" row-key="key"
               :loading="loading[course.id]" :pagination="false" sticky table-layout="fixed"
-              :scroll="{ y: 'calc(100vh - 300px)', x: 'auto' }" :expandable="{
+              :scroll="{ y: 'calc(100vh - 180px)' }" :expandable="{
                 childrenColumnName: 'children',
                 expandRowByClick: false,
                 defaultExpandAllRows: false

@@ -79,17 +79,7 @@
 
       <!-- Status / Level / Language -->
       <a-row :gutter="16">
-        <a-col :span="8">
-          <a-form-item label="Status" name="status">
-            <a-select v-model:value="formState.status" placeholder="Select status">
-              <a-select-option value="draft">Draft</a-select-option>
-              <a-select-option value="published">Published</a-select-option>
-              <a-select-option value="archived">Archived</a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-
-        <a-col :span="8">
+        <a-col :span="12">
           <a-form-item label="Level" name="level">
             <a-select v-model:value="formState.level" placeholder="Select level">
               <a-select-option value="beginner">Beginner</a-select-option>
@@ -99,7 +89,7 @@
           </a-form-item>
         </a-col>
 
-        <a-col :span="8">
+        <a-col :span="12">
           <a-form-item label="Language" name="language">
             <a-select v-model:value="formState.language" placeholder="Select language">
               <a-select-option value="vi">Vietnamese</a-select-option>
@@ -175,7 +165,7 @@ const initialFormState: CoursePayload = {
   title: '',
   short_description: '',
   description: '',
-  price: 0,
+  price: null,
   status: 'published',
   level: 'beginner',
   language: 'en',

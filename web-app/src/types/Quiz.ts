@@ -9,6 +9,7 @@ export interface Quiz {
   lesson_id?: number
   title: string
   duration_minutes: number
+  total_questions: number
   shuffle_questions: boolean
   shuffle_options: boolean
   max_attempts: number
@@ -61,43 +62,6 @@ export interface QuizSubmitPayload {
   }[]
 }
 
-/* ========= 🔹 API Responses ========= */
-export interface QuizDetailResponse {
-  success: boolean
-  data: Quiz
-}
-
-export interface QuizStartResponse {
-  success: boolean
-  data: {
-    attempt: QuizAttempt
-  }
-}
-
-export interface QuizSubmitResponse {
-  success: boolean
-  data: {
-    attempt: QuizAttempt
-    correct_count: number
-    wrong_count: number
-    score: number
-    max_score: number
-  }
-}
-
-export interface QuizReviewResponse {
-  success: boolean
-  data: {
-    attempt: QuizAttempt
-    answers: (QuizAttemptAnswer & {
-      question_id: number
-      text: string
-      options: string[]
-      correct_options: string[]
-    })[]
-  }
-}
-
 export interface QuizDetailData {
   id: number
   title: string
@@ -111,9 +75,4 @@ export interface QuizDetailData {
     score: number
     completed_at: string
   } | null
-}
-
-export interface QuizDetailResponse {
-  success: boolean
-  data: QuizDetailData
 }

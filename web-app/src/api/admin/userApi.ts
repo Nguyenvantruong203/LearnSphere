@@ -25,13 +25,6 @@ async getUsers(params: GetUsersParams = {}): Promise<PaginationUser<User>> {
     return response.data
   },
 
-  async deleteUser(id: number): Promise<void> {
-    await httpAdmin(`/api/admin/users/${id}`, {
-      method: 'DELETE',
-      withCredentials: true
-    })
-  },
-
   async updateProfile(data: { name: string }): Promise<User> {
     const response = await httpAdmin('/api/admin/profile', {
       method: 'POST',

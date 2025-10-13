@@ -2,7 +2,7 @@
   <div class="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 to-gray-100">
     <!-- ===== Header ===== -->
     <header class="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 shadow-sm sticky top-0 z-40">
-      <div class="px-8 py-6 flex items-center justify-between">
+      <div class="px-4 py-6 flex items-center justify-between">
         <div class="flex-1 min-w-0">
           <h1
             class="text-3xl font-bold text-gray-800 truncate mb-2"
@@ -37,7 +37,7 @@
 
     <!-- ===== Main content ===== -->
     <main class="flex-1 overflow-y-auto">
-      <div class="max-w-6xl mx-auto p-8 space-y-8">
+      <div class="max-w-6xl mx-auto p-3 space-y-6">
         <!-- Loading state -->
         <div v-if="loading || !lesson" class="flex flex-col items-center justify-center py-20">
           <div class="w-16 h-16 border-4 border-teal-200 border-t-teal-500 rounded-full animate-spin mb-6"></div>

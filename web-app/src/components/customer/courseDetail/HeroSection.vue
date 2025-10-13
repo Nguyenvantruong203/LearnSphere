@@ -4,11 +4,14 @@
     <div class="absolute inset-0">
       <div class="absolute inset-0 bg-gradient-to-r from-teal-400/8 to-blue-400/8"></div>
       <div
-        class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-cyan-300/20 to-transparent rounded-full blur-3xl"></div>
+        class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-cyan-300/20 to-transparent rounded-full blur-3xl">
+      </div>
       <div
-        class="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-teal-300/20 to-transparent rounded-full blur-3xl"></div>
+        class="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-teal-300/20 to-transparent rounded-full blur-3xl">
+      </div>
       <div
-        class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMiIgZmlsbD0icmdiYSgxNDgsMTYzLDE4NCwwLjEpIi8+Cjwvc3ZnPg==')] opacity-20"></div>
+        class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMiIgZmlsbD0icmdiYSgxNDgsMTYzLDE4NCwwLjEpIi8+Cjwvc3ZnPg==')] opacity-20">
+      </div>
     </div>
 
     <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16">
@@ -27,8 +30,7 @@
               <span class="text-sm text-gray-600">Level:</span>
               <span class="text-sm font-semibold text-gray-800">Intermediate</span>
             </div>
-            <div
-              class="flex items-center space-x-2 bg-emerald-50 border border-emerald-200 rounded-full px-4 py-2">
+            <div class="flex items-center space-x-2 bg-emerald-50 border border-emerald-200 rounded-full px-4 py-2">
               <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
               <span class="text-sm font-medium text-emerald-700">Open</span>
             </div>
@@ -36,8 +38,7 @@
 
           <!-- Course Title -->
           <div class="space-y-6">
-            <h1
-              class="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-slate-800 leading-tight">
+            <h1 class="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-slate-800 leading-tight">
               {{ course?.title || 'AWS Certified Solutions Architect' }}
             </h1>
 
@@ -51,8 +52,7 @@
             class="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-white/50 shadow-lg hover:shadow-xl transition-all duration-300">
             <div class="flex items-center space-x-4">
               <div class="relative">
-                <img
-                  :src="course?.instructor?.avatar_url || 'https://static.codia.ai/image/2025-10-02/4dOSBEkxQr.png'"
+                <img :src="course?.instructor?.avatar_url || 'https://static.codia.ai/image/2025-10-02/4dOSBEkxQr.png'"
                   :alt="course?.instructor?.name || 'Instructor'"
                   class="w-16 h-16 rounded-full object-cover shadow-lg ring-4 ring-white" />
                 <div
@@ -79,24 +79,21 @@
           <div class="grid grid-cols-3 sm:grid-cols-3 gap-4">
             <div
               class="bg-white/90 backdrop-blur-sm rounded-xl p-4 border border-white/50 shadow-sm hover:shadow-md transition-all duration-300 text-center group">
-              <div
-                class="text-2xl font-bold text-slate-800 mb-1 group-hover:text-teal-600 transition-colors">
+              <div class="text-2xl font-bold text-slate-800 mb-1 group-hover:text-teal-600 transition-colors">
                 {{ course?.total_topics }}
               </div>
               <div class="text-sm text-slate-600">Topics</div>
             </div>
             <div
               class="bg-white/90 backdrop-blur-sm rounded-xl p-4 border border-white/50 shadow-sm hover:shadow-md transition-all duration-300 text-center group">
-              <div
-                class="text-2xl font-bold text-slate-800 mb-1 group-hover:text-teal-600 transition-colors">
+              <div class="text-2xl font-bold text-slate-800 mb-1 group-hover:text-teal-600 transition-colors">
                 {{ course?.total_lessons }}
               </div>
               <div class="text-sm text-slate-600">Lessons</div>
             </div>
             <div
               class="bg-white/90 backdrop-blur-sm rounded-xl p-4 border border-white/50 shadow-sm hover:shadow-md transition-all duration-300 text-center group">
-              <div
-                class="text-2xl font-bold text-slate-800 mb-1 group-hover:text-teal-600 transition-colors">
+              <div class="text-2xl font-bold text-slate-800 mb-1 group-hover:text-teal-600 transition-colors">
                 4.9
               </div>
               <div class="text-sm text-slate-600">Rating</div>
@@ -112,7 +109,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div class="flex items-start space-x-3">
                 <CheckOutlined class="text-teal-600 mt-1 flex-shrink-0" />
-                <span class="text-slate-700">{{course?.short_description}}</span>
+                <span class="text-slate-700">{{ course?.short_description }}</span>
               </div>
             </div>
           </div>
@@ -125,8 +122,7 @@
               class="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden hover:shadow-3xl transition-all duration-500">
               <!-- Course Image -->
               <div class="relative overflow-hidden">
-                <img
-                  :src="course?.thumbnail_url || 'https://static.codia.ai/image/2025-10-02/7OkwkSfwnx.png'"
+                <img :src="course?.thumbnail_url || 'https://static.codia.ai/image/2025-10-02/7OkwkSfwnx.png'"
                   :alt="course?.title || 'Course'"
                   class="w-full h-56 object-cover transition-transform duration-700 hover:scale-110" />
                 <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
@@ -142,10 +138,10 @@
 
               <div class="p-6 space-y-6">
                 <!-- Pricing -->
-                <div class="text-center">
+                <div v-if="!hasAccess" class="text-center">
                   <template v-if="course?.price > 0">
                     <div class="flex items-center justify-center space-x-3 mb-2">
-                      <FormatPrice :price="course?.price" class="text-4xl font-bold text-teal-600"/>
+                      <FormatPrice :price="course?.price" class="text-4xl font-bold text-teal-600" />
                     </div>
                   </template>
                   <template v-else>
@@ -156,6 +152,7 @@
 
                 <!-- CTA Buttons -->
                 <div class="space-y-3">
+                  <!-- 🟢 Đã mua / có quyền học -->
                   <template v-if="hasAccess">
                     <button
                       class="w-full h-14 bg-gradient-to-r from-emerald-500 to-green-500 text-white font-bold text-lg rounded-xl hover:from-emerald-600 hover:to-green-600 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
@@ -164,6 +161,7 @@
                     </button>
                   </template>
 
+                  <!-- 🟢 Miễn phí (chưa mua nhưng giá = 0) -->
                   <template v-else-if="course?.price <= 0">
                     <button
                       class="w-full h-14 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-lg rounded-xl hover:from-emerald-600 hover:to-teal-600 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
@@ -172,6 +170,7 @@
                     </button>
                   </template>
 
+                  <!-- 💰 Chưa mua (có giá) -->
                   <template v-else>
                     <button
                       class="w-full h-14 bg-gradient-to-r from-teal-500 to-cyan-500 text-white font-bold text-lg rounded-xl hover:from-teal-600 hover:to-cyan-600 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
@@ -240,6 +239,7 @@
                   </div>
                 </div>
               </div>
+
             </div>
           </div>
         </div>

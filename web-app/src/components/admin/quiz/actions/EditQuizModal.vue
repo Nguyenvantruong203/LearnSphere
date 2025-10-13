@@ -69,10 +69,10 @@ const localOpen = ref(false)
 // Default form data
 const defaultForm = () => ({
   title: '',
-  duration_minutes: 0,
+  duration_minutes: null,
   shuffle_questions: false,
   shuffle_options: false,
-  max_attempts: 0,
+  max_attempts: null,
 })
 
 const form = ref(defaultForm())
@@ -86,10 +86,10 @@ const populateForm = () => {
 
   form.value = {
     title: props.quiz.title ?? '',
-    duration_minutes: props.quiz.duration_minutes ?? 0,
+    duration_minutes: props.quiz.duration_minutes,
     shuffle_questions: !!props.quiz.shuffle_questions,
     shuffle_options: !!props.quiz.shuffle_options,
-    max_attempts: props.quiz.max_attempts ?? 0,
+    max_attempts: props.quiz.max_attempts,
   }
 }
 
