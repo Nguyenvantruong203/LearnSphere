@@ -108,7 +108,6 @@ import {
   UserOutlined,
   LogoutOutlined,
   DownOutlined,
-  SettingOutlined,
   LoginOutlined,
 } from '@ant-design/icons-vue'
 import { useAdminAuthStore } from '@/stores/adminAuth'

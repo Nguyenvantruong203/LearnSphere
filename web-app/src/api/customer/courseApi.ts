@@ -3,14 +3,14 @@ import type { Course, PaginationCourse, CourseSearchParams } from '@/types/Cours
 
 export const courseApi = {
   async getAllCourses(params: CourseSearchParams): Promise<PaginationCourse<Course>> {
-    return await httpClient('/api/client/courses', {
+    return await httpClient('/api/student/courses', {
       method: 'GET',
       params,
     })
   },
 
   async getCourse(courseId: string): Promise<Course> {
-    const response = await httpClient(`/api/client/courses/${courseId}`, {
+    const response = await httpClient(`/api/student/courses/${courseId}`, {
       method: 'GET',
     })
     return response.data || response
@@ -32,21 +32,21 @@ export const courseApi = {
     return response
   },
   async checkAccess(courseId: number) {
-    const response = await httpClient(`/api/client/courses/${courseId}/check-access`, {
+    const response = await httpClient(`/api/student/courses/${courseId}/check-access`, {
       method: 'GET',
     })
     return response
   },
 
   async getMyCourses(): Promise<Course[]> {
-    const response = await httpClient('/api/client/my-courses', {
+    const response = await httpClient('/api/student/my-courses', {
       method: 'GET',
     })
     return response.data || response
   },
   /** 🟢 Ghi danh vào khóa học (dùng cho free course) */
   async enroll(courseId: number) {
-    const response = await httpClient(`/api/client/courses/${courseId}/enroll`, {
+    const response = await httpClient(`/api/student/courses/${courseId}/enroll`, {
       method: 'POST',
     })
     return response.data || response

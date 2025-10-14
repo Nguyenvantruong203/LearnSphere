@@ -6,7 +6,7 @@ export const lessonApi = {
    * Dùng cho sidebar bên trái (LessonList)
    */
   async getLessonListByCourseId(courseId: number) {
-    return await httpClient(`/api/client/courses/${courseId}/lessons`, {
+    return await httpClient(`/api/student/courses/${courseId}/lessons`, {
       method: 'GET',
     })
   },
@@ -16,7 +16,7 @@ export const lessonApi = {
    * Dùng cho LessonPlayer bên phải
    */
   async getLessonDetail(lessonId: number) {
-    return await httpClient(`/api/client/lessons/${lessonId}/lesson-detail`, {
+    return await httpClient(`/api/student/lessons/${lessonId}/lesson-detail`, {
       method: 'GET',
     })
   },

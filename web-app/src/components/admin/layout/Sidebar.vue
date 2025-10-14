@@ -2,7 +2,7 @@
   <aside class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-gray-50 to-white z-10 px-6">
     <!-- Logo -->
     <div class="flex items-center justify-center pt-6 pb-8">
-      <router-link to="/" class="transform transition-transform duration-300 hover:scale-105">
+      <router-link to="/admin/courses" class="transform transition-transform duration-300 hover:scale-105">
         <img 
           src="@/assets/images/logo.png" 
           alt="LearnSphere Logo"

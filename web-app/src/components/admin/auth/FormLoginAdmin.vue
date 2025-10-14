@@ -68,7 +68,7 @@ const handleFinish = async (values: any) => {
         const payload = { ...values, target: 'admin' };
         const loggedInUser = await authStore.login(payload);
 
-        if (loggedInUser.role !== 'admin') {
+        if (!['admin', 'instructor'].includes(loggedInUser.role)) {
             await authStore.logout();
             throw new Error('Tài khoản không có quyền truy cập trang quản trị.');
         }
@@ -79,7 +79,11 @@ const handleFinish = async (values: any) => {
             duration: 2
         });
 
-        router.push({ name: 'admin-users' });
+        if (loggedInUser.role === 'admin') {
+            router.push({ name: 'admin-users' })
+        } else {
+            router.push({ name: 'admin-courses' })
+        }
 
     } catch (err: any) {
         error.value = err.message || 'Email hoặc mật khẩu không chính xác.';
