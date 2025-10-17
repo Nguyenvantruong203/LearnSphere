@@ -39,17 +39,13 @@ Route::middleware('auth:sanctum')->prefix('student')->group(function () {
     Route::get('/courses/{courseId}/lessons', [LessonController::class, 'getLessonListByCourseId']);
     Route::get('/lessons/{lessonId}/lesson-detail', [LessonController::class, 'getLessonDetail']);
 
-    // 🧩 Lấy chi tiết quiz + câu hỏi
+
     Route::get('/quizzes/{quizId}/quiz-detail', [QuizController::class, 'getQuizDetail']);
-
-    // 🧩 Bắt đầu một lượt làm quiz (tạo record quiz_attempts)
     Route::post('/quizzes/{quizId}/start', [QuizController::class, 'startQuizAttempt']);
-
-    // 🧩 Nộp bài quiz (lưu câu trả lời & chấm điểm)
     Route::post('/quizzes/{quizId}/submit', [QuizController::class, 'submitQuizAttempt']);
-
-    // 🧩 Xem lại kết quả bài làm (review)
     Route::get('/quizzes/{quizId}/review/{attemptId}', [QuizController::class, 'getQuizReview']);
-
+    //history
     Route::get('/quizzes/{quizId}/attempts', [QuizController::class, 'getQuizAttempts']);
+
+    
 });

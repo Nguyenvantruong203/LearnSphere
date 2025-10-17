@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\CourseController;
+use App\Http\Controllers\Admin\TopicController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\CouponController;
@@ -8,7 +10,6 @@ use App\Http\Controllers\Admin\CouponController;
 
 Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
-    Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/users/{id}/approve', [AuthController::class, 'approveUser']);
 
     // Profile routes

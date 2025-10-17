@@ -17,6 +17,7 @@ return [
         'client/*',
         'admin/*',
         'sanctum/csrf-cookie',
+        'broadcasting/auth', // Thêm dòng này để cho phép xác thực kênh bảo vệ
     ],
 
     'allowed_methods' => ['*'],
@@ -34,5 +35,5 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => true,
+    'supports_credentials' => true,// cho phép gửi cookie/token
 ];

@@ -30,17 +30,24 @@ class LessonQuestionController extends Controller
             'text'            => 'required|string',
             'options'         => 'nullable|array',
             'correct_options' => 'nullable|array',
-            'weight'          => 'nullable|numeric'
+            'weight'          => 'nullable|numeric',
+            'order'           => 'nullable|numeric',
         ]);
 
         $data['options'] = $this->normalizeOptions($data['options'] ?? []);
         $data['is_temp'] = false;
 
+        if (empty($data['order'])) {
+            $maxOrder = $quiz->questions()->max('order');
+            $data['order'] = $maxOrder ? $maxOrder + 1 : 1;
+        } else {
+            $data['order'] = (int) $data['order'];
+        }
+
         $question = $quiz->questions()->create($data);
 
         return response()->json($question, 201);
     }
-
 
     // Xem chi tiết câu hỏi
     public function show(Quiz $quiz, Question $question)
@@ -62,6 +69,11 @@ class LessonQuestionController extends Controller
             'correct_options' => 'nullable|array',
             'weight'          => 'nullable|numeric',
         ]);
+
+        if (!isset($data['order'])) {
+            $maxOrder = $quiz->questions()->max('order');
+            $data['order'] = $maxOrder ? $maxOrder + 1 : 1;
+        }
 
         $data['options'] = $this->normalizeOptions($data['options'] ?? []);
         $data['is_temp'] = false;

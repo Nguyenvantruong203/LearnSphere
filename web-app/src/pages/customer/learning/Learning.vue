@@ -4,17 +4,34 @@
       <!-- Left Sidebar -->
       <div class="w-[450px] bg-white border-r overflow-y-auto">
         <LessonList :course="courseData" :topics="topics" :currentLessonId="currentLessonId" :loading="isListLoading"
-          @select-lesson="handleSelectLesson" @open-quiz="handleOpenQuiz" />
+          @select-lesson="handleSelectLesson" @open-quiz="handleOpenQuiz" @open-chat="isChatOpen = true" />
       </div>
 
       <!-- Right Content Area -->
       <div class="flex-1 bg-info bg-opacity-20 overflow-y-auto">
         <LessonPlayer v-if="activeView === 'lesson'" :lesson="currentLessonData" :lessons="lessons"
           :loading="isLessonLoading" @open-quiz="openQuiz" />
-
         <QuizPlayer v-if="activeView === 'quiz'" :quiz-id="currentQuizId" @exit="activeView = 'lesson'" />
       </div>
 
+      <!-- 💬 Drawer Chat -->
+      <a-drawer v-model:open="isChatOpen" width="80%" title="Thảo luận khóa học" placement="right" :mask="false"
+        :closable="true">
+        <div class="flex h-full">
+          <!-- Danh sách thread -->
+          <ChatSidebar :current-user="currentUser" :course-id="courseData?.id" role="student"
+            @select-thread="handleSelectThread" @refresh="refreshSidebar" />
+
+          <!-- Cửa sổ chat -->
+          <div class="flex-1">
+            <ChatWindow v-if="activeThread && currentUser" :key="activeThread.id" :thread-id="activeThread.id"
+              :user="currentUser" />
+            <div v-else class="h-full flex items-center justify-center text-gray-400 text-sm">
+              Chọn một cuộc trò chuyện để bắt đầu
+            </div>
+          </div>
+        </div>
+      </a-drawer>
     </div>
   </LayoutLearning>
 </template>
@@ -26,8 +43,10 @@ import { notification } from 'ant-design-vue'
 import LayoutLearning from '../layout/layoutLearning.vue'
 import LessonList from '@/components/customer/learning/LessonList.vue'
 import LessonPlayer from '@/components/customer/learning/LessonPlayer.vue'
-import { lessonApi } from '@/api/customer/lessonApi'
 import QuizPlayer from '@/components/customer/quiz/QuizPlayer.vue'
+import ChatWindow from '@/components/common/chat/ChatWindow.vue'
+import ChatSidebar from '@/components/common/chat/ChatSidebar.vue'
+import { lessonApi } from '@/api/customer/lessonApi'
 import type { Lesson, LessonListResponse, LessonDetailResponse } from '@/types/Lesson'
 import type { Topic } from '@/types/Topic'
 
@@ -35,7 +54,6 @@ const route = useRoute()
 const activeView = ref<'lesson' | 'quiz'>('lesson')
 const currentQuizId = ref<number | null>(null)
 
-// ===== STATE =====
 const courseData = ref<{ id: number; title: string } | null>(null)
 const topics = ref<Topic[]>([])
 const lessons = ref<Lesson[]>([])
@@ -43,8 +61,16 @@ const currentLessonId = ref<number | null>(null)
 const currentLessonData = ref<any>(null)
 const isListLoading = ref(true)
 const isLessonLoading = ref(false)
+const isChatOpen = ref(false)
+const activeThread = ref<any>(null)
 
-// ===== FETCH DANH SÁCH BÀI HỌC =====
+const sidebarRef = ref()
+const refreshSidebar = () => sidebarRef.value?.fetchThreads()
+
+const clientAuth = JSON.parse(localStorage.getItem('client_auth') || '{}')
+const currentUser = ref(clientAuth?.user || null)
+
+/** ====== FETCH DANH SÁCH BÀI HỌC ====== */
 const fetchLessonList = async () => {
   try {
     isListLoading.value = true
@@ -60,7 +86,7 @@ const fetchLessonList = async () => {
     lessons.value = topics.value.flatMap((topic: Topic) =>
       (topic.lessons || []).map((lesson: Lesson) => ({
         ...lesson,
-        status: lesson.is_completed ? 'completed' : 'available'
+        status: lesson.is_completed ? 'completed' : 'available',
       }))
     )
 
@@ -71,17 +97,19 @@ const fetchLessonList = async () => {
       await fetchLessonDetail(savedLessonId)
     } else if (firstLesson) {
       currentLessonId.value = firstLesson.id
-      fetchLessonDetail(firstLesson.id) 
+      fetchLessonDetail(firstLesson.id)
     }
   } catch (err: any) {
-    console.error('fetchLessonList error:', err)
-    notification.error({ message: 'Lỗi tải khóa học', description: err.message || 'Không thể tải danh sách bài học' })
+    notification.error({
+      message: 'Lỗi tải khóa học',
+      description: err.message || 'Không thể tải danh sách bài học',
+    })
   } finally {
     isListLoading.value = false
   }
 }
 
-// ===== FETCH CHI TIẾT BÀI HỌC =====
+/** ====== FETCH CHI TIẾT BÀI HỌC ====== */
 const fetchLessonDetail = async (lessonId: number) => {
   try {
     isLessonLoading.value = true
@@ -89,45 +117,44 @@ const fetchLessonDetail = async (lessonId: number) => {
     if (!res.success) throw new Error('Không thể tải chi tiết bài học')
 
     const { lesson, course } = res.data
-    currentLessonData.value = {
-      ...lesson,
-      course_title: course?.title || '',
-    }
+    currentLessonData.value = { ...lesson, course_title: course?.title || '' }
     currentLessonId.value = lessonId
 
     // ✅ Lưu lại bài học gần nhất
     if (courseData.value?.id)
       localStorage.setItem(`lastLesson_${courseData.value.id}`, lessonId.toString())
   } catch (err: any) {
-    console.error('fetchLessonDetail error:', err)
-    notification.error({ message: 'Lỗi tải bài học', description: err.message || 'Không thể tải nội dung bài học' })
+    notification.error({
+      message: 'Lỗi tải bài học',
+      description: err.message || 'Không thể tải nội dung bài học',
+    })
   } finally {
     isLessonLoading.value = false
   }
 }
 
-// ===== EVENT HANDLERS =====
-const handleSelectLesson = (lessonId: number) => {
-  fetchLessonDetail(lessonId)
-}
-
+/** ====== EVENT HANDLERS ====== */
+const handleSelectLesson = (lessonId: number) => fetchLessonDetail(lessonId)
 const handleOpenQuiz = (quizId: number) => {
   currentQuizId.value = quizId
   activeView.value = 'quiz'
 }
 
-// ===== AUTO LOAD =====
+/** 🧩 Khi chọn thread trong sidebar */
+const handleSelectThread = (thread: any) => {
+  activeThread.value = thread
+}
+
+/** ====== AUTO LOAD ====== */
 onMounted(() => {
   fetchLessonList()
 })
 
-// ===== RELOAD KHI ĐỔI KHÓA HỌC =====
 watch(
   () => route.params.courseId,
-  () => {
-    fetchLessonList()
-  }
+  () => fetchLessonList()
 )
+
 const openQuiz = (quizId: number) => {
   currentQuizId.value = quizId
   activeView.value = 'quiz'

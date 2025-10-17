@@ -1,15 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Events\Verified;
 use Laravel\Socialite\Facades\Socialite;
@@ -40,7 +37,7 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => $request->password, // Mutator sẽ hash mật khẩu
             'role' => 'student', // Mặc định là student
-            'status' => 'pending', // Trạng thái chờ duyệt
+            'status' => 'approved',
         ]);
 
         event(new Registered($user));
@@ -237,35 +234,30 @@ class AuthController extends Controller
             if ($user) {
                 // Nếu tìm thấy, cập nhật thông tin từ Google
                 $user->update([
+                    'name' => $googleUser->name,
                     'username' => $googleUser->username,
-                    'google_id' => $googleUser->id, // Đảm bảo google_id được liên kết
+                    'google_id' => $googleUser->id,
                     'google_token' => $googleUser->token,
                     'google_refresh_token' => $googleUser->refreshToken,
-                    'avatar_url' => $user->avatar_url ?? $googleUser->avatar, // Chỉ cập nhật avatar nếu chưa có
+                    'avatar_url' => $user->avatar_url ?? $googleUser->avatar,
                 ]);
             } else {
                 // Nếu không tìm thấy, tạo người dùng mới
                 $user = User::create([
+                    'name' => $googleUser->name,
                     'username' => $googleUser->username,
                     'email' => $googleUser->email,
                     'google_id' => $googleUser->id,
                     'google_token' => $googleUser->token,
                     'google_refresh_token' => $googleUser->refreshToken,
-                    'email_verified_at' => now(), // Email từ Google được coi là đã xác thực
+                    'email_verified_at' => now(),
                     'avatar_url' => $googleUser->avatar,
-                    'status' => 'pending', // Mặc định chờ duyệt
-                    'role' => 'student', // Mặc định
-                    'password' => null, // Không cần mật khẩu
+                    'status' => 'approved',
+                    'role' => 'student',
+                    'password' => null,
                 ]);
             }
 
-            // Sau khi tìm hoặc tạo, kiểm tra trạng thái phê duyệt
-            if ($user->status !== 'approved') {
-                // Nếu tài khoản chưa được duyệt, trả về thông báo và không cấp token
-                return response()->json(['message' => 'Tài khoản của bạn đã được ghi nhận và đang chờ quản trị viên phê duyệt.'], 403);
-            }
-
-            // Nếu đã được duyệt, cấp token và cho đăng nhập
             $token = $user->createToken('auth_token')->plainTextToken;
 
             return response()->json([

@@ -1,13 +1,6 @@
 <template>
-  <a-modal
-    v-model:open="open"
-    title="Add New Lesson"
-    ok-text="Add"
-    cancel-text="Cancel"
-    @ok="handleFinish"
-    @cancel="handleCancel"
-    :confirm-loading="loading"
-  >
+  <a-modal v-model:open="open" title="Add New Lesson" ok-text="Add" cancel-text="Cancel" @ok="handleFinish"
+    @cancel="handleCancel" :confirm-loading="loading">
     <div v-if="youtubeConnected">
       <a-form :model="form" :rules="rules" ref="formRef" layout="vertical">
         <a-form-item label="Title" name="title" required>
@@ -15,30 +8,16 @@
         </a-form-item>
 
         <a-form-item label="Content" name="content" required>
-          <a-textarea
-            v-model:value="form.content"
-            placeholder="Enter lesson content"
-            rows="4"
-          />
+          <a-textarea v-model:value="form.content" placeholder="Enter lesson content" rows="4" />
         </a-form-item>
 
         <a-form-item label="Order" name="order">
-          <a-input-number
-            v-model:value="form.order"
-            min="1"
-            style="width: 100%"
-            placeholder="Enter display order"
-          />
+          <a-input-number v-model:value="form.order" min="1" style="width: 100%" placeholder="Enter display order" />
         </a-form-item>
 
         <a-form-item label="Upload Video" name="file">
-          <a-upload
-            v-model:file-list="fileList"
-            :before-upload="beforeUpload"
-            :max-count="1"
-            accept="video/mp4,video/quicktime,video/x-matroska"
-            list-type="text"
-          >
+          <a-upload v-model:file-list="fileList" :before-upload="beforeUpload" :max-count="1"
+            accept="video/mp4,video/quicktime,video/x-matroska" list-type="text">
             <a-button>Select Video</a-button>
           </a-upload>
         </a-form-item>
@@ -121,7 +100,7 @@ const beforeUpload = (file: File) => {
 }
 
 const resetForm = () => {
-  form.value = { title: '', content: '', order: 1, file: null }
+  form.value = { title: '', content: '', order: undefined, file: null }
   fileList.value = []
   formRef.value?.resetFields()
 }
@@ -134,7 +113,10 @@ const handleFinish = async () => {
     const formData = new FormData()
     formData.append('title', form.value.title)
     formData.append('content', form.value.content || '')
-    formData.append('order', String(form.value.order))
+    if (form.value.order != null && form.value.order !== undefined) {
+      formData.append('order', String(form.value.order))
+    }
+
     if (form.value.file) formData.append('file', form.value.file)
 
     await lessonApi.createLesson(props.topicId as number, formData)

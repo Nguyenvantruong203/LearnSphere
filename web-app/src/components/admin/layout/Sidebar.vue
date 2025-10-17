@@ -3,28 +3,15 @@
     <!-- Logo -->
     <div class="flex items-center justify-center pt-6 pb-8">
       <router-link to="/admin/courses" class="transform transition-transform duration-300 hover:scale-105">
-        <img 
-          src="@/assets/images/logo.png" 
-          alt="LearnSphere Logo"
-          class="w-36 h-22 object-contain drop-shadow-md"
-        />
+        <img src="@/assets/images/logo.png" alt="LearnSphere Logo" class="w-36 h-22 object-contain drop-shadow-md" />
       </router-link>
     </div>
-    
+
     <!-- Navigation -->
     <nav class="space-y-1">
       <!-- Main -->
-      <router-link 
-        v-for="item in filteredMainNavigation" 
-        :key="item.label" 
-        :to="item.path"
-        class="block"
-      >
-        <SidebarItem 
-          :icon="item.icon"
-          :label="item.label"
-          :active="route.path === item.path"
-        />
+      <router-link v-for="item in filteredMainNavigation" :key="item.label" :to="item.path" class="block">
+        <SidebarItem :icon="item.icon" :label="item.label" :active="route.path === item.path" />
       </router-link>
 
       <!-- Divider -->
@@ -35,17 +22,8 @@
       </div>
 
       <!-- Account -->
-      <router-link 
-        v-for="item in filteredAccountPages" 
-        :key="item.label" 
-        :to="item.path"
-        class="block"
-      >
-        <SidebarItem 
-          :icon="item.icon"
-          :label="item.label"
-          :active="route.path === item.path"
-        />
+      <router-link v-for="item in filteredAccountPages" :key="item.label" :to="item.path" class="block">
+        <SidebarItem :icon="item.icon" :label="item.label" :active="route.path === item.path" />
       </router-link>
     </nav>
   </aside>
@@ -55,10 +33,10 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAdminAuthStore } from '@/stores/adminAuth'
-import { 
-  HomeOutlined, 
-  BarChartOutlined, 
-  CreditCardOutlined, 
+import {
+  HomeOutlined,
+  BarChartOutlined,
+  CreditCardOutlined,
   ToolOutlined,
   UserOutlined,
   FileTextOutlined,
@@ -78,6 +56,7 @@ const mainNavigation = [
   { icon: BarChartOutlined, label: 'Users Management', path: '/admin/users', roles: ['admin'] },
   { icon: BookOutlined, label: 'Courses', path: '/admin/courses', roles: ['instructor'] },
   { icon: FileTextOutlined, label: 'Coupons', path: '/admin/coupons', roles: ['admin'] },
+  { icon: CreditCardOutlined, label: 'Chat', path: '/admin/chat', roles: ['admin', 'instructor'] },
 ]
 
 const accountPages = [

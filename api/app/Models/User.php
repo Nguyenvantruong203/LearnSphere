@@ -147,4 +147,25 @@ class User extends Authenticatable implements MustVerifyEmail
             ->withPivot('is_read', 'read_at')
             ->withTimestamps();
     }
+
+    public function chatThreads()
+    {
+        return $this->belongsToMany(ChatThread::class, 'chat_participants', 'user_id', 'thread_id')
+            ->withPivot('role', 'joined_at', 'last_read_at')
+            ->withTimestamps();
+    }
+
+    public function chatMessages()
+    {
+        return $this->hasMany(ChatMessage::class, 'sender_id');
+    }
+    public function groupThreads()
+    {
+        return $this->chatThreads()->where('is_group', true);
+    }
+
+    public function privateThreads()
+    {
+        return $this->chatThreads()->where('is_group', false);
+    }
 }

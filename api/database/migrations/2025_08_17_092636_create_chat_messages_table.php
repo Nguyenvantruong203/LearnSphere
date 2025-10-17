@@ -6,27 +6,23 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-
         Schema::create('chat_messages', function (Blueprint $table) {
             $table->id();
             $table->foreignId('thread_id')->constrained('chat_threads')->cascadeOnDelete();
             $table->foreignId('sender_id')->constrained('users')->cascadeOnDelete();
-            $table->longText('message');
+            $table->text('message');
+            $table->enum('message_type', ['text', 'image', 'file', 'system'])->default('text');
+            $table->json('attachments')->nullable();
             $table->timestamp('sent_at')->useCurrent();
             $table->timestamps();
+            $table->softDeletes();
 
             $table->index(['thread_id', 'sender_id', 'sent_at']);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('chat_messages');

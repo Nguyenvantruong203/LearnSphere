@@ -56,6 +56,8 @@ declare module 'vue' {
     BlogList: typeof import('./components/customer/blog/BlogList.vue')['default']
     CategoryCard: typeof import('./components/customer/course/CategoryCard.vue')['default']
     CategorySection: typeof import('./components/customer/course/CategorySection.vue')['default']
+    ChatSidebar: typeof import('./components/common/chat/ChatSidebar.vue')['default']
+    ChatWindow: typeof import('./components/common/chat/ChatWindow.vue')['default']
     CouponsTable: typeof import('./components/admin/coupon/CouponsTable.vue')['default']
     CourseCard: typeof import('./components/customer/course/CourseCard.vue')['default']
     CourseList: typeof import('./components/customer/course/CourseList.vue')['default']

@@ -12,6 +12,7 @@ return Application::configure(basePath: dirname(__DIR__))
             __DIR__ . '/../routes/student.php',
             __DIR__ . '/../routes/instructor.php',
             __DIR__ . '/../routes/auth.php',
+            __DIR__ . '/../routes/channels.php',
         ],
         apiPrefix: 'api',
         commands: __DIR__ . '/../routes/console.php',

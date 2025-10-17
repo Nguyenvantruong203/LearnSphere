@@ -1,0 +1,12 @@
+{
+  "debug": true,
+  "port": 6001,
+  "appManager.array.apps": [
+    {
+      "id": "learnsphere",
+      "key": "chat_key_123",
+      "secret": "chat_secret_123",
+      "name": "LearnSphere Chat"
+    }
+  ]
+}

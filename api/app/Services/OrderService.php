@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use App\Models\User;
 use App\Models\Notification;
+use App\Models\ChatThread;
+use App\Models\ChatParticipant;
 
 class OrderService
 {
@@ -65,12 +67,10 @@ class OrderService
                 return null;
             }
 
-            Log::info('ORDER FOUND', ['order_id' => $order->id]);
-
             $order->status = 'paid';
             $order->save();
 
-            // Tạo transaction
+            // 🔹 Ghi nhận giao dịch thanh toán
             Transaction::create([
                 'order_id'          => $order->id,
                 'amount'            => $order->final_price,
@@ -85,7 +85,7 @@ class OrderService
                 'currency'          => 'VND',
             ]);
 
-            // Nếu có coupon
+            // 🔹 Nếu có coupon
             if ($order->coupon_id) {
                 CouponUsage::create([
                     'coupon_id' => $order->coupon_id,
@@ -97,48 +97,109 @@ class OrderService
                 Coupon::where('id', $order->coupon_id)->increment('used_count');
             }
 
-            // Gán khóa học cho user + gửi notify
+            // 🔹 Gán khóa học cho user + join chat + gửi notify
             foreach ($order->items as $item) {
+                $course = $item->course;
+                $studentId = $order->user_id;
+                $instructorId = $course->created_by;
+
+                // ✅ Ghi danh user vào khóa học
                 UserCourse::updateOrCreate(
-                    ['user_id' => $order->user_id, 'course_id' => $item->course_id],
+                    ['user_id' => $studentId, 'course_id' => $course->id],
                     ['enrolled_at' => now(), 'is_paid' => true]
                 );
 
-                $instructorId = $item->course->created_by;
-                $instructor   = User::find($instructorId);
+                /**
+                 * ==================================================
+                 * 🔸 PHẦN MỚI: TẠO HOẶC THÊM CHAT GROUP + CHAT PRIVATE
+                 * ==================================================
+                 */
 
-                // Notify DB
+                // 🧩 (1) Chat nhóm khóa học
+                $groupThread = ChatThread::firstOrCreate(
+                    [
+                        'course_id'   => $course->id,
+                        'thread_type' => 'course_group',
+                    ],
+                    [
+                        'is_group'   => true,
+                        'title'      => $course->title,
+                        'created_by' => $instructorId,
+                    ]
+                );
+
+                ChatParticipant::firstOrCreate(
+                    ['thread_id' => $groupThread->id, 'user_id' => $studentId],
+                    ['role' => 'student', 'joined_at' => now()]
+                );
+
+                Log::info("✅ User {$studentId} joined group chat {$groupThread->id} for course {$course->id}");
+
+                // 🧩 (2) Chat riêng với giảng viên
+                $privateThread = ChatThread::firstOrCreate(
+                    [
+                        'course_id'   => $course->id,
+                        'thread_type' => 'private',
+                        'is_group'    => false,
+                    ],
+                    [
+                        'title'      => "Trao đổi với giảng viên {$course->instructor->name}",
+                        'created_by' => $studentId,
+                    ]
+                );
+
+                // Thêm học viên + giảng viên vào thread
+                ChatParticipant::firstOrCreate(
+                    ['thread_id' => $privateThread->id, 'user_id' => $studentId],
+                    ['role' => 'student', 'joined_at' => now()]
+                );
+
+                ChatParticipant::firstOrCreate(
+                    ['thread_id' => $privateThread->id, 'user_id' => $instructorId],
+                    ['role' => 'instructor', 'joined_at' => now()]
+                );
+
+                Log::info("✅ Created/Linked private chat between student {$studentId} and instructor {$instructorId}");
+
+                /**
+                 * ==================================================
+                 * 🔔 Gửi notification & email như cũ
+                 * ==================================================
+                 */
+
+                // 🔔 Notify instructor
                 Notification::create([
                     'type'    => 'order',
                     'title'   => 'Khóa học mới đã được đăng ký',
-                    'message' => "Người dùng #{$order->user_id} vừa đăng ký khóa học {$item->course->title}",
+                    'message' => "Người dùng #{$studentId} vừa đăng ký khóa học {$course->title}",
                     'data'    => json_encode([
                         'order_id'   => $order->id,
-                        'course_id'  => $item->course_id,
-                        'user_id'    => $order->user_id,
-                    ])
+                        'course_id'  => $course->id,
+                        'user_id'    => $studentId,
+                    ]),
                 ])->users()->attach([$instructorId]);
 
-                // Notify student
+                // 🔔 Notify student
                 Notification::create([
                     'type'    => 'course',
                     'title'   => 'Thanh toán thành công',
-                    'message' => "Bạn đã đăng ký thành công khóa học {$item->course->title}",
+                    'message' => "Bạn đã đăng ký thành công khóa học {$course->title}",
                     'data'    => json_encode([
                         'order_id'  => $order->id,
-                        'course_id' => $item->course_id,
+                        'course_id' => $course->id,
                     ]),
-                ])->users()->attach([$order->user_id]);
+                ])->users()->attach([$studentId]);
 
-                // ✅ Gửi mail cho instructor
+                // 📧 Gửi mail cho instructor
+                $instructor = User::find($instructorId);
                 if ($instructor && $instructor->email) {
                     Mail::to($instructor->email)->send(
-                        new InstructorNewEnrollmentMail($order, $item->course)
+                        new InstructorNewEnrollmentMail($order, $course)
                     );
                 }
             }
 
-            // Bắn thông báo tới Admin
+            // 🔔 Notify admin
             $adminIds = User::where('role', 'admin')->pluck('id')->toArray();
             if ($adminIds) {
                 Notification::create([
@@ -148,7 +209,7 @@ class OrderService
                     'data'    => json_encode([
                         'order_id' => $order->id,
                         'user_id'  => $order->user_id,
-                    ])
+                    ]),
                 ])->users()->attach($adminIds);
             }
 

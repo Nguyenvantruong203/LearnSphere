@@ -8,8 +8,6 @@ import Homepage from '@/pages/customer/Homepage.vue'
 import Blog from '@/pages/customer/blog/Blog.vue'
 import Course from '@/pages/customer/course/Course.vue'
 import GoogleCallback from '@/pages/customer/auth/GoogleCallback.vue'
-
-// --- Error Pages ---
 import NotFound from '@/pages/error/404.vue'
 import Forbidden from '@/pages/error/403.vue'
 import UserProfile from '@/pages/admin/profile/UserProfile.vue'
@@ -23,6 +21,7 @@ import MyCourses from '@/pages/customer/myCourses/MyCourses.vue'
 import Learning from '@/pages/customer/learning/Learning.vue'
 import QuizReview from '@/pages/customer/quiz/QuizReview.vue'
 import StudentProfile from '@/pages/customer/profile/StudentProfile.vue'
+import Chat from '@/pages/instructor/chat/Chat.vue'
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -180,6 +179,12 @@ export const routes: RouteRecordRaw[] = [
         name: 'admin-coupons',
         component: CouponList,
         meta: { title: 'Coupon Management', roles: ['admin'] },
+      },
+      {
+        path: 'chat',
+        name: 'Instructor chat with Student',
+        component: Chat,
+        meta: { title: 'Instructor chat with Student', roles: ['admin', 'instructor'] },
       },
     ],
   },

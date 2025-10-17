@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Models\ChatThread;
+use App\Models\ChatParticipant;
 
 class CourseController extends Controller
 {
@@ -29,7 +31,6 @@ class CourseController extends Controller
         return response()->json($courses);
     }
 
-    // POST /admin/courses
     public function store(Request $request)
     {
         $this->authorize('create', Course::class);
@@ -47,20 +48,46 @@ class CourseController extends Controller
             'thumbnail'         => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
         ]);
 
+        // 🔹 Upload thumbnail
         if ($request->hasFile('thumbnail')) {
             $path = $request->file('thumbnail')->store('thumbnails', 'public');
             $data['thumbnail_url'] = $path;
         }
-
         unset($data['thumbnail']);
 
+        // 🔹 Tạo khóa học
         $course = Course::create([
             'created_by' => $request->user()->id,
             ...$data
         ]);
 
-        return response()->json($course);
+        // 🔹 Tạo group chat cho khóa học (nếu chưa có)
+        $thread = ChatThread::create([
+            'course_id'   => $course->id,
+            'is_group'    => true,
+            'thread_type' => 'course_group',
+            'title'       => 'Thảo luận khóa học: ' . $course->title,
+            'created_by'  => $request->user()->id,
+        ]);
+
+        // 🔹 Thêm instructor (người tạo khóa) vào group chat
+        ChatParticipant::create([
+            'thread_id' => $thread->id,
+            'user_id'   => $request->user()->id,
+            'role'      => 'instructor',
+        ]);
+
+        // ✅ Trả về kết quả kèm thông tin chat
+        return response()->json([
+            'course' => $course,
+            'chat_thread' => [
+                'id' => $thread->id,
+                'title' => $thread->title,
+            ],
+            'message' => 'Khóa học và nhóm chat đã được tạo thành công.',
+        ], 201);
     }
+
 
     // GET /admin/courses/{course}
     public function show(Course $course)

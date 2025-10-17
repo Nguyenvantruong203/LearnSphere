@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Course;
 use App\Models\UserCourse;
+use App\Models\ChatThread;
+use App\Models\ChatParticipant;
 
 class CourseController extends Controller
 {
@@ -132,41 +134,81 @@ class CourseController extends Controller
         ]);
     }
 
-    public function enroll($courseId)
-    {
-        $user = auth()->user();
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bạn cần đăng nhập để tham gia khóa học.'
-            ], 401);
-        }
+public function enroll($courseId)
+{
+    $user = auth()->user();
 
-        $course = Course::findOrFail($courseId);
+    $course = Course::with('instructor')->findOrFail($courseId);
 
-        // Nếu khóa học có giá > 0 => không cho enroll trực tiếp
-        if ($course->price > 0) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Khóa học này yêu cầu thanh toán.'
-            ], 403);
-        }
-
-        // Tạo bản ghi trong user_courses nếu chưa có
-        UserCourse::firstOrCreate([
-            'user_id' => $user->id,
+    // 🧾 Ghi danh khóa học (nếu chưa có)
+    $enrollment = UserCourse::firstOrCreate(
+        [
+            'user_id'   => $user->id,
             'course_id' => $courseId,
-        ], [
-            'is_paid' => false,
+        ],
+        [
+            'is_paid'     => false,
             'enrolled_at' => now(),
-        ]);
+        ]
+    );
+    $instructorId = $course->created_by ?? $course->instructor_id;
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Tham gia khóa học thành công!',
-        ]);
+    // 🧩 (1) Chat nhóm khóa học
+    $groupThread = ChatThread::firstOrCreate(
+        [
+            'course_id'   => $course->id,
+            'thread_type' => 'course_group',
+        ],
+        [
+            'is_group'   => true,
+            'title'      => $course->title,
+            'created_by' => $instructorId,
+        ]
+    );
+
+    ChatParticipant::firstOrCreate(
+        ['thread_id' => $groupThread->id, 'user_id' => $user->id],
+        ['role' => 'student', 'joined_at' => now()]
+    );
+
+    // 🧩 (2) Chat riêng giữa học viên và giảng viên
+    $privateThread = ChatThread::firstOrCreate(
+        [
+            'course_id'   => $course->id,
+            'thread_type' => 'private',
+            'is_group'    => false,
+        ],
+        [
+            'title'      => "Trao đổi với giảng viên {$course->instructor->name}",
+            'created_by' => $user->id,
+        ]
+    );
+
+    // Thêm cả 2 người vào thread private
+    ChatParticipant::firstOrCreate(
+        ['thread_id' => $privateThread->id, 'user_id' => $user->id],
+        ['role' => 'student', 'joined_at' => now()]
+    );
+
+    if ($instructorId) {
+        ChatParticipant::firstOrCreate(
+            ['thread_id' => $privateThread->id, 'user_id' => $instructorId],
+            ['role' => 'instructor', 'joined_at' => now()]
+        );
     }
 
+    return response()->json([
+        'success' => true,
+        'message' => 'Tham gia khóa học thành công!',
+        'data' => [
+            'course_id' => $course->id,
+            'threads' => [
+                'group' => $groupThread->id,
+                'private' => $privateThread->id,
+            ]
+        ],
+    ]);
+}
 
     /**
      * Danh sách khóa học user đã mua
@@ -203,6 +245,7 @@ class CourseController extends Controller
             'data' => $courses
         ]);
     }
+
     public function recommended()
     {
         $courses = Course::where('status', 'published')
