@@ -8,6 +8,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AAlert: typeof import('ant-design-vue/es')['Alert']
     AAvatar: typeof import('ant-design-vue/es')['Avatar']
     ABreadcrumb: typeof import('ant-design-vue/es')['Breadcrumb']
     ABreadcrumbItem: typeof import('ant-design-vue/es')['BreadcrumbItem']
@@ -18,6 +19,8 @@ declare module 'vue' {
     ACollapse: typeof import('ant-design-vue/es')['Collapse']
     ACollapsePanel: typeof import('ant-design-vue/es')['CollapsePanel']
     ADatePicker: typeof import('ant-design-vue/es')['DatePicker']
+    ADescriptions: typeof import('ant-design-vue/es')['Descriptions']
+    ADescriptionsItem: typeof import('ant-design-vue/es')['DescriptionsItem']
     ADrawer: typeof import('ant-design-vue/es')['Drawer']
     ADropdown: typeof import('ant-design-vue/es')['Dropdown']
     AEmpty: typeof import('ant-design-vue/es')['Empty']
@@ -25,6 +28,7 @@ declare module 'vue' {
     AFormItem: typeof import('ant-design-vue/es')['FormItem']
     AInput: typeof import('ant-design-vue/es')['Input']
     AInputNumber: typeof import('ant-design-vue/es')['InputNumber']
+    AInputPassword: typeof import('ant-design-vue/es')['InputPassword']
     AInputSearch: typeof import('ant-design-vue/es')['InputSearch']
     AllInOneSection: typeof import('./components/customer/home/AllInOneSection.vue')['default']
     AMenu: typeof import('ant-design-vue/es')['Menu']
@@ -56,6 +60,7 @@ declare module 'vue' {
     BlogList: typeof import('./components/customer/blog/BlogList.vue')['default']
     CategoryCard: typeof import('./components/customer/course/CategoryCard.vue')['default']
     CategorySection: typeof import('./components/customer/course/CategorySection.vue')['default']
+    ChatBotWidget: typeof import('./components/common/chat/ChatBotWidget.vue')['default']
     ChatSidebar: typeof import('./components/common/chat/ChatSidebar.vue')['default']
     ChatWindow: typeof import('./components/common/chat/ChatWindow.vue')['default']
     CouponsTable: typeof import('./components/admin/coupon/CouponsTable.vue')['default']
@@ -81,6 +86,7 @@ declare module 'vue' {
     FeaturesSection: typeof import('./components/customer/home/FeaturesSection.vue')['default']
     FormatDate: typeof import('./components/admin/user/FormatDate.vue')['default']
     FormatPrice: typeof import('./components/common/FormatPrice.vue')['default']
+    FormatTime: typeof import('./components/common/FormatTime.vue')['default']
     FormatWeight: typeof import('./components/common/FormatWeight.vue')['default']
     FormLogin: typeof import('./components/customer/auth/FormLogin.vue')['default']
     FormLoginAdmin: typeof import('./components/admin/auth/FormLoginAdmin.vue')['default']
@@ -111,10 +117,12 @@ declare module 'vue' {
     SelectFromLessonModal: typeof import('./components/instructor/question/actions/forTopic/SelectFromLessonModal.vue')['default']
     Sidebar: typeof import('./components/admin/layout/Sidebar.vue')['default']
     SidebarItem: typeof import('./components/admin/layout/SidebarItem.vue')['default']
+    StatCard: typeof import('./components/customer/quiz/StatCard.vue')['default']
     SuccessSection: typeof import('./components/customer/home/SuccessSection.vue')['default']
     TeamSection: typeof import('./components/customer/about/TeamSection.vue')['default']
     TestimonialsSection: typeof import('./components/customer/home/TestimonialsSection.vue')['default']
     UserCell: typeof import('./components/admin/user/UserCell.vue')['default']
+    UserDrawer: typeof import('./components/admin/user/actions/UserDrawer.vue')['default']
     UsersTable: typeof import('./components/admin/user/UsersTable.vue')['default']
     WhatIsSection: typeof import('./components/customer/home/WhatIsSection.vue')['default']
   }

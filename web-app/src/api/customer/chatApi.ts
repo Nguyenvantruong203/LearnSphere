@@ -2,7 +2,11 @@ import { httpClient } from '@/helpers/http'
 import type { ChatThread, ChatMessage } from '@/types/Chat'
 
 export const chatApi = {
-  async getThreads(thread_type?: 'private' | 'course_group' | 'support', course_id?: number): Promise<ChatThread[]> {
+  /** 🔹 Lấy danh sách thread */
+  async getThreads(
+    thread_type?: 'private' | 'course_group' | 'support' | 'user_support' | 'consult',
+    course_id?: number
+  ): Promise<ChatThread[]> {
     const res = await httpClient('/api/chat/threads', {
       method: 'GET',
       params: {
@@ -13,12 +17,18 @@ export const chatApi = {
     return (res?.threads ?? res ?? []) as ChatThread[]
   },
 
+  /** 💬 Lấy tin nhắn trong thread */
   async getMessages(threadId: number): Promise<{ thread: ChatThread; messages: ChatMessage[] }> {
     const res = await httpClient(`/api/chat/${threadId}/messages`, { method: 'GET' })
     return res
   },
 
-  async sendMessage(threadId: number, message: string, messageType: string = 'text'): Promise<ChatMessage> {
+  /** ✉️ Gửi tin nhắn (text, image, file) */
+  async sendMessage(
+    threadId: number,
+    message: string,
+    messageType: string = 'text'
+  ): Promise<ChatMessage> {
     const res = await httpClient(`/api/chat/${threadId}/messages`, {
       method: 'POST',
       body: { message, message_type: messageType },
@@ -26,8 +36,20 @@ export const chatApi = {
     return (res as any).message
   },
 
-  async markAsRead(threadId: number): Promise<{ success: boolean; message: string }> {
-    const res = await httpClient(`/api/chat/${threadId}/read`, { method: 'POST' })
+  /** 🧩 Chat hỗ trợ người dùng (Student ↔ Admin) */
+  async startUserSupport(): Promise<{ thread: ChatThread }> {
+    const res = await httpClient('/api/chat/support/user', {
+      method: 'POST',
+    })
+    return res
+  },
+
+  /** 🧠 Chat tư vấn khóa học (Student ↔ Instructor) */
+  async startConsult(courseId: number): Promise<{ thread: ChatThread }> {
+    const res = await httpClient('/api/chat/consult/start', {
+      method: 'POST',
+      body: { course_id: courseId },
+    })
     return res
   },
 }

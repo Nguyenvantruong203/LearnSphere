@@ -1,26 +1,22 @@
 <template>
   <LayoutHomepage>
     <main>
-      <!-- Hero Section -->
       <HeroSection />
       
-      <!-- All-in-One Cloud Software Section -->
       <AllInOneSection />
-      
-      <!-- What is LearnSphere Section -->
+
       <WhatIsSection />
       
-      <!-- Our Success Section -->
       <SuccessSection />
       
-      <!-- Features Section -->
       <FeaturesSection />
       
-      <!-- Testimonials Section -->
       <TestimonialsSection />
       
-      <!-- News Section -->
       <NewsSection />
+
+      <ChatBotWidget threadType="user_support" />
+
     </main>
   </LayoutHomepage>
 </template>
@@ -36,12 +32,7 @@ import SuccessSection from '@/components/customer/home/SuccessSection.vue';
 import FeaturesSection from '@/components/customer/home/FeaturesSection.vue';
 import TestimonialsSection from '@/components/customer/home/TestimonialsSection.vue';
 import NewsSection from '@/components/customer/home/NewsSection.vue';
+import ChatBotWidget from '@/components/common/chat/ChatBotWidget.vue'
 
 const router = useRouter();
 </script>
-
-<style scoped>
-.bg-gradient-blue-teal {
-  background: linear-gradient(90deg, #136CB5 0%, #49BBBD 100%);
-}
-</style>

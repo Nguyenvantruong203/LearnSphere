@@ -125,7 +125,7 @@
                   </div>
                   <router-link to="/cart"
                     class="block w-full bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-center font-semibold py-3 rounded-xl hover:from-teal-600 hover:to-cyan-600 transition-all duration-300 transform hover:scale-105">
-                    Xem chi tiết giỏ hàng
+                    View Detail giỏ hàng
                   </router-link>
                 </div>
               </div>

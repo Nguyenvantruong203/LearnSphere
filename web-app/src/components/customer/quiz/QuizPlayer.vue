@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex flex-col">
+  <div class="min-h-screen bg-gradient-to-br from-[#e8f9f9] via-[#dbf5f5] to-[#f3ffff] flex flex-col">
     <!-- Header -->
     <QuizHeader :title="quiz?.title || 'Quiz'" @exit="$emit('exit')" />
 
@@ -12,18 +12,18 @@
 
         <!-- 🧠 Khi đang làm bài -->
         <div v-else class="space-y-8">
-          <!-- Timer & Progress - Enhanced Design -->
+          <!-- 🔹 Timer & Progress -->
           <div
-            class="bg-gradient-to-r from-white via-blue-50/30 to-purple-50/30 rounded-3xl p-8 shadow-2xl border border-gray-200/60 backdrop-blur-sm">
+            class="bg-gradient-to-r from-white via-[#e8f9f9] to-[#dbf5f5] rounded-3xl p-8 shadow-2xl border border-gray-200/60 backdrop-blur-sm">
             <div class="flex flex-col md:flex-row items-center justify-between gap-6">
-              <!-- Timer Section -->
+              <!-- Timer -->
               <div class="flex items-center gap-6 flex-1">
                 <div class="relative">
                   <div
-                    class="absolute inset-0 bg-gradient-to-br from-green-400 to-teal-500 rounded-3xl animate-pulse opacity-20">
+                    class="absolute inset-0 bg-gradient-to-br from-[#49bbbd] to-[#2ea5a8] rounded-3xl animate-pulse opacity-20">
                   </div>
                   <div
-                    class="relative w-16 h-16 bg-gradient-to-br from-green-500 to-teal-600 rounded-3xl flex items-center justify-center shadow-lg">
+                    class="relative w-16 h-16 bg-gradient-to-br from-[#49bbbd] to-[#2ea5a8] rounded-3xl flex items-center justify-center shadow-lg">
                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -32,30 +32,28 @@
                 </div>
                 <div>
                   <p class="text-sm text-gray-500 font-medium mb-1">⏰ Thời gian còn lại</p>
-                  <p
-                    class="text-3xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
+                  <p class="text-3xl font-bold text-[#2ea5a8]">
                     {{ formattedTime }}
                   </p>
                 </div>
               </div>
 
-              <!-- Progress Section -->
+              <!-- Progress -->
               <div class="flex items-center gap-6 flex-1 justify-end">
                 <div class="text-right">
                   <p class="text-sm text-gray-500 font-medium mb-1">📊 Tiến độ hoàn thành</p>
-                  <p
-                    class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  <p class="text-3xl font-bold text-[#2ea5a8]">
                     {{ answeredCount }}/{{ questions.length }}
                   </p>
                 </div>
                 <div class="relative">
                   <div
-                    class="absolute inset-0 bg-gradient-to-br from-blue-400 to-purple-500 rounded-3xl animate-pulse opacity-20">
+                    class="absolute inset-0 bg-gradient-to-br from-[#49bbbd] to-[#68d6d8] rounded-3xl animate-pulse opacity-20">
                   </div>
                   <div
-                    class="relative w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-lg">
+                    class="relative w-16 h-16 bg-gradient-to-br from-[#49bbbd] to-[#68d6d8] rounded-3xl flex items-center justify-center shadow-lg">
                     <span class="text-white font-bold text-lg">{{ Math.round((answeredCount / questions.length) * 100)
-                    }}%</span>
+                      }}%</span>
                   </div>
                 </div>
               </div>
@@ -69,40 +67,41 @@
               </div>
               <div class="w-full bg-gray-200 rounded-full h-3 shadow-inner">
                 <div
-                  class="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-500 shadow-sm"
+                  class="bg-gradient-to-r from-[#49bbbd] to-[#68d6d8] h-3 rounded-full transition-all duration-500 shadow-sm"
                   :style="{ width: `${(answeredCount / questions.length) * 100}%` }"></div>
               </div>
             </div>
           </div>
 
-          <!-- Questions - Enhanced Design -->
+          <!-- 🔸 Câu hỏi -->
           <div v-if="questions.length" class="space-y-8">
             <div v-for="(q, index) in questions" :key="q.id"
-              class="group bg-gradient-to-br from-white via-blue-50/20 to-purple-50/20 rounded-3xl p-8 shadow-2xl border border-gray-200/60 hover:shadow-3xl hover:border-blue-300/50 transition-all duration-300 relative overflow-hidden">
-              <!-- Background decoration -->
+              class="group bg-gradient-to-br from-white via-[#e8f9f9]/40 to-[#dbf5f5]/50 rounded-3xl p-8 shadow-2xl border border-gray-200/60 hover:shadow-3xl hover:border-[#49bbbd]/50 transition-all duration-300 relative overflow-hidden">
               <div
-                class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-blue-100/30 to-purple-100/30 rounded-full -translate-y-16 translate-x-16">
+                class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#49bbbd]/10 to-[#68d6d8]/10 rounded-full -translate-y-16 translate-x-16">
               </div>
 
               <div class="relative z-10">
                 <div class="flex items-start gap-6 mb-8">
                   <div class="relative">
                     <div
-                      class="absolute inset-0 bg-gradient-to-br from-blue-400 to-purple-500 rounded-2xl animate-pulse opacity-20">
+                      class="absolute inset-0 bg-gradient-to-br from-[#49bbbd] to-[#68d6d8] rounded-2xl animate-pulse opacity-20">
                     </div>
                     <div
-                      class="relative w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                      class="relative w-12 h-12 bg-gradient-to-br from-[#49bbbd] to-[#68d6d8] rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300">
                       <span class="text-white font-bold text-lg">{{ index + 1 }}</span>
                     </div>
                   </div>
                   <div class="flex-1">
                     <h3 class="text-xl md:text-2xl font-bold text-gray-800 leading-relaxed mb-3">{{ q.text }}</h3>
                     <div class="flex items-center gap-2">
-                      <div class="px-3 py-1 bg-gradient-to-r from-gray-100 to-gray-200 rounded-full">
-                        <p class="text-sm font-medium text-gray-600">
-                          {{ q.type === 'multiple_choice' ? '🔘 Chọn nhiều đáp án' :
-                            q.type === 'single' ? '🔴 Chọn một đáp án' :
-                              '🔘 Chọn một đáp án' }}
+                      <div class="px-3 py-1 bg-[#e8f9f9] rounded-full">
+                        <p class="text-sm font-medium text-[#2ea5a8]">
+                          {{ q.type === 'multiple_choice'
+                            ? '🔘 Chọn nhiều đáp án'
+                            : q.type === 'single'
+                              ? '🔴 Chọn một đáp án'
+                              : '🔘 Chọn một đáp án' }}
                         </p>
                       </div>
                     </div>
@@ -113,16 +112,16 @@
                   <div v-for="(opt, i) in q.options" :key="i" @click="selectAnswer(q.id, i)"
                     class="group/option relative p-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
                     :class="{
-                      'border-blue-500 bg-gradient-to-r from-blue-50 to-purple-50 shadow-md': isAnswerSelected(q.id, i),
-                      'border-gray-200 hover:border-blue-300 hover:bg-blue-50/30': !isAnswerSelected(q.id, i)
+                      'border-[#49bbbd] bg-gradient-to-r from-[#e8f9f9] to-[#dbf5f5] shadow-md': isAnswerSelected(q.id, i),
+                      'border-gray-200 hover:border-[#68d6d8] hover:bg-[#e8f9f9]/40': !isAnswerSelected(q.id, i)
                     }">
                     <div class="flex items-center gap-4">
                       <div class="relative">
                         <div
                           class="w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all duration-300"
                           :class="{
-                            'border-blue-500 bg-blue-500 shadow-lg': isAnswerSelected(q.id, i),
-                            'border-gray-300 group-hover/option:border-blue-400': !isAnswerSelected(q.id, i)
+                            'border-[#49bbbd] bg-[#49bbbd] shadow-lg': isAnswerSelected(q.id, i),
+                            'border-gray-300 group-hover/option:border-[#68d6d8]': !isAnswerSelected(q.id, i)
                           }">
                           <svg v-if="isAnswerSelected(q.id, i)" class="w-4 h-4 text-white" fill="currentColor"
                             viewBox="0 0 20 20">
@@ -133,8 +132,9 @@
                         </div>
                       </div>
                       <div class="flex items-center gap-3 flex-1">
-                        <span class="text-lg font-bold text-gray-500 min-w-[32px]">{{ String.fromCharCode(65 + i)
-                        }}.</span>
+                        <span class="text-lg font-bold text-gray-500 min-w-[32px]">
+                          {{ String.fromCharCode(65 + i) }}.
+                        </span>
                         <span class="text-gray-800 font-medium text-lg">{{ opt }}</span>
                       </div>
                     </div>
@@ -144,53 +144,46 @@
             </div>
           </div>
 
-          <!-- Submit Section - Enhanced Design -->
+          <!-- 🔹 Submit -->
           <div
-            class="bg-gradient-to-br from-white via-green-50/20 to-teal-50/20 rounded-3xl p-10 shadow-2xl border border-gray-200/60 text-center relative overflow-hidden">
-            <!-- Background decoration -->
+            class="bg-gradient-to-br from-white via-[#e8f9f9] to-[#dbf5f5] rounded-3xl p-10 shadow-2xl border border-gray-200/60 text-center relative overflow-hidden">
             <div
-              class="absolute top-0 left-0 w-40 h-40 bg-gradient-to-br from-green-200/20 to-teal-200/20 rounded-full -translate-y-20 -translate-x-20">
+              class="absolute top-0 left-0 w-40 h-40 bg-gradient-to-br from-[#49bbbd]/20 to-[#68d6d8]/20 rounded-full -translate-y-20 -translate-x-20">
             </div>
             <div
-              class="absolute bottom-0 right-0 w-32 h-32 bg-gradient-to-tl from-green-200/20 to-blue-200/20 rounded-full translate-y-16 translate-x-16">
+              class="absolute bottom-0 right-0 w-32 h-32 bg-gradient-to-tl from-[#68d6d8]/20 to-[#49bbbd]/20 rounded-full translate-y-16 translate-x-16">
             </div>
 
             <div class="relative z-10">
               <div
-                class="w-20 h-20 bg-gradient-to-br from-green-500 to-teal-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
+                class="w-20 h-20 bg-gradient-to-br from-[#49bbbd] to-[#2ea5a8] rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
                 <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
 
-              <h3
-                class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-4">
-                🎯 Hoàn thành bài thi
-              </h3>
-              <div class="mb-8">
-                <p class="text-lg text-gray-600 mb-2">Tiến độ hoàn thành của bạn</p>
-                <p class="text-2xl font-bold text-green-600">
-                  {{ answeredCount }}/{{ questions.length }}
-                  <span class="text-lg text-gray-500">({{ Math.round((answeredCount / questions.length) * 100)
-                  }}%)</span>
-                </p>
-              </div>
+              <h3 class="text-3xl md:text-4xl font-bold text-[#2ea5a8] mb-4">🎯 Hoàn thành bài thi</h3>
+              <p class="text-lg text-gray-600 mb-3">Tiến độ hoàn thành của bạn</p>
+              <p class="text-2xl font-bold text-[#49bbbd]">
+                {{ answeredCount }}/{{ questions.length }}
+                <span class="text-lg text-gray-500">
+                  ({{ Math.round((answeredCount / questions.length) * 100) }}%)
+                </span>
+              </p>
 
-              <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
                 <button
                   class="px-8 py-3 text-gray-600 border-2 border-gray-300 rounded-2xl font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 hover:shadow-md"
                   @click="$emit('exit')">
                   ← Thoát khỏi bài thi
                 </button>
                 <button
-                  class="group relative px-10 py-4 bg-gradient-to-r from-green-500 to-teal-600 text-white rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl hover:shadow-green-500/25 hover:-translate-y-1 transition-all duration-300 flex items-center gap-3 overflow-hidden"
+                  class="group relative px-10 py-4 bg-gradient-to-r from-[#49bbbd] via-[#2ea5a8] to-[#68d6d8] text-white rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl hover:shadow-[#49bbbd]/25 hover:-translate-y-1 transition-all duration-300 flex items-center gap-3 overflow-hidden"
                   @click="submitQuiz" :disabled="submitting">
-                  <!-- Background animation -->
                   <div
-                    class="absolute inset-0 bg-gradient-to-r from-green-600 to-teal-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    class="absolute inset-0 bg-gradient-to-r from-[#2ea5a8] to-[#49bbbd] opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   </div>
-
                   <div class="relative z-10 flex items-center gap-3">
                     <svg v-if="submitting" class="w-6 h-6 animate-spin" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
@@ -213,6 +206,7 @@
     </main>
   </div>
 </template>
+
 
 <script setup lang="ts">
 import { ref, onMounted, computed, onUnmounted, nextTick, h } from 'vue'
@@ -383,7 +377,7 @@ async function submitQuiz() {
         title: '🎉 Kết quả bài quiz',
         width: 500,
         centered: true,
-        okText: 'Xem chi tiết',
+        okText: 'View Detail',
         cancelText: 'Đóng',
         closable: true,
         content: h('div', { class: 'space-y-3 text-gray-700 mt-4' }, [

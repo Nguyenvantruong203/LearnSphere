@@ -24,39 +24,48 @@ class Course extends Model
         'short_description',
         'description',
 
-        'status',       // draft|published|archived
+        'status',
         'publish_at',
-
         'price',
-        'currency',     // VND
-        'level',        // beginner|intermediate|advanced
-        'language',     // vi
+        'currency',      // USD
+        'level',
+        'language',      // en
         'is_featured',
         'subject',
+
+        'instructor_share',
+        'platform_fee',
 
         'created_by',
         'updated_by',
     ];
 
+
     /**
      * Kiểu dữ liệu/cast cho các trường.
      */
     protected $casts = [
-        'publish_at' => 'datetime',
-        'price'      => 'decimal:2',
+        'publish_at'       => 'datetime',
+        'price'            => 'decimal:2',
+        'instructor_share' => 'decimal:2',
+        'platform_fee'     => 'decimal:2',
     ];
+
 
     /**
      * Giá trị mặc định.
      */
     protected $attributes = [
-        'status'     => 'draft',
-        'price'      => 0,
-        'currency'   => 'VND',
-        'level'      => 'beginner',
-        'language'   => 'vi',
-        'is_featured' => false,
+        'status'          => 'draft',
+        'price'           => 0,
+        'currency'        => 'USD',    // ✅ đổi sang USD
+        'level'           => 'beginner',
+        'language'        => 'en',     // ✅ đổi sang en
+        'is_featured'     => false,
+        'instructor_share' => 70.00,    // ✅ thêm mặc định
+        'platform_fee'    => 30.00,    // ✅ thêm mặc định
     ];
+
 
     /**
      * Append thuộc tính tính toán is_free vào JSON (tuỳ thích).
@@ -193,5 +202,18 @@ class Course extends Model
             return asset('storage/' . $value);
         }
         return $value;
+    }
+
+    //xem dánh sách doanh thu từ khoá học
+    public function payouts()
+    {
+        return $this->hasManyThrough(
+            Payout::class,
+            OrderItem::class,
+            'course_id',      // FK trên order_items
+            'order_item_id',  // FK trên payouts
+            'id',             // local key on courses
+            'id'              // local key on order_items
+        );
     }
 }

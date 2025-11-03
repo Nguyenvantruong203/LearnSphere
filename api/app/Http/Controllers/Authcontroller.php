@@ -179,25 +179,6 @@ class AuthController extends Controller
     }
 
     /**
-     * Admin phê duyệt người dùng.
-     */
-    public function approveUser(Request $request, $id)
-    {
-        if ($request->user()->role !== 'admin') {
-            return response()->json(['message' => 'Hành động này yêu cầu quyền quản trị viên.'], 403);
-        }
-
-        $userToApprove = User::findOrFail($id);
-        $userToApprove->status = 'approved';
-        $userToApprove->save();
-
-        // Optional: Gửi email thông báo cho người dùng đã được duyệt
-        // $userToApprove->notify(new AccountApprovedNotification());
-
-        return response()->json(['message' => 'Người dùng đã được phê duyệt thành công.', 'user' => $userToApprove]);
-    }
-
-    /**
      * Chuyển hướng người dùng đến trang xác thực của Google.
      *
      * @return \Symfony\Component\HttpFoundation\RedirectResponse

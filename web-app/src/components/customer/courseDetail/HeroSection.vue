@@ -155,7 +155,7 @@
                   <!-- 🟢 Đã mua / có quyền học -->
                   <template v-if="hasAccess">
                     <button
-                      class="w-full h-14 bg-gradient-to-r from-emerald-500 to-green-500 text-white font-bold text-lg rounded-xl hover:from-emerald-600 hover:to-green-600 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
+                      class="w-full h-14 bg-gradient-to-r from-teal-500 to-cyan-500 text-white font-bold text-lg rounded-xl hover:from-emerald-600 hover:to-green-600 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
                       @click="goToMyCourses">
                       Start Learning
                     </button>
@@ -239,7 +239,7 @@
                   </div>
                 </div>
               </div>
-
+              <ChatBotWidget v-if="!hasAccess" :course-id="course?.id" thread-type="consult" />
             </div>
           </div>
         </div>
@@ -256,6 +256,8 @@ import { useRouter } from 'vue-router'
 import { CartStorage } from '@/helpers/cartStorage'
 import { ref, onMounted } from 'vue'
 import { courseApi } from '@/api/customer/courseApi'
+import FormatPrice from '@/components/common/FormatPrice.vue'
+import ChatBotWidget from '@/components/common/chat/ChatBotWidget.vue'
 
 interface Props {
   course?: Course

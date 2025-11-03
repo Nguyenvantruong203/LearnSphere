@@ -7,6 +7,7 @@ use App\Http\Controllers\Student\CouponController;
 use App\Http\Controllers\Student\LessonController;
 use App\Http\Controllers\Student\QuizController;
 use App\Http\Controllers\Student\ProfileController;
+use App\Http\Controllers\Student\InstructorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,6 +25,9 @@ Route::get('/vnpay-ipn', [VNPayController::class, 'vnpayIpn'])->name('vnpay.ipn'
 
 Route::get('/student/courses', [CourseController::class, 'index']);
 Route::get('/student/courses/{id}', [CourseController::class, 'show']);
+
+Route::get('/instructors', [InstructorController::class, 'index']);
+Route::post('/instructors/apply', [InstructorController::class, 'apply']);
 
 Route::middleware('auth:sanctum')->prefix('student')->group(function () {
     Route::post('/profile/update', [ProfileController::class, 'updateProfile']);
@@ -47,5 +51,5 @@ Route::middleware('auth:sanctum')->prefix('student')->group(function () {
     //history
     Route::get('/quizzes/{quizId}/attempts', [QuizController::class, 'getQuizAttempts']);
 
-    
+
 });

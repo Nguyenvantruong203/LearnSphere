@@ -1,3 +1,4 @@
+// src/helpers/http.ts
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 type HttpOptions = {
@@ -6,11 +7,18 @@ type HttpOptions = {
   body?: unknown
   withCredentials?: boolean
   params?: Record<string, any>
-  authType?: 'client' | 'admin' // phân biệt loại token
+  authType?: 'client' | 'instructor' | 'admin' // 👈 thêm instructor
 }
 
-function getToken(authType: 'client' | 'admin' = 'client'): string | null {
-  const state = localStorage.getItem(authType === 'admin' ? 'admin_auth' : 'client_auth')
+/**
+ * 🔑 Lấy token đúng với vai trò
+ */
+function getToken(authType: 'client' | 'instructor' | 'admin' = 'client'): string | null {
+  let key = 'client_auth'
+  if (authType === 'admin') key = 'admin_auth'
+  if (authType === 'instructor') key = 'instructor_auth'
+
+  const state = localStorage.getItem(key)
   if (!state) return null
 
   try {
@@ -21,55 +29,65 @@ function getToken(authType: 'client' | 'admin' = 'client'): string | null {
   }
 }
 
+/**
+ * 🌐 Hàm http chính
+ */
 export async function http(path: string, opts: HttpOptions = {}) {
   const headers = new Headers({
     Accept: 'application/json',
     ...(opts.headers ?? {}),
   })
 
-  if (opts.body instanceof FormData) {
-    headers.delete('Content-Type')
-  } else {
+  // 🔹 Nếu không gửi FormData → thêm Content-Type
+  if (!(opts.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json')
   }
 
-  // 👇 Lấy token theo loại auth
+  // 🔹 Thêm token (Bearer)
   const token = getToken(opts.authType ?? 'client')
-  if (token) {
-    headers.set('Authorization', `Bearer ${token}`)
-  }
+  if (token) headers.set('Authorization', `Bearer ${token}`)
 
-  let finalPath = `${API_BASE}${path}`
+  // 🔹 Tạo URL hoàn chỉnh
+  let finalPath = path.startsWith('http')
+    ? path
+    : `${API_BASE}${path.startsWith('/') ? path : '/' + path}`
+
   if (opts.params) {
     const searchParams = new URLSearchParams()
-    for (const key in opts.params) {
-      if (opts.params[key] !== undefined && opts.params[key] !== null) {
-        searchParams.append(key, opts.params[key])
-      }
-    }
-    if (searchParams.toString()) {
-      finalPath += `?${searchParams.toString()}`
-    }
+    Object.entries(opts.params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null) searchParams.append(k, v as any)
+    })
+    const query = searchParams.toString()
+    if (query) finalPath += `?${query}`
   }
 
+  // 🔹 Gửi request
   const res = await fetch(finalPath, {
     method: opts.method ?? 'GET',
-    credentials: opts.withCredentials ? 'include' : 'same-origin',
+    mode: 'cors', // ✅ Cho phép CORS
+    credentials: 'include', // ✅ Cho phép cookie + Sanctum
     headers,
     body:
-      opts.body instanceof FormData ? opts.body : opts.body ? JSON.stringify(opts.body) : undefined,
+      opts.body instanceof FormData
+        ? opts.body
+        : opts.body
+        ? JSON.stringify(opts.body)
+        : undefined,
   })
 
+  // 🔹 Xử lý hết hạn session
   if (res.status === 401) {
-    if (opts.authType === 'admin') {
-      localStorage.removeItem('admin_auth')
-    }
-    if (opts.authType === 'client') {
-      localStorage.removeItem('client_auth')
-    }
+    const key =
+      opts.authType === 'admin'
+        ? 'admin_auth'
+        : opts.authType === 'instructor'
+        ? 'instructor_auth'
+        : 'client_auth'
+    localStorage.removeItem(key)
     throw new Error('Session expired. Please login again.')
   }
 
+  // 🔹 Parse JSON
   const isJson = res.headers.get('content-type')?.includes('application/json')
   const data = isJson ? await res.json() : await res.text()
 
@@ -81,8 +99,20 @@ export async function http(path: string, opts: HttpOptions = {}) {
   return data
 }
 
+/**
+ * 🎓 Client API (student)
+ */
 export const httpClient = (path: string, opts: Omit<HttpOptions, 'authType'> = {}) =>
   http(path, { ...opts, authType: 'client' })
 
+/**
+ * 🧑‍🏫 Instructor API
+ */
+export const httpInstructor = (path: string, opts: Omit<HttpOptions, 'authType'> = {}) =>
+  http(path, { ...opts, authType: 'instructor' })
+
+/**
+ * 👨‍💼 Admin API
+ */
 export const httpAdmin = (path: string, opts: Omit<HttpOptions, 'authType'> = {}) =>
   http(path, { ...opts, authType: 'admin' })

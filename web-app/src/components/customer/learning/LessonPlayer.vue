@@ -23,7 +23,7 @@
         <!-- Quiz button (desktop) -->
         <button
           v-if="lesson?.quiz"
-          class="group relative px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-2xl text-base font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-indigo-500/25 hover:-translate-y-0.5 overflow-hidden flex items-center gap-3"
+          class="group relative px-6 py-3 bg-gradient-to-r from-teal-500 to-blue-500 text-white rounded-2xl text-base font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-indigo-500/25 hover:-translate-y-0.5 overflow-hidden flex items-center gap-3"
           @click="$emit('open-quiz', lesson.quiz.id)"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

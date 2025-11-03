@@ -16,6 +16,7 @@ return [
         'api/*',
         'client/*',
         'admin/*',
+        'chat/*',
         'sanctum/csrf-cookie',
         'broadcasting/auth', // Thêm dòng này để cho phép xác thực kênh bảo vệ
     ],
@@ -25,6 +26,8 @@ return [
     'allowed_origins' => [
         env('FRONTEND_URL', 'http://localhost:5173'),
         'http://127.0.0.1:5173',
+        'https://2czx41h7-5173.asse.devtunnels.ms',
+        'https://protected-oklahoma-wright-polished.trycloudflare.com',
     ],
 
     'allowed_origins_patterns' => [],
@@ -35,5 +38,5 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => true,// cho phép gửi cookie/token
+    'supports_credentials' => true, // cho phép gửi cookie/token
 ];

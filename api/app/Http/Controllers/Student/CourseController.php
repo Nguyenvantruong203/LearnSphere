@@ -8,6 +8,7 @@ use App\Models\Course;
 use App\Models\UserCourse;
 use App\Models\ChatThread;
 use App\Models\ChatParticipant;
+use App\Models\Notification;
 
 class CourseController extends Controller
 {
@@ -134,81 +135,104 @@ class CourseController extends Controller
         ]);
     }
 
-public function enroll($courseId)
-{
-    $user = auth()->user();
+    public function enroll($courseId)
+    {
+        $user = auth()->user();
+        $course = Course::with('instructor')->findOrFail($courseId);
 
-    $course = Course::with('instructor')->findOrFail($courseId);
+        if (! $user) {
+            return response()->json(['success' => false, 'message' => 'Vui lòng đăng nhập trước khi tham gia.'], 401);
+        }
 
-    // 🧾 Ghi danh khóa học (nếu chưa có)
-    $enrollment = UserCourse::firstOrCreate(
-        [
-            'user_id'   => $user->id,
-            'course_id' => $courseId,
-        ],
-        [
-            'is_paid'     => false,
-            'enrolled_at' => now(),
-        ]
-    );
-    $instructorId = $course->created_by ?? $course->instructor_id;
-
-    // 🧩 (1) Chat nhóm khóa học
-    $groupThread = ChatThread::firstOrCreate(
-        [
-            'course_id'   => $course->id,
-            'thread_type' => 'course_group',
-        ],
-        [
-            'is_group'   => true,
-            'title'      => $course->title,
-            'created_by' => $instructorId,
-        ]
-    );
-
-    ChatParticipant::firstOrCreate(
-        ['thread_id' => $groupThread->id, 'user_id' => $user->id],
-        ['role' => 'student', 'joined_at' => now()]
-    );
-
-    // 🧩 (2) Chat riêng giữa học viên và giảng viên
-    $privateThread = ChatThread::firstOrCreate(
-        [
-            'course_id'   => $course->id,
-            'thread_type' => 'private',
-            'is_group'    => false,
-        ],
-        [
-            'title'      => "Trao đổi với giảng viên {$course->instructor->name}",
-            'created_by' => $user->id,
-        ]
-    );
-
-    // Thêm cả 2 người vào thread private
-    ChatParticipant::firstOrCreate(
-        ['thread_id' => $privateThread->id, 'user_id' => $user->id],
-        ['role' => 'student', 'joined_at' => now()]
-    );
-
-    if ($instructorId) {
-        ChatParticipant::firstOrCreate(
-            ['thread_id' => $privateThread->id, 'user_id' => $instructorId],
-            ['role' => 'instructor', 'joined_at' => now()]
+        // ✅ 1. Ghi danh học viên
+        $enrollment = UserCourse::firstOrCreate(
+            ['user_id' => $user->id, 'course_id' => $courseId],
+            ['is_paid' => true, 'enrolled_at' => now()]
         );
-    }
 
-    return response()->json([
-        'success' => true,
-        'message' => 'Tham gia khóa học thành công!',
-        'data' => [
-            'course_id' => $course->id,
-            'threads' => [
-                'group' => $groupThread->id,
-                'private' => $privateThread->id,
+        $instructorId = $course->created_by ?? $course->instructor_id;
+
+        // ✅ 2. Tạo hoặc tìm thread nhóm của khóa học
+        $groupThread = ChatThread::firstOrCreate(
+            [
+                'course_id'   => $course->id,
+                'thread_type' => 'course_group',
+            ],
+            [
+                'is_group'   => true,
+                'title'      => "Thảo luận: {$course->title}",
+                'created_by' => $instructorId,
             ]
-        ],
-    ]);
-}
+        );
+
+        ChatParticipant::firstOrCreate(
+            ['thread_id' => $groupThread->id, 'user_id' => $user->id],
+            ['role' => 'student', 'joined_at' => now()]
+        );
+
+        // ✅ 3. Nếu có thread "consult" → chuyển thành "private"
+        $consultThread = ChatThread::where([
+            'course_id' => $course->id,
+            'thread_type' => 'consult',
+            'created_by' => $user->id,
+        ])->first();
+
+        if ($consultThread) {
+            $consultThread->update([
+                'thread_type' => 'private',
+                'title'       => "Trao đổi với giảng viên {$course->instructor->name}",
+            ]);
+
+            // Đảm bảo instructor và student đều tham gia
+            $consultThread->participants()->syncWithoutDetaching([
+                $user->id => ['role' => 'student'],
+                $instructorId => ['role' => 'instructor'],
+            ]);
+
+            $privateThread = $consultThread;
+        } else {
+            // ✅ Nếu chưa từng chat consult, tạo mới thread private
+            $privateThread = ChatThread::firstOrCreate(
+                [
+                    'course_id'   => $course->id,
+                    'thread_type' => 'private',
+                    'is_group'    => false,
+                ],
+                [
+                    'title'      => "Trao đổi với giảng viên {$course->instructor->name}",
+                    'created_by' => $user->id,
+                ]
+            );
+
+            // Gắn hai người vào thread
+            $privateThread->participants()->syncWithoutDetaching([
+                $user->id => ['role' => 'student'],
+                $instructorId => ['role' => 'instructor'],
+            ]);
+        }
+
+        // ✅ 4. Gửi thông báo cho giảng viên
+        if ($instructorId) {
+            Notification::create([
+                'type'    => 'course',
+                'title'   => 'Học viên mới tham gia khóa học',
+                'message' => "{$user->name} vừa ghi danh vào khóa học {$course->title}.",
+                'data'    => json_encode(['course_id' => $course->id, 'user_id' => $user->id]),
+            ])->users()->attach([$instructorId]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Tham gia khóa học thành công!',
+            'data' => [
+                'course_id' => $course->id,
+                'threads' => [
+                    'group'   => $groupThread->id,
+                    'private' => $privateThread->id,
+                ]
+            ],
+        ]);
+    }
 
     /**
      * Danh sách khóa học user đã mua

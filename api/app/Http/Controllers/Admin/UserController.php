@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use App\Mail\InstructorApprovedMail;
+use App\Models\Notification;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\InstructorRejectedMail;
 
 class UserController extends Controller
 {
@@ -17,30 +21,57 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::query()->whereIn('role', ['student', 'instructor']);
+        // 🔹 Khởi tạo query cơ bản (chỉ lấy student & instructor)
+        $query = User::query()
+            ->whereIn('role', ['student', 'instructor']);
 
-        // Search
-        if ($request->has('search')) {
-            $searchTerm = $request->input('search');
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('name', 'like', "%{$searchTerm}%")
-                    ->orWhere('email', 'like', "%{$searchTerm}%")
-                    ->orWhere('username', 'like', "%{$searchTerm}%");
+        // 🔍 Tìm kiếm (search theo name, email, username, expertise)
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('username', 'like', "%{$search}%")
+                    ->orWhere('expertise', 'like', "%{$search}%");
             });
         }
 
-        // Filter by role / status
-        if ($request->filled('role')) $query->where('role', $request->input('role'));
-        if ($request->filled('status')) $query->where('status', $request->input('status'));
+        // 🎓 Lọc theo role (student hoặc instructor)
+        if ($role = $request->input('role')) {
+            if (in_array($role, ['student', 'instructor'])) {
+                $query->where('role', $role);
+            }
+        }
 
-        // Sorting
+        // ⚙️ Lọc theo status (pending / approved / rejected)
+        if ($status = $request->input('status')) {
+            $query->where('status', $status);
+        }
+
+        // 📅 Sắp xếp
         $sortBy = $request->input('sort_by', 'created_at');
         $sortOrder = $request->input('sort_order', 'desc');
         $query->orderBy($sortBy, $sortOrder);
 
-        $users = $query->paginate($request->input('per_page', 15));
+        // 📦 Phân trang (mặc định 15 bản ghi/trang)
+        $perPage = $request->input('per_page', 15);
+        $users = $query->paginate($perPage);
 
-        return response()->json($users);
+        // 🧠 Trả kết quả JSON chuẩn REST
+        return response()->json([
+            'success' => true,
+            'message' => 'Danh sách người dùng',
+            'filters' => [
+                'role' => $role ?? 'all',
+                'status' => $status ?? 'all',
+                'search' => $search ?? null,
+            ],
+            'pagination' => [
+                'current_page' => $users->currentPage(),
+                'per_page' => $users->perPage(),
+                'total' => $users->total(),
+            ],
+            'data' => $users->items(),
+        ]);
     }
 
     /**
@@ -84,8 +115,7 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'nullable|string|max:255', // ✅ không bắt buộc
-            'email' => ['sometimes', 'required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'name' => 'nullable|string|max:255',
             'username' => ['nullable', 'string', 'max:50', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:8',
             'phone' => ['nullable', 'string', 'max:20', Rule::unique('users')->ignore($user->id)],
@@ -168,5 +198,107 @@ class UserController extends Controller
         }
 
         return response()->json($user);
+    }
+
+    /**
+     * Admin phê duyệt người dùng.
+     */
+    public function approveUser(Request $request, $id)
+    {
+        // ✅ Chỉ admin mới được duyệt
+        if ($request->user()->role !== 'admin') {
+            return response()->json(['message' => 'Hành động này yêu cầu quyền quản trị viên.'], 403);
+        }
+
+        $userToApprove = User::findOrFail($id);
+
+        // ✅ Kiểm tra role trước khi duyệt (chỉ instructor)
+        if ($userToApprove->role !== 'instructor') {
+            return response()->json(['message' => 'Chỉ có thể phê duyệt người dùng là giảng viên.'], 400);
+        }
+
+        // ✅ Cập nhật trạng thái
+        $userToApprove->status = 'approved';
+        $userToApprove->save();
+
+        // ✅ Gửi notification nội bộ (Notification + notification_user)
+        $notification = Notification::create([
+            'title' => '🎉 Instructor Application Approved',
+            'message' => "Chúc mừng {$userToApprove->name}, hồ sơ giảng viên của bạn đã được phê duyệt!",
+            'type' => 'instructor_approved',
+            'related_id' => $userToApprove->id,
+        ]);
+
+        $notification->users()->attach($userToApprove->id, [
+            'is_read' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // ✅ Gửi email thông báo
+        try {
+            Mail::to($userToApprove->email)->queue(new InstructorApprovedMail($userToApprove));
+        } catch (\Throwable $e) {
+            \Log::error("Failed to send instructor approved mail: " . $e->getMessage());
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Người dùng đã được phê duyệt thành công và email thông báo đã được gửi.',
+            'user' => $userToApprove
+        ]);
+    }
+
+    public function rejectUser(Request $request, $id)
+    {
+        if ($request->user()->role !== 'admin') {
+            return response()->json(['message' => 'Hành động này yêu cầu quyền quản trị viên.'], 403);
+        }
+
+        $request->validate([
+            'reason' => 'nullable|string|max:500',
+        ]);
+
+        $userToReject = User::findOrFail($id);
+
+        if ($userToReject->role !== 'instructor') {
+            return response()->json(['message' => 'Chỉ có thể từ chối người dùng là giảng viên.'], 400);
+        }
+
+        if ($userToReject->status === 'rejected') {
+            return response()->json(['message' => 'Hồ sơ này đã bị từ chối trước đó.'], 400);
+        }
+
+        // ✅ Cập nhật trạng thái
+        $userToReject->status = 'rejected';
+        $userToReject->save();
+
+        // ✅ Gửi notification nội bộ
+        $notification = Notification::create([
+            'title' => '⚠️ Instructor Application Rejected',
+            'message' => "Rất tiếc, hồ sơ giảng viên của bạn đã bị từ chối." .
+                ($request->reason ? " Lý do: {$request->reason}" : ""),
+            'type' => 'instructor_rejected',
+            'related_id' => $userToReject->id,
+        ]);
+
+        $notification->users()->attach($userToReject->id, [
+            'is_read' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // ✅ Gửi email thông báo
+        try {
+            Mail::to($userToReject->email)->queue(new InstructorRejectedMail($userToReject, $request->reason));
+        } catch (\Throwable $e) {
+            \Log::error("Failed to send instructor rejection mail: " . $e->getMessage());
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Hồ sơ giảng viên đã bị từ chối và thông báo đã được gửi.',
+            'user' => $userToReject,
+        ]);
     }
 }

@@ -136,7 +136,7 @@ const handleCancel = () => {
   open.value = false
 }
 
-const auth = JSON.parse(localStorage.getItem('admin_auth') || '{}')
+const auth = JSON.parse(localStorage.getItem('instructor_auth') || '{}')
 const userId = auth.user?.id
 
 const connectYoutube = () => {

@@ -6,9 +6,10 @@ use App\Events\MessageSent;
 use App\Models\ChatThread;
 use App\Models\ChatMessage;
 use App\Models\ChatParticipant;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
+use App\Models\Course;
 
 class ChatController extends Controller
 {
@@ -24,9 +25,9 @@ class ChatController extends Controller
 
         // 🔹 Phân quyền theo vai trò
         $allowedTypes = match ($user->role) {
-            'student'    => ['course_group', 'private'],
-            'instructor' => ['course_group', 'private', 'support'],
-            'admin'      => ['support'],
+            'student'    => ['course_group', 'private', 'user_support', 'consult'],
+            'instructor' => ['course_group', 'private', 'support', 'consult'],
+            'admin'      => ['support', 'user_support'],
             default      => ['course_group', 'private'],
         };
 
@@ -35,7 +36,7 @@ class ChatController extends Controller
             ->when($type, fn($q) => $q->where('thread_type', $type))
             ->whereIn('thread_type', $allowedTypes)
             ->with([
-                'participants.user:id,name,avatar_url,role',
+                'participants:id,name,avatar_url,role',
                 'messages' => fn($q) => $q->latest('sent_at')->take(1),
                 'course:id,title',
             ])
@@ -48,35 +49,6 @@ class ChatController extends Controller
         ]);
     }
 
-    public function startPrivateInstructor($courseId)
-    {
-        $user = Auth::user();
-        $course = \App\Models\Course::findOrFail($courseId);
-
-        // Instructor của khóa học
-        $instructorId = $course->created_by;
-
-        // Tìm hoặc tạo thread riêng
-        $thread = ChatThread::firstOrCreate(
-            [
-                'course_id'   => $courseId,
-                'thread_type' => 'private_instructor',
-                'is_group'    => false,
-            ],
-            [
-                'title'       => 'Trao đổi với giảng viên',
-                'created_by'  => $user->id,
-            ]
-        );
-
-        $thread->participants()->syncWithoutDetaching([$user->id, $instructorId]);
-
-        return response()->json([
-            'success' => true,
-            'thread'  => $thread->load('participants.user:id,name,avatar_url')
-        ]);
-    }
-
     /**
      * 🔹 Lấy tin nhắn trong 1 thread
      */
@@ -84,24 +56,18 @@ class ChatController extends Controller
     {
         $userId = Auth::id();
 
-        $thread = ChatThread::with('participants.user:id,name,avatar_url')->findOrFail($threadId);
+        $thread = ChatThread::with('participants:id,name,avatar_url')->findOrFail($threadId);
 
-        // ✅ Kiểm tra quyền
         if (! $thread->participants()->where('user_id', $userId)->exists()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bạn không có quyền truy cập cuộc trò chuyện này.',
-            ], 403);
+            return response()->json(['success' => false, 'message' => 'Bạn không có quyền truy cập cuộc trò chuyện này.'], 403);
         }
 
-        // ✅ Lấy 50 tin nhắn mới nhất (có thể dùng phân trang sau)
         $messages = $thread->messages()
             ->with('sender:id,name,avatar_url')
             ->orderBy('sent_at', 'asc')
             ->take(50)
             ->get();
 
-        // ✅ Đánh dấu đã đọc
         ChatParticipant::where('thread_id', $threadId)
             ->where('user_id', $userId)
             ->update(['last_read_at' => now()]);
@@ -114,7 +80,7 @@ class ChatController extends Controller
     }
 
     /**
-     * 🔹 Gửi tin nhắn (Realtime Broadcast qua Soketi)
+     * 🔹 Gửi tin nhắn (Broadcast realtime)
      */
     public function sendMessage(Request $request, $threadId)
     {
@@ -127,15 +93,10 @@ class ChatController extends Controller
 
         $thread = ChatThread::findOrFail($threadId);
 
-        // ✅ Kiểm tra user có trong nhóm không
         if (! $thread->participants()->where('user_id', $user->id)->exists()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bạn không thuộc nhóm chat này.',
-            ], 403);
+            return response()->json(['success' => false, 'message' => 'Bạn không thuộc nhóm chat này.'], 403);
         }
 
-        // ✅ Tạo tin nhắn
         $message = ChatMessage::create([
             'thread_id'    => $thread->id,
             'sender_id'    => $user->id,
@@ -144,13 +105,9 @@ class ChatController extends Controller
             'sent_at'      => now(),
         ]);
 
-        // ✅ Cập nhật thời gian hoạt động thread
         $thread->touch();
 
-        // ✅ Broadcast realtime tới channel (qua Soketi)
-        broadcast(new MessageSent(
-            $message->load('sender:id,name,avatar_url')
-        ))->toOthers();
+        broadcast(new MessageSent($message->load('sender:id,name,avatar_url')))->toOthers();
 
         return response()->json([
             'success' => true,
@@ -159,52 +116,103 @@ class ChatController extends Controller
     }
 
     /**
-     * 🔹 Đánh dấu thread đã đọc
+     * 🔹 Student ↔ Admin (hỗ trợ người dùng)
      */
-    public function markAsRead($threadId)
+    public function startUserSupport()
     {
-        $participant = ChatParticipant::where('thread_id', $threadId)
-            ->where('user_id', Auth::id())
-            ->first();
+        $user = Auth::user();
 
-        if (! $participant) {
+        // 🧩 Chỉ cho phép student tạo chat hỗ trợ
+        if ($user->role !== 'student') {
             return response()->json([
                 'success' => false,
-                'message' => 'Không tìm thấy dữ liệu tham gia cuộc trò chuyện.',
+                'message' => 'Chỉ sinh viên mới được mở chat hỗ trợ với admin.',
+            ], 403);
+        }
+
+        // 🧩 Lấy admin thật sự
+        $admin = User::where('role', 'admin')->first();
+
+        if (! $admin) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy admin hỗ trợ. Vui lòng liên hệ quản trị viên.',
             ], 404);
         }
 
-        $participant->update(['last_read_at' => now()]);
+        // 🧩 Kiểm tra xem user này đã có thread với admin chưa
+        $thread = ChatThread::where('thread_type', 'user_support')
+            ->whereHas('participants', fn($q) => $q->where('user_id', $user->id))
+            ->whereHas('participants', fn($q) => $q->where('user_id', $admin->id))
+            ->first();
+
+        // 🧩 Nếu chưa có thì tạo mới
+        if (! $thread) {
+            $thread = ChatThread::create([
+                'thread_type' => 'user_support',
+                'is_group'    => false,
+                'title'       => 'Hỗ trợ người dùng',
+                'created_by'  => $user->id,
+            ]);
+
+            // 🧩 Attach đúng 2 user
+            $thread->participants()->attach([
+                $user->id => ['role' => $user->role, 'joined_at' => now()],
+                $admin->id => ['role' => $admin->role, 'joined_at' => now()],
+            ]);
+        }
 
         return response()->json([
             'success' => true,
-            'message' => 'Đã đánh dấu đã đọc.',
+            'thread'  => $thread->load('participants:id,name,avatar_url,role'),
         ]);
     }
 
-    public function startSupport()
+    public function startConsult(Request $request)
     {
         $user = Auth::user();
-        $adminId = User::where('role', 'admin')->value('id');
+        $courseId = $request->input('course_id');
 
-        if (!$adminId) {
-            return response()->json(['success' => false, 'message' => 'Không tìm thấy admin'], 404);
+        // ✅ Kiểm tra khóa học tồn tại
+        $course = Course::find($courseId);
+        if (! $course) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Khóa học không tồn tại.',
+            ], 404);
         }
 
+        // ✅ Lấy instructor của khóa học
+        $instructorId = $course->created_by;
+        if (! $instructorId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Khóa học chưa có giảng viên.',
+            ], 400);
+        }
+
+        // ✅ Tìm hoặc tạo thread tư vấn (consult)
         $thread = ChatThread::firstOrCreate(
             [
-                'thread_type' => 'support',
-                'is_group'    => false,
-                'created_by'  => $user->id,
+                'thread_type' => 'consult',
+                'course_id' => $courseId,
+                'is_group' => false,
+                'created_by' => $user->id,
             ],
-            ['title' => 'Hỗ trợ khách hàng']
+            [
+                'title' => "Tư vấn khóa học: {$course->title}",
+            ]
         );
 
-        $thread->participants()->syncWithoutDetaching([$user->id, $adminId]);
+        // ✅ Gắn người dùng và giảng viên làm participants
+        $thread->participants()->syncWithoutDetaching([
+            $user->id => ['role' => 'student'],
+            $instructorId => ['role' => 'instructor'],
+        ]);
 
         return response()->json([
             'success' => true,
-            'thread'  => $thread->load('participants.user:id,name,avatar_url'),
+            'thread' => $thread->load('participants:id,name,avatar_url,role'),
         ]);
     }
 }

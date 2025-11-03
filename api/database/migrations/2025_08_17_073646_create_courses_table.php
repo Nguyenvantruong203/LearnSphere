@@ -23,11 +23,17 @@ return new class extends Migration
             $t->timestamp('publish_at')->nullable();
             $t->string('subject')->nullable();
 
+            // 💲 Giá theo USD
             $t->decimal('price', 12, 2)->default(0);
-            $t->char('currency', 3)->default('VND');
+            $t->char('currency', 3)->default('USD'); // ✅ đổi sang USD
 
+            // 💰 Phần chia doanh thu
+            $t->decimal('instructor_share', 5, 2)->default(70.00);
+            $t->decimal('platform_fee', 5, 2)->default(30.00);
+
+            // 🌍 Ngôn ngữ mặc định là English
             $t->enum('level', ['beginner', 'intermediate', 'advanced'])->default('beginner');
-            $t->string('language', 5)->default('vi');
+            $t->string('language', 5)->default('en'); // ✅ đổi sang en
 
             $t->boolean('is_featured')->default(false);
 

@@ -21,6 +21,9 @@ export const useAdminAuthStore = defineStore(
       token.value = newToken
     }
 
+    /**
+     * 🔹 Đăng nhập — kiểm tra vai trò rồi lưu vào localStorage đúng key
+     */
     async function login(payload: LoginPayload): Promise<User> {
       const response = await authApi.login(payload)
 
@@ -30,6 +33,23 @@ export const useAdminAuthStore = defineStore(
 
       setToken(response.access_token)
       setUser(response.user)
+
+      // 🔹 Xác định key lưu theo vai trò
+      const storageKey =
+        response.user.role === 'admin'
+          ? 'admin_auth'
+          : response.user.role === 'instructor'
+          ? 'instructor_auth'
+          : 'client_auth'
+
+      // 🔹 Lưu thủ công vào localStorage để Echo dùng chính xác
+      localStorage.setItem(
+        storageKey,
+        JSON.stringify({
+          token: response.access_token,
+          user: response.user,
+        }),
+      )
 
       return response.user
     }
@@ -42,6 +62,11 @@ export const useAdminAuthStore = defineStore(
       }
       setUser(null)
       setToken(null)
+
+      // 🔹 Xóa cả 2 loại auth khi logout
+      localStorage.removeItem('admin_auth')
+      localStorage.removeItem('instructor_auth')
+
       await router.push('/admin/login')
     }
 
@@ -56,6 +81,6 @@ export const useAdminAuthStore = defineStore(
     }
   },
   {
-    persist: { key: 'admin_auth' }, // 👈 key riêng cho admin
+    persist: { key: 'admin_auth' }, // vẫn giữ key default cho Pinia
   },
 )

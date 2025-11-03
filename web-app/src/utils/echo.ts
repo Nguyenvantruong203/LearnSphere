@@ -3,8 +3,24 @@ import Pusher from 'pusher-js'
 
 window.Pusher = Pusher
 
-const token = JSON.parse(localStorage.getItem('client_auth') || '{}')?.token || ''
+// 🧩 Lấy token chính xác theo vai trò hiện có
+function getToken() {
+  const path = window.location.pathname
+  const isAdmin = path.startsWith('/admin') || path.startsWith('/instructor')
 
+  const admin = JSON.parse(localStorage.getItem('admin_auth') || '{}')
+  const instructor = JSON.parse(localStorage.getItem('instructor_auth') || '{}')
+  const client = JSON.parse(localStorage.getItem('client_auth') || '{}')
+
+  if (isAdmin && admin?.token) return admin?.token
+  if (isAdmin && instructor?.token) return instructor?.token
+  if (!isAdmin && client?.token) return client?.token
+  return ''
+}
+
+const token = getToken()
+
+// 🧠 Cấu hình Echo
 const echo = new Echo({
   broadcaster: 'pusher',
   key: import.meta.env.VITE_PUSHER_APP_KEY || 'chat_key_123',
@@ -14,11 +30,16 @@ const echo = new Echo({
   forceTLS: false,
   disableStats: true,
   enabledTransports: ['ws', 'wss'],
-  cluster: 'mt1', 
-  authEndpoint: 'http://127.0.0.1:8000/broadcasting/auth',
+  cluster: 'mt1',
+
+  // ✅ Auth endpoint chính xác (Laravel default)
+authEndpoint: `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/broadcasting/auth`,
+
+  // ✅ Gửi kèm token đúng guard
   auth: {
     headers: {
       Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
     },
   },
 })

@@ -19,7 +19,7 @@
         :closable="true">
         <div class="flex h-full">
           <!-- Danh sách thread -->
-          <ChatSidebar :current-user="currentUser" :course-id="courseData?.id" role="student"
+          <ChatSidebar ref="sidebarRef" :current-user="currentUser" :course-id="courseData?.id" role="student"
             @select-thread="handleSelectThread" @refresh="refreshSidebar" />
 
           <!-- Cửa sổ chat -->
@@ -140,11 +140,6 @@ const handleOpenQuiz = (quizId: number) => {
   activeView.value = 'quiz'
 }
 
-/** 🧩 Khi chọn thread trong sidebar */
-const handleSelectThread = (thread: any) => {
-  activeThread.value = thread
-}
-
 /** ====== AUTO LOAD ====== */
 onMounted(() => {
   fetchLessonList()
@@ -158,6 +153,10 @@ watch(
 const openQuiz = (quizId: number) => {
   currentQuizId.value = quizId
   activeView.value = 'quiz'
+}
+
+const handleSelectThread = (thread: any) => {
+  activeThread.value = thread
 }
 </script>
 

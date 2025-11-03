@@ -11,9 +11,8 @@ async getUsers(params: GetUsersParams = {}): Promise<PaginationUser<User>> {
 
   const response = await httpAdmin(`/api/admin/users?${query}`, {
     method: 'GET',
-    withCredentials: true
+    withCredentials: true,
   })
-
   return response
 },
   async updateUser(id: number, data: Partial<User>): Promise<User> {
@@ -24,6 +23,23 @@ async getUsers(params: GetUsersParams = {}): Promise<PaginationUser<User>> {
     })
     return response.data
   },
+
+  async approveUser(id: number): Promise<any> {
+  const response = await httpAdmin(`/api/admin/users/${id}/approve`, {
+    method: 'POST',
+    withCredentials: true,
+  })
+  return response
+},
+
+async rejectUser(id: number, reason: string): Promise<any> {
+  const response = await httpAdmin(`/api/admin/users/${id}/reject`, {
+    method: 'POST',
+    body: { reason },
+    withCredentials: true,
+  })
+  return response
+},
 
   async updateProfile(data: { name: string }): Promise<User> {
     const response = await httpAdmin('/api/admin/profile', {
@@ -42,4 +58,6 @@ async getUsers(params: GetUsersParams = {}): Promise<PaginationUser<User>> {
     })
     return response
   }
+  
+
 }

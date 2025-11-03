@@ -17,7 +17,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Application Environment
+    | Application Environmentapp
     |--------------------------------------------------------------------------
     |
     | This value determines the "environment" your application is currently
@@ -43,7 +43,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Application URL
+    | Application app
     |--------------------------------------------------------------------------
     |
     | This URL is used by the console to properly generate URLs when using
@@ -52,7 +52,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    'url' => env('APP_URL', 'http://localhost:8000'),
 
     /*
     |--------------------------------------------------------------------------

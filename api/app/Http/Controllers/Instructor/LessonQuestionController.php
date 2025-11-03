@@ -49,7 +49,7 @@ class LessonQuestionController extends Controller
         return response()->json($question, 201);
     }
 
-    // Xem chi tiết câu hỏi
+    // View Detail câu hỏi
     public function show(Quiz $quiz, Question $question)
     {
         $this->authorizeQuestion($quiz, $question);

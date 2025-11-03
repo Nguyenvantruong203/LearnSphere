@@ -269,7 +269,7 @@
             <!-- Call to Action -->
             <div class="action-section">
                 <p style="margin-bottom: 15px; color: #555;">
-                    Bạn có thể đăng nhập vào hệ thống để xem chi tiết và bắt đầu tương tác với học viên mới.
+                    Bạn có thể đăng nhập vào hệ thống để View Detail và bắt đầu tương tác với học viên mới.
                 </p>
                 <a href="{{ url('/admin/dashboard') }}" class="cta-button">
                     🚀 Đăng nhập hệ thống

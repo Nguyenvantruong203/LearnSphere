@@ -28,11 +28,18 @@ class User extends Authenticatable implements MustVerifyEmail
         'birth_date',
         'gender',
         'role',
-        'status',
+        'status', // pending | approved | rejected
         'google_id',
         'google_token',
         'google_refresh_token',
         'email_verified_at',
+
+        // 🔹 Dành riêng cho instructor
+        'expertise',
+        'bio',
+        'linkedin_url',
+        'portfolio_url',
+        'teaching_experience',
     ];
 
     /**
@@ -54,14 +61,12 @@ class User extends Authenticatable implements MustVerifyEmail
     ];
 
     /**
-     * The accessors to append to the model's array form.
-     *
-     * @var array
+     * Các accessor thêm vào tự động khi trả JSON.
      */
     protected $appends = ['avatar_url'];
 
     /**
-     * Mutator: luôn hash password khi set.
+     * Mutator: tự động hash password khi set.
      */
     public function setPasswordAttribute($value)
     {
@@ -70,14 +75,18 @@ class User extends Authenticatable implements MustVerifyEmail
         }
     }
 
+    /**
+     * Gửi email xác minh đăng ký tài khoản.
+     */
     public function sendEmailVerificationNotification()
     {
         $this->notify(new CustomVerifyEmail);
     }
 
-    /**
-     * Check nhanh quyền user.
-     */
+    // ==========================
+    // 🚦 CHECK ROLE
+    // ==========================
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
@@ -93,33 +102,50 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->role === 'student';
     }
 
+    // ==========================
+    // 🧑‍🏫 SCOPE CHO INSTRUCTOR
+    // ==========================
+
     /**
-     * Get the full URL to the user's avatar.
-     *
-     * @return string|null
+     * Truy vấn nhanh danh sách giảng viên được duyệt.
      */
-    public function getAvatarUrlAttribute()
+    public function scopeApprovedInstructors($query)
     {
-        // Lấy đường dẫn thô từ cột 'avatar_url' để tránh đệ quy vô hạn
-        $path = $this->attributes['avatar_url'] ?? null;
-
-        if ($path) {
-            // Nếu đã là một URL đầy đủ (ví dụ: từ Google), trả về luôn
-            if (str_starts_with($path, 'http')) {
-                return $path;
-            }
-            // Nếu là đường dẫn tương đối, tạo URL đầy đủ từ storage
-            // Sử dụng asset() helper để tránh lỗi linter "Undefined method 'url'"
-            return asset('storage/' . $path);
-        }
-
-        // Nếu không có avatar, trả về null
-        return null;
+        return $query->where('role', 'instructor')
+            ->where('status', 'approved');
     }
 
     /**
-     * Các quan hệ (ví dụ nếu sau này có bảng courses, posts...).
+     * Truy vấn nhanh danh sách giảng viên đang chờ duyệt.
      */
+    public function scopePendingInstructors($query)
+    {
+        return $query->where('role', 'instructor')
+            ->where('status', 'pending');
+    }
+
+    // ==========================
+    // 🌐 AVATAR
+    // ==========================
+    public function getAvatarUrlAttribute()
+    {
+        $path = $this->attributes['avatar_url'] ?? null;
+
+        if ($path) {
+            if (str_starts_with($path, 'http')) {
+                return $path;
+            }
+            return asset('storage/' . $path);
+        }
+
+        // Default avatar fallback
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name ?? 'User');
+    }
+
+    // ==========================
+    // 🔗 QUAN HỆ
+    // ==========================
+
     public function courses()
     {
         return $this->belongsToMany(Course::class, 'user_courses')
@@ -128,19 +154,18 @@ class User extends Authenticatable implements MustVerifyEmail
             ->withTimestamps();
     }
 
-    // ====== QUIZ ATTEMPTS (mỗi lượt làm bài) ======
     public function quizAttempts(): HasMany
     {
         return $this->hasMany(QuizAttempt::class);
     }
 
-    // ====== QUIZZES (liên kết thông qua attempts) ======
     public function quizzes()
     {
         return $this->belongsToMany(Quiz::class, 'quiz_attempts')
             ->withPivot(['attempt_no', 'score', 'status', 'submitted_at'])
             ->withTimestamps();
     }
+
     public function notifications()
     {
         return $this->belongsToMany(Notification::class, 'notification_users')
@@ -159,6 +184,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(ChatMessage::class, 'sender_id');
     }
+
     public function groupThreads()
     {
         return $this->chatThreads()->where('is_group', true);
@@ -167,5 +193,15 @@ class User extends Authenticatable implements MustVerifyEmail
     public function privateThreads()
     {
         return $this->chatThreads()->where('is_group', false);
+    }
+
+    public function wallet()
+    {
+        return $this->hasOne(InstructorWallet::class, 'instructor_id');
+    }
+
+    public function payouts()
+    {
+        return $this->hasMany(Payout::class, 'instructor_id');
     }
 }

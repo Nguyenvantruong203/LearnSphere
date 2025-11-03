@@ -69,7 +69,7 @@
         </div>
         
         <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-teal-500 to-cyan-500 text-white px-4 py-2 rounded-xl font-semibold text-sm hover:from-teal-600 hover:to-cyan-600 transform hover:scale-105 shadow-lg">
-          Xem chi tiết
+          View Detail
         </button>
       </div>
     </div>

@@ -37,6 +37,6 @@ protected function bootPolicies(): void
      */
     public function boot(): void
     {
-        //
+
     }
 }

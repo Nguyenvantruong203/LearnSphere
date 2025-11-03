@@ -3,23 +3,24 @@
     class="relative flex items-center justify-between px-4 py-2 cursor-pointer transition-all duration-300 group overflow-hidden"
     :class="[
       isActive
-        ? 'bg-gradient-to-r from-teal-600 to-blue-600 text-white shadow-lg'
-        : bgColor || 'bg-white hover:bg-gradient-to-r hover:from-teal-50 hover:to-blue-50 hover:shadow-md',
+        ? 'bg-gradient-to-r from-[#49bbbd] to-[#2ea5a8] text-white shadow-lg'
+        : bgColor || 'bg-white hover:bg-gradient-to-r hover:from-[#e8f9f9] hover:to-[#dbf5f5] hover:shadow-md',
       expandable ? 'rounded-t-xl' : 'rounded-xl'
     ]"
     @click="handleClick"
   >
+    <!-- 🔹 Thanh chỉ báo active -->
     <div
       v-if="isActive"
       class="absolute left-0 top-0 bottom-0 w-1 bg-white rounded-r-full"
     ></div>
 
-    <!-- 📘 Content -->
+    <!-- 📘 Nội dung -->
     <div class="flex items-center flex-1 min-w-0 gap-4 z-10">
       <!-- Icon -->
       <div
         class="flex items-center justify-center"
-        :class="isActive ? 'text-white' : 'text-teal-600 group-hover:text-teal-700'"
+        :class="isActive ? 'text-white' : 'text-[#49bbbd] group-hover:text-[#2ea5a8]'"
       >
         <slot name="icon" />
       </div>
@@ -35,20 +36,20 @@
         </h3>
       </div>
 
-      <!-- Extra (ví dụ: quiz, action button, icon...) -->
+      <!-- Extra -->
       <div
         class="flex items-center gap-2 transition-colors"
-        :class="isActive ? 'text-white' : 'text-gray-500 group-hover:text-teal-600'"
+        :class="isActive ? 'text-white' : 'text-gray-500 group-hover:text-[#49bbbd]'"
       >
         <slot name="extra" />
       </div>
     </div>
 
-    <!-- 🔽 Expand Arrow -->
+    <!-- 🔽 Nút mở rộng -->
     <div v-if="expandable" class="ml-3 z-10">
       <div
         class="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300"
-        :class="isActive ? 'bg-white/20' : 'bg-gray-100 group-hover:bg-gray-200'"
+        :class="isActive ? 'bg-white/20' : 'bg-gray-100 group-hover:bg-[#e8f9f9]'"
       >
         <svg
           class="w-4 h-4 transform transition-transform duration-300"
@@ -70,10 +71,10 @@
       </div>
     </div>
 
-    <!-- ✨ Subtle gradient overlay on hover (optional aesthetic) -->
+    <!-- ✨ Overlay hover -->
     <div
       v-if="!isActive"
-      class="absolute inset-0 bg-gradient-to-r from-teal-50/0 to-blue-50/0 group-hover:from-teal-50/60 group-hover:to-blue-50/60 transition-all duration-300"
+      class="absolute inset-0 bg-gradient-to-r from-[#e8f9f9]/0 to-[#dbf5f5]/0 group-hover:from-[#e8f9f9]/70 group-hover:to-[#dbf5f5]/70 transition-all duration-300"
     ></div>
   </div>
 </template>

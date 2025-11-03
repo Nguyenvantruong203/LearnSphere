@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Instructor\GoogleAuthController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChatController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Broadcast;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -30,8 +32,9 @@ Route::middleware('auth:sanctum')->prefix('chat')->group(function () {
     Route::get('/threads', [ChatController::class, 'getThreads']);
     Route::get('/{threadId}/messages', [ChatController::class, 'getMessages']);
     Route::post('/{threadId}/messages', [ChatController::class, 'sendMessage']);
-    Route::post('/{threadId}/read', [ChatController::class, 'markAsRead']);
 
-    //instructor
-    Route::post('/support/start', [ChatController::class, 'startSupport']);
+    // 🔹 Student ↔ Admin (hỗ trợ người dùng)
+    Route::post('/support/user', [ChatController::class, 'startUserSupport']);
+
+    Route::post('/consult/start', [ChatController::class, 'startConsult']);
 });

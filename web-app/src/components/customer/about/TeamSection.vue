@@ -16,12 +16,17 @@
         </p>
       </div>
 
-      <!-- Team Grid -->
+      <!-- 🔹 Team Grid -->
+      <div v-if="loadingList" class="text-center py-16">
+        <a-spin size="large" />
+      </div>
+
       <div
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16"
+        v-else
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12"
       >
         <div
-          v-for="(member, index) in teamMembers"
+          v-for="(member, index) in instructors"
           :key="member.id"
           v-motion
           :initial="{ opacity: 0, y: 50, scale: 0.9 }"
@@ -42,14 +47,11 @@
                 class="relative mx-auto w-32 h-32 rounded-full overflow-hidden shadow-lg group-hover:shadow-xl transition-shadow duration-300"
               >
                 <img
-                  :src="member.avatar"
+                  :src="member.avatar_url || defaultAvatar"
                   :alt="member.name"
                   class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
                 />
               </div>
-              <div
-                class="absolute bottom-2 right-2 w-6 h-6 bg-green-500 rounded-full border-4 border-white shadow-lg"
-              ></div>
             </div>
 
             <!-- Member Info -->
@@ -59,219 +61,254 @@
                   {{ member.name }}
                 </h3>
                 <p class="text-teal-600 font-semibold mb-3">
-                  {{ member.position }}
+                  {{ member.expertise || 'Instructor' }}
                 </p>
-                <p class="text-[#696984] text-sm leading-relaxed mb-6">
-                  {{ member.description }}
-                </p>
-              </div>
-
-              <!-- Skills -->
-              <div class="flex flex-wrap justify-center gap-2 mb-6">
-                <span
-                  v-for="skill in member.skills"
-                  :key="skill"
-                  class="px-3 py-1 bg-gradient-to-r from-teal-100 to-cyan-100 text-teal-700 text-xs font-medium rounded-full"
+                <p
+                  class="text-[#696984] text-sm leading-relaxed mb-6 line-clamp-4"
                 >
-                  {{ skill }}
-                </span>
+                  {{ member.bio || 'No description available.' }}
+                </p>
               </div>
 
-              <!-- Social Links -->
-              <div class="flex justify-center space-x-4 mt-auto">
+              <!-- LinkedIn -->
+              <div v-if="member.linkedin_url" class="flex justify-center mt-auto">
                 <a
-                  v-for="social in member.socials"
-                  :key="social.platform"
-                  :href="social.url"
+                  :href="member.linkedin_url"
                   target="_blank"
                   rel="noopener"
-                  :class="`w-10 h-10 rounded-full flex items-center justify-center text-white transition-all duration-300 transform hover:scale-110 shadow-lg ${social.color}`"
+                  class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white transition-all duration-300 transform hover:scale-110 shadow-md"
                 >
-                  <i :class="social.icon"></i>
+                  <i class="fab fa-linkedin text-lg"></i>
                 </a>
               </div>
             </div>
-
-            <!-- Decorative elements -->
-            <div
-              class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-            >
-              <div
-                class="w-3 h-3 bg-gradient-to-r from-teal-400 to-cyan-400 rounded-full animate-pulse"
-              ></div>
-            </div>
           </div>
         </div>
+      </div>
+
+      <!-- 🔸 Pagination -->
+      <div v-if="pagination.total > pagination.per_page" class="flex justify-center mb-20">
+        <a-pagination
+          :current="pagination.page"
+          :total="pagination.total"
+          :page-size="pagination.per_page"
+          show-less-items
+          @change="onPageChange"
+        />
+      </div>
+
+      <!-- ✅ Instructor Application Form -->
+      <div
+        v-motion
+        :initial="{ opacity: 0, y: 40 }"
+        :enter="{ opacity: 1, y: 0, transition: { duration: 0.8 } }"
+        class="bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50 rounded-3xl p-10 shadow-xl border border-gray-100"
+      >
+        <h3 class="text-3xl font-bold text-[#2F327D] text-center mb-8">
+          Become an Instructor
+        </h3>
+        <p class="text-center text-[#696984] max-w-2xl mx-auto mb-10">
+          Join our growing network of passionate educators and make a real
+          impact in shaping the future of learning.
+        </p>
+
+        <!-- Ant Design Form -->
+        <a-form
+          layout="vertical"
+          :model="form"
+          @finish="handleSubmit"
+          class="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6"
+        >
+          <a-form-item label="Full Name" name="name" :rules="[{ required: true, message: 'Please enter your name' }]">
+            <a-input v-model:value="form.name" placeholder="Enter your name" />
+          </a-form-item>
+
+          <a-form-item
+            label="Email"
+            name="email"
+            :rules="[
+              { required: true, message: 'Please enter your email' },
+              { type: 'email', message: 'Invalid email format' },
+            ]"
+          >
+            <a-input v-model:value="form.email" placeholder="Enter your email" />
+          </a-form-item>
+
+          <a-form-item label="Phone" name="phone">
+            <a-input v-model:value="form.phone" placeholder="Enter your phone number" />
+          </a-form-item>
+
+          <a-form-item label="Password" name="password">
+            <a-input-password
+              v-model:value="form.password"
+              placeholder="Enter a password (optional)"
+            />
+          </a-form-item>
+
+          <a-form-item
+            label="Expertise Area"
+            name="expertise"
+            :rules="[{ required: true, message: 'Please enter your expertise area' }]"
+          >
+            <a-input v-model:value="form.expertise" placeholder="e.g., Data Science, Marketing, Design" />
+          </a-form-item>
+
+          <a-form-item label="LinkedIn URL" name="linkedin_url">
+            <a-input v-model:value="form.linkedin_url" placeholder="https://linkedin.com/in/..." />
+          </a-form-item>
+
+          <a-form-item label="Portfolio URL" name="portfolio_url">
+            <a-input v-model:value="form.portfolio_url" placeholder="https://yourportfolio.com" />
+          </a-form-item>
+
+          <a-form-item label="Years of Experience" name="teaching_experience">
+            <a-input-number v-model:value="form.teaching_experience" :min="0" :max="50" class="w-full" />
+          </a-form-item>
+
+          <a-form-item
+            label="Short Bio"
+            name="bio"
+            :rules="[
+              { required: true, message: 'Please tell us about yourself' },
+              { min: 30, message: 'Bio should be at least 30 characters' },
+            ]"
+            class="md:col-span-2"
+          >
+            <a-textarea
+              v-model:value="form.bio"
+              rows="4"
+              placeholder="Tell us about your experience and teaching passion..."
+            />
+          </a-form-item>
+
+          <div class="md:col-span-2 flex justify-center mt-6">
+            <a-button
+              type="primary"
+              html-type="submit"
+              size="large"
+              :loading="loading"
+              class="px-8 py-3 rounded-full bg-gradient-to-r from-teal-500 to-blue-600 border-none text-white hover:from-teal-600 hover:to-blue-700"
+            >
+              Submit Application
+            </a-button>
+          </div>
+        </a-form>
+
+        <a-alert
+          v-if="successMessage"
+          type="success"
+          show-icon
+          class="mt-8 text-center max-w-2xl mx-auto"
+          :message="successMessage"
+        />
       </div>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { message } from 'ant-design-vue'
+import { instructorApi } from '@/api/customer/instructorApi'
+import type { ApplyInstructorPayload, User } from '@/types/User'
 
-interface Social {
-  platform: string
-  url: string
-  icon: string
-  color: string
+const instructors = ref<User[]>([])
+const loadingList = ref(false)
+const defaultAvatar = 'https://static.codia.ai/image/2025-10-02/4dOSBEkxQr.png'
+
+// Pagination
+const pagination = ref({
+  page: 1,
+  per_page: 9,
+  total: 0,
+})
+
+// Load instructors
+const fetchInstructors = async (page = 1) => {
+  loadingList.value = true
+  try {
+    const res = await instructorApi.getList({ page, per_page: pagination.value.per_page })
+    if (res.success) {
+      instructors.value = res.data.data
+      pagination.value = {
+        page: res.data.current_page,
+        per_page: res.data.per_page || 9,
+        total: res.data.total,
+      }
+    }
+  } catch (err) {
+    message.error('Failed to load instructors.')
+  } finally {
+    loadingList.value = false
+  }
 }
 
-interface TeamMember {
-  id: number
-  name: string
-  position: string
-  description: string
-  avatar: string
-  skills: string[]
-  socials: Social[]
+const onPageChange = (page: number) => {
+  fetchInstructors(page)
 }
 
-const teamMembers = ref<TeamMember[]>([
-  {
-    id: 1,
-    name: 'Nguyen Van Truong',
-    position: 'CEO & Founder',
-    description:
-      'With over 10 years of experience in education and technology, he leads the vision and strategy behind LearnSphere.',
-    avatar:
-      'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-    skills: ['Leadership', 'Strategy', 'EdTech Innovation'],
-    socials: [
-      {
-        platform: 'LinkedIn',
-        url: '#',
-        icon: 'fab fa-linkedin-in',
-        color: 'bg-blue-600 hover:bg-blue-700',
-      },
-      {
-        platform: 'Twitter',
-        url: '#',
-        icon: 'fab fa-twitter',
-        color: 'bg-sky-500 hover:bg-sky-600',
-      },
-    ],
-  },
-  {
-    id: 2,
-    name: 'Tran Thi Minh Anh',
-    position: 'CTO',
-    description:
-      'A technology expert experienced in building large-scale systems and advanced cloud computing architecture.',
-    avatar:
-      'https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-    skills: ['Cloud Architecture', 'AI/ML', 'Full Stack Development'],
-    socials: [
-      {
-        platform: 'GitHub',
-        url: '#',
-        icon: 'fab fa-github',
-        color: 'bg-gray-800 hover:bg-gray-900',
-      },
-      {
-        platform: 'LinkedIn',
-        url: '#',
-        icon: 'fab fa-linkedin-in',
-        color: 'bg-blue-600 hover:bg-blue-700',
-      },
-    ],
-  },
-  {
-    id: 3,
-    name: 'Le Hoang Nam',
-    position: 'Head of Product',
-    description:
-      'A UX/UI specialist passionate about creating intuitive and delightful learning experiences.',
-    avatar:
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-    skills: ['Product Design', 'User Research', 'Prototyping'],
-    socials: [
-      {
-        platform: 'Dribbble',
-        url: '#',
-        icon: 'fab fa-dribbble',
-        color: 'bg-pink-500 hover:bg-pink-600',
-      },
-      {
-        platform: 'Behance',
-        url: '#',
-        icon: 'fab fa-behance',
-        color: 'bg-blue-500 hover:bg-blue-600',
-      },
-    ],
-  },
-  {
-    id: 4,
-    name: 'Pham Thi Huong',
-    position: 'Head of Content',
-    description:
-      'An academic with 15 years of teaching experience, specializing in developing high-quality educational materials.',
-    avatar:
-      'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-    skills: ['Curriculum Design', 'Educational Psychology', 'Content Strategy'],
-    socials: [
-      {
-        platform: 'LinkedIn',
-        url: '#',
-        icon: 'fab fa-linkedin-in',
-        color: 'bg-blue-600 hover:bg-blue-700',
-      },
-      {
-        platform: 'Academia',
-        url: '#',
-        icon: 'fas fa-graduation-cap',
-        color: 'bg-green-600 hover:bg-green-700',
-      },
-    ],
-  },
-  {
-    id: 5,
-    name: 'Do Van Khoi',
-    position: 'Lead Developer',
-    description:
-      'A full-stack developer specializing in modern web technologies and scalable microservice architectures.',
-    avatar:
-      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-    skills: ['Vue.js', 'Node.js', 'Docker', 'AWS'],
-    socials: [
-      {
-        platform: 'GitHub',
-        url: '#',
-        icon: 'fab fa-github',
-        color: 'bg-gray-800 hover:bg-gray-900',
-      },
-      {
-        platform: 'Stack Overflow',
-        url: '#',
-        icon: 'fab fa-stack-overflow',
-        color: 'bg-orange-500 hover:bg-orange-600',
-      },
-    ],
-  },
-  {
-    id: 6,
-    name: 'Ngo Thi Lan',
-    position: 'Marketing Director',
-    description:
-      'A digital marketing expert with experience in brand strategy and building vibrant learning communities.',
-    avatar:
-      'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-    skills: ['Digital Marketing', 'Brand Strategy', 'Community Growth'],
-    socials: [
-      {
-        platform: 'LinkedIn',
-        url: '#',
-        icon: 'fab fa-linkedin-in',
-        color: 'bg-blue-600 hover:bg-blue-700',
-      },
-      {
-        platform: 'Instagram',
-        url: '#',
-        icon: 'fab fa-instagram',
-        color:
-          'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600',
-      },
-    ],
-  },
-])
+// Load initial
+onMounted(() => {
+  fetchInstructors(1)
+})
+
+// Apply form
+const form = ref<ApplyInstructorPayload>({
+  name: '',
+  email: '',
+  phone: '',
+  password: '',
+  expertise: '',
+  bio: '',
+  linkedin_url: '',
+  portfolio_url: '',
+  teaching_experience: 0,
+})
+
+const loading = ref(false)
+const successMessage = ref('')
+
+// Submit handler
+const handleSubmit = async () => {
+  loading.value = true
+  try {
+    const res = await instructorApi.apply(form.value)
+    if (res.success) {
+      message.success(res.message)
+      successMessage.value = res.message
+      fetchInstructors(1) // reload list sau khi apply thành công
+      form.value = {
+        name: '',
+        email: '',
+        phone: '',
+        password: '',
+        expertise: '',
+        bio: '',
+        linkedin_url: '',
+        portfolio_url: '',
+        teaching_experience: 0,
+      }
+    } else {
+      message.error(res.message || 'Failed to submit application.')
+    }
+  } catch (err: any) {
+    message.error(err?.response?.data?.message || 'Something went wrong.')
+  } finally {
+    loading.value = false
+    setTimeout(() => (successMessage.value = ''), 5000)
+  }
+}
 </script>
+
+<style scoped>
+.ant-form-item-label label {
+  font-weight: 600;
+  color: #2f327d;
+}
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>

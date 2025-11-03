@@ -1,22 +1,37 @@
-// User entity
+/**
+ * ================================
+ * 👤 USER TYPES (Shared Entity)
+ * ================================
+ */
+
+// User entity (bao gồm cả instructor fields)
 export interface User {
   id: number
   name: string
   username?: string
   email: string
-  email_verified_at?: string
-  phone?: string
-  address?: string
-  avatar_url?: string
-  birth_date?: string
-  gender?: 'male' | 'female' | 'other'
+  email_verified_at?: string | null
+  phone?: string | null
+  address?: string | null
+  avatar_url?: string | null
+  birth_date?: string | null
+  gender?: 'male' | 'female' | 'other' | null
   role: 'student' | 'instructor' | 'admin'
   status: 'pending' | 'approved' | 'rejected'
+  expertise?: string | null
+  bio?: string | null
+  linkedin_url?: string | null
+  portfolio_url?: string | null
+  teaching_experience?: number | null
   created_at: string
   updated_at: string
 }
 
-// Query params khi get danh sách user
+/**
+ * ================================
+ * 🔍 GET USERS PARAMS (Filters)
+ * ================================
+ */
 export interface GetUsersParams {
   page?: number
   per_page?: number
@@ -27,7 +42,11 @@ export interface GetUsersParams {
   sort_order?: 'asc' | 'desc'
 }
 
-// Pagination generic cho user
+/**
+ * ================================
+ * 📄 PAGINATION GENERIC
+ * ================================
+ */
 export interface PaginationUser<T> {
   current_page: number
   data: T[]
@@ -48,7 +67,11 @@ export interface PaginationUser<T> {
   total: number
 }
 
-// Auth payloads & responses
+/**
+ * ================================
+ * 🔐 AUTH PAYLOADS & RESPONSES
+ * ================================
+ */
 export type RegisterPayload = {
   username: string
   email: string
@@ -70,4 +93,36 @@ export type LoginResponse = {
 
 export type RegisterResponse = {
   message: string
+}
+
+/**
+ * ================================
+ * 🎓 INSTRUCTOR MODULE
+ * ================================
+ */
+
+// Payload apply instructor
+export interface ApplyInstructorPayload {
+  name: string
+  email: string
+  phone?: string
+  password?: string
+  expertise: string
+  bio: string
+  linkedin_url?: string
+  portfolio_url?: string
+  teaching_experience?: number
+}
+
+// Response khi apply instructor
+export interface ApplyInstructorResponse {
+  success: boolean
+  message: string
+  data?: User
+}
+
+// Response khi lấy danh sách instructor
+export interface InstructorListResponse {
+  success: boolean
+  data: PaginationUser<User>
 }
