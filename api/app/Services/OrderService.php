@@ -16,6 +16,9 @@ use App\Models\User;
 use App\Models\Notification;
 use App\Models\ChatThread;
 use App\Models\ChatParticipant;
+use App\Models\InstructorWallet;
+use App\Models\Payout;
+use App\Models\WalletTransaction;
 
 class OrderService
 {
@@ -59,18 +62,23 @@ class OrderService
     public function markOrderPaid($txnRef, $params)
     {
         return DB::transaction(function () use ($txnRef, $params) {
-            Log::info('MARK ORDER PAID CALLED', ['txnRef' => $txnRef]);
 
-            $order = Order::with('items.course')->where('id', $txnRef)->first();
-            if (!$order) {
-                Log::warning('ORDER NOT FOUND', ['txnRef' => $txnRef]);
+            Log::info('💰 [PaymentService] markOrderPaid called', ['txnRef' => $txnRef]);
+
+            /** 1. Lấy đơn hàng */
+            $order = Order::with(['items.course.instructor', 'user'])->find($txnRef);
+            if (! $order) {
+                Log::warning('⚠️ Order not found', ['txnRef' => $txnRef]);
                 return null;
             }
 
-            $order->status = 'paid';
-            $order->save();
+            $studentId = $order->user_id;
+            $student = $order->user;
 
-            // 🔹 Ghi nhận giao dịch thanh toán
+            /** 2. Cập nhật trạng thái */
+            $order->update(['status' => 'paid']);
+
+            /** 3. Ghi transaction */
             Transaction::create([
                 'order_id'          => $order->id,
                 'amount'            => $order->final_price,
@@ -78,52 +86,67 @@ class OrderService
                 'provider'          => 'VNPAY',
                 'transaction_code'  => uniqid('txn_'),
                 'provider_txn_id'   => $params['vnp_TransactionNo'] ?? null,
-                'provider_order_id' => $params['vnp_TxnRef'],
+                'provider_order_id' => $params['vnp_TxnRef'] ?? null,
                 'signature'         => $params['vnp_SecureHash'] ?? null,
                 'raw_params'        => json_encode($params),
                 'ipn_received_at'   => now(),
-                'currency'          => 'VND',
+                'currency'          => 'USD',
             ]);
 
-            // 🔹 Nếu có coupon
+            /** 4. Ghi coupon */
             if ($order->coupon_id) {
                 CouponUsage::create([
                     'coupon_id' => $order->coupon_id,
-                    'user_id'   => $order->user_id,
+                    'user_id'   => $studentId,
                     'order_id'  => $order->id,
                     'used_at'   => now(),
                 ]);
-
                 Coupon::where('id', $order->coupon_id)->increment('used_count');
             }
 
-            // 🔹 Gán khóa học cho user + join chat + gửi notify
+            /**
+             * ============================================================
+             * 🟦 PHÂN BỔ FINAL_PRICE THEO TỪNG KHÓA HỌC
+             * ============================================================
+             */
+
+            $totalOriginal = $order->items->sum('price_at_purchase');
+
+            foreach ($order->items as $item) {
+                $ratio = $item->price_at_purchase / max(1, $totalOriginal);
+
+                // final_price được phân bổ theo tỷ lệ giá gốc
+                $itemFinal = $order->final_price * $ratio;
+
+                // Lưu final_price_per_item
+                $item->update([
+                    'final_price_per_item' => round($itemFinal, 2)
+                ]);
+            }
+
+
+            /**
+             * ============================================================
+             * 🟩 GHI DANH KHÓA HỌC + CHAT + THÔNG BÁO
+             * ============================================================
+             */
+
             foreach ($order->items as $item) {
                 $course = $item->course;
-                $studentId = $order->user_id;
-                $instructorId = $course->created_by;
+                $instructorId = $course->created_by ?? $course->instructor_id;
 
-                // ✅ Ghi danh user vào khóa học
+                /** Ghi danh */
                 UserCourse::updateOrCreate(
                     ['user_id' => $studentId, 'course_id' => $course->id],
-                    ['enrolled_at' => now(), 'is_paid' => true]
+                    ['is_paid' => true, 'enrolled_at' => now()]
                 );
 
-                /**
-                 * ==================================================
-                 * 🔸 PHẦN MỚI: TẠO HOẶC THÊM CHAT GROUP + CHAT PRIVATE
-                 * ==================================================
-                 */
-
-                // 🧩 (1) Chat nhóm khóa học
+                /** Tạo group chat */
                 $groupThread = ChatThread::firstOrCreate(
-                    [
-                        'course_id'   => $course->id,
-                        'thread_type' => 'course_group',
-                    ],
+                    ['course_id' => $course->id, 'thread_type' => 'course_group'],
                     [
                         'is_group'   => true,
-                        'title'      => $course->title,
+                        'title'      => "Thảo luận: {$course->title}",
                         'created_by' => $instructorId,
                     ]
                 );
@@ -133,85 +156,110 @@ class OrderService
                     ['role' => 'student', 'joined_at' => now()]
                 );
 
-                Log::info("✅ User {$studentId} joined group chat {$groupThread->id} for course {$course->id}");
+                /** Xử lý private chat */
+                $consultThread = ChatThread::where([
+                    'course_id'   => $course->id,
+                    'thread_type' => 'consult',
+                    'created_by'  => $studentId,
+                ])->first();
 
-                // 🧩 (2) Chat riêng với giảng viên
-                $privateThread = ChatThread::firstOrCreate(
-                    [
-                        'course_id'   => $course->id,
+                if ($consultThread) {
+                    $consultThread->update([
                         'thread_type' => 'private',
-                        'is_group'    => false,
-                    ],
-                    [
-                        'title'      => "Trao đổi với giảng viên {$course->instructor->name}",
-                        'created_by' => $studentId,
-                    ]
-                );
+                        'title'       => "Trao đổi với giảng viên {$course->instructor->name}",
+                    ]);
 
-                // Thêm học viên + giảng viên vào thread
-                ChatParticipant::firstOrCreate(
-                    ['thread_id' => $privateThread->id, 'user_id' => $studentId],
-                    ['role' => 'student', 'joined_at' => now()]
-                );
+                    $consultThread->participants()->syncWithoutDetaching([
+                        $studentId   => ['role' => 'student'],
+                        $instructorId => ['role' => 'instructor'],
+                    ]);
+                } else {
+                    $privateThread = ChatThread::firstOrCreate(
+                        ['course_id' => $course->id, 'thread_type' => 'private', 'is_group' => false],
+                        ['title' => "Trao đổi với giảng viên {$course->instructor->name}", 'created_by' => $studentId]
+                    );
 
-                ChatParticipant::firstOrCreate(
-                    ['thread_id' => $privateThread->id, 'user_id' => $instructorId],
-                    ['role' => 'instructor', 'joined_at' => now()]
-                );
+                    $privateThread->participants()->syncWithoutDetaching([
+                        $studentId   => ['role' => 'student'],
+                        $instructorId => ['role' => 'instructor'],
+                    ]);
+                }
 
-                Log::info("✅ Created/Linked private chat between student {$studentId} and instructor {$instructorId}");
-
-                /**
-                 * ==================================================
-                 * 🔔 Gửi notification & email như cũ
-                 * ==================================================
-                 */
-
-                // 🔔 Notify instructor
+                /** Notify */
                 Notification::create([
                     'type'    => 'order',
-                    'title'   => 'Khóa học mới đã được đăng ký',
-                    'message' => "Người dùng #{$studentId} vừa đăng ký khóa học {$course->title}",
-                    'data'    => json_encode([
-                        'order_id'   => $order->id,
-                        'course_id'  => $course->id,
-                        'user_id'    => $studentId,
-                    ]),
+                    'title'   => 'Khóa học mới được đăng ký',
+                    'message' => "{$student->name} vừa đăng ký khóa học {$course->title}.",
+                    'data'    => json_encode(['order_id' => $order->id, 'course_id' => $course->id]),
                 ])->users()->attach([$instructorId]);
 
-                // 🔔 Notify student
                 Notification::create([
                     'type'    => 'course',
                     'title'   => 'Thanh toán thành công',
-                    'message' => "Bạn đã đăng ký thành công khóa học {$course->title}",
-                    'data'    => json_encode([
-                        'order_id'  => $order->id,
-                        'course_id' => $course->id,
-                    ]),
+                    'message' => "Bạn đã đăng ký thành công khóa học {$course->title}.",
+                    'data'    => json_encode(['order_id' => $order->id, 'course_id' => $course->id]),
                 ])->users()->attach([$studentId]);
 
-                // 📧 Gửi mail cho instructor
-                $instructor = User::find($instructorId);
-                if ($instructor && $instructor->email) {
-                    Mail::to($instructor->email)->send(
+                /** Mail instructor */
+                if ($course->instructor?->email) {
+                    Mail::to($course->instructor->email)->queue(
                         new InstructorNewEnrollmentMail($order, $course)
                     );
                 }
             }
 
-            // 🔔 Notify admin
+
+            /**
+             * ============================================================
+             * 🟨 CHIA DOANH THU 70/30 THEO FINAL_PRICE_PER_ITEM
+             * ============================================================
+             */
+
+            foreach ($order->items as $item) {
+                $course = $item->course;
+                $instructor = $course->instructor;
+                if (! $instructor) continue;
+
+                $itemFinal = $item->final_price_per_item;
+
+                $platformFee = $itemFinal * ($course->platform_fee / 100);
+                $instructorAmount = $itemFinal * ($course->instructor_share / 100);
+
+                /** Ghi payout */
+                Payout::create([
+                    'instructor_id'      => $instructor->id,
+                    'order_item_id'      => $item->id,
+                    'total_amount'       => $itemFinal,
+                    'platform_fee'       => $platformFee,
+                    'instructor_amount'  => $instructorAmount,
+                    'status'             => 'pending',
+                ]);
+
+                /** Update instructor wallet */
+                $wallet = InstructorWallet::firstOrCreate(['instructor_id' => $instructor->id]);
+                $wallet->increment('balance', $instructorAmount);
+                $wallet->increment('total_earned', $instructorAmount);
+
+                WalletTransaction::create([
+                    'wallet_id'   => $wallet->id,
+                    'amount'      => $instructorAmount,
+                    'type'        => 'credit',
+                    'description' => "Doanh thu từ khóa học #{$course->id} ({$course->title})",
+                    'currency'    => 'USD',
+                ]);
+            }
+
+            /** 7. Notify admin */
             $adminIds = User::where('role', 'admin')->pluck('id')->toArray();
             if ($adminIds) {
                 Notification::create([
                     'type'    => 'order',
-                    'title'   => 'Đơn hàng mới',
-                    'message' => "Đơn hàng #{$order->id} đã được thanh toán thành công",
-                    'data'    => json_encode([
-                        'order_id' => $order->id,
-                        'user_id'  => $order->user_id,
-                    ]),
+                    'title'   => 'Đơn hàng mới thành công',
+                    'message' => "Đơn hàng #{$order->id} đã được thanh toán thành công.",
                 ])->users()->attach($adminIds);
             }
+
+            Log::info("✅ [PaymentService] markOrderPaid completed for order #{$order->id}");
 
             return $order;
         });
@@ -235,7 +283,7 @@ class OrderService
                 'signature'         => $params['vnp_SecureHash'] ?? null,
                 'raw_params'        => json_encode($params),
                 'ipn_received_at'   => now(),
-                'currency'          => 'VND',
+                'currency'          => 'USD',
             ]);
         }
         // ⚠️ Notify student

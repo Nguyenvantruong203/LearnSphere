@@ -56,6 +56,7 @@ const mainNavigation = [
   { icon: BarChartOutlined, label: 'Users Management', path: '/admin/users', roles: ['admin'] },
   { icon: BookOutlined, label: 'Courses', path: '/admin/courses', roles: ['instructor'] },
   { icon: FileTextOutlined, label: 'Coupons', path: '/admin/coupons', roles: ['admin'] },
+  { icon: FileTextOutlined, label: 'Courses', path: '/admin/approveCourses', roles: ['admin'] },
   { icon: CreditCardOutlined, label: 'Chat', path: '/admin/chat', roles: ['admin', 'instructor'] },
 ]
 

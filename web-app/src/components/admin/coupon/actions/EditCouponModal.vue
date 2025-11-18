@@ -14,12 +14,12 @@
             <a-space-compact class="w-full">
               <a-select v-model:value="form.type" :disabled="loading" style="width: 40%;">
                 <a-select-option value="percent">%</a-select-option>
-                <a-select-option value="fixed">VND</a-select-option>
+                <a-select-option value="fixed">USD</a-select-option>
               </a-select>
 
               <a-input-number v-model:value="form.value" :min="0" :max="form.type === 'percent' ? 100 : undefined"
                 :precision="0" class="w-full" :disabled="loading"
-                :placeholder="form.type === 'percent' ? 'Enter percentage' : 'Enter amount (VND)'"
+                :placeholder="form.type === 'percent' ? 'Enter percentage' : 'Enter amount (USD)'"
                 :formatter="formatter" :parser="parser" />
             </a-space-compact>
           </a-form-item>

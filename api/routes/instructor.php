@@ -20,12 +20,13 @@ use App\Http\Controllers\Instructor\TopicQuestionController;
 */
 
 Route::middleware('auth:sanctum')->prefix('instructor')->group(function () {
- // Courses
+    // Courses
     Route::get('/courses', [CourseController::class, 'index'])->name('courses.index');         // Danh sách courses
     Route::post('/courses', [CourseController::class, 'store'])->name('courses.store');        // Tạo mới course
     Route::get('/courses/{course}', [CourseController::class, 'show'])->name('courses.show');  // Chi tiết course
     Route::put('/courses/{course}', [CourseController::class, 'update'])->name('courses.update');  // Update course
     Route::delete('/courses/{course}', [CourseController::class, 'destroy'])->name('courses.destroy');
+    Route::post('/courses/{course}/resubmit',[CourseController::class, 'resubmit']);
 
     // Topics
     Route::get('/courses/{course}/topics', [TopicController::class, 'index'])->name('courses.topics.index');

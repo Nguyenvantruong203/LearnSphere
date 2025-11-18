@@ -13,7 +13,7 @@
             <a-space-compact class="w-full">
               <a-select v-model:value="form.type" :disabled="loading" style="width: 40%;">
                 <a-select-option value="percent">%</a-select-option>
-                <a-select-option value="fixed">VND</a-select-option>
+                <a-select-option value="fixed">USD</a-select-option>
               </a-select>
 
               <a-input-number v-model:value="form.value" :min="0" :max="form.type === 'percent' ? 100 : undefined"

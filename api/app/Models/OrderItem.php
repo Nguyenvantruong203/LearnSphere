@@ -15,10 +15,12 @@ class OrderItem extends Model
         'order_id',
         'course_id',
         'price_at_purchase',
+        'final_price_per_item',
     ];
 
     protected $casts = [
         'price_at_purchase' => 'decimal:2',
+        'final_price_per_item' => 'decimal:2',
     ];
 
     // Quan hệ tới Order

@@ -13,10 +13,6 @@ class Course extends Model
 
     protected $table = 'courses';
 
-    /**
-     * Cho phép gán hàng loạt.
-     * Giữ danh sách này khớp với migration mà mình đã thống nhất.
-     */
     protected $fillable = [
         'title',
         'slug',
@@ -35,6 +31,9 @@ class Course extends Model
 
         'instructor_share',
         'platform_fee',
+
+        'rejection_reason',
+        'rejected_at',
 
         'created_by',
         'updated_by',
@@ -156,41 +155,18 @@ class Course extends Model
 
     public function scopePublished($q)
     {
-        return $q->where('status', 'published')
+        return $q->where('status', 'approved')
             ->where(function ($q) {
                 $q->whereNull('publish_at')
                     ->orWhere('publish_at', '<=', now());
             });
     }
 
-    public function scopeVisible($q, string $visibility = 'public')
-    {
-        return $q->where('visibility', $visibility);
-    }
-
-    public function scopeSearch($q, ?string $term)
-    {
-        if (!$term) return $q;
-        return $q->where(function ($qq) use ($term) {
-            $qq->where('title', 'like', "%{$term}%")
-                ->orWhere('short_description', 'like', "%{$term}%")
-                ->orWhere('description', 'like', "%{$term}%");
-        });
-    }
-
-    /* =========================
-     |  Accessors
-     |=========================*/
-
-    // is_free = true nếu price <= 0
     public function getIsFreeAttribute(): bool
     {
         return (float) $this->price <= 0;
     }
-    /**
-     * Gọi thủ công khi muốn đổi slug theo title mới.
-     * Không tự động chạy trong updating() để tránh vỡ URL.
-     */
+
     public function refreshSlug(): void
     {
         $this->slug = static::generateUniqueSlug($this->title);

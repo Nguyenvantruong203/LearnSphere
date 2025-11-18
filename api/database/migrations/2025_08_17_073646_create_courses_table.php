@@ -19,7 +19,7 @@ return new class extends Migration
             $t->string('short_description', 255)->nullable();
             $t->text('description')->nullable();
 
-            $t->enum('status', ['draft', 'published', 'archived'])->default('draft');
+            $t->string('status')->default('draft');
             $t->timestamp('publish_at')->nullable();
             $t->string('subject')->nullable();
 
@@ -36,6 +36,9 @@ return new class extends Migration
             $t->string('language', 5)->default('en'); // ✅ đổi sang en
 
             $t->boolean('is_featured')->default(false);
+
+            $t->text('rejection_reason')->nullable();
+            $t->timestamp('rejected_at')->nullable();
 
             $t->foreignId('created_by')->constrained('users')->cascadeOnDelete();
             $t->timestamps();

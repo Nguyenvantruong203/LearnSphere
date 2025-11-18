@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('order_id')->constrained('orders')->cascadeOnDelete();
             $table->foreignId('course_id')->constrained('courses')->cascadeOnDelete();
             $table->decimal('price_at_purchase', 12, 2);
+            $table->decimal('final_price_per_item', 12, 2)->nullable();
             $table->timestamps();
 
             $table->unique(['order_id', 'course_id']);

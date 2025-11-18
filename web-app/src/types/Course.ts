@@ -7,7 +7,7 @@ export interface Course {
   thumbnail_url?: string;
   short_description?: string;
   description?: string;
-  status: 'draft' | 'published' | 'archived';
+  status: 'draft' | 'approved' | 'archived' | 'pending' | 'rejected';
   publish_at?: string;
   price?: number;
   currency: string;
@@ -93,4 +93,19 @@ export interface MappedCourse {
     name: string
     avatar_url: string
   }
+}
+
+export interface GetCoursesParams {
+  page?: number
+  limit?: number
+  search?: string
+  status?: string
+}
+
+export interface GetCoursesResponse {
+  data: Course[]
+  total: number
+  current_page: number
+  last_page: number
+  per_page: number
 }

@@ -10,6 +10,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     AAlert: typeof import('ant-design-vue/es')['Alert']
     AAvatar: typeof import('ant-design-vue/es')['Avatar']
+    ABadge: typeof import('ant-design-vue/es')['Badge']
     ABreadcrumb: typeof import('ant-design-vue/es')['Breadcrumb']
     ABreadcrumbItem: typeof import('ant-design-vue/es')['BreadcrumbItem']
     AButton: typeof import('ant-design-vue/es')['Button']
@@ -65,6 +66,7 @@ declare module 'vue' {
     ChatWindow: typeof import('./components/common/chat/ChatWindow.vue')['default']
     CouponsTable: typeof import('./components/admin/coupon/CouponsTable.vue')['default']
     CourseCard: typeof import('./components/customer/course/CourseCard.vue')['default']
+    CourseDrawer: typeof import('./components/admin/course/CourseDrawer.vue')['default']
     CourseList: typeof import('./components/customer/course/CourseList.vue')['default']
     CourseSearchBar: typeof import('./components/customer/search/CourseSearchBar.vue')['default']
     CourseSection: typeof import('./components/customer/course/CourseSection.vue')['default']

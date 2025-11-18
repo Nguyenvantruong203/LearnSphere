@@ -51,7 +51,7 @@ class VNPayService
             "vnp_Amount"     => $vnp_Amount,
             "vnp_CreateDate" => $vnp_CreateDate,
             "vnp_ExpireDate" => $vnp_ExpireDate,
-            "vnp_CurrCode"   => "VND",
+            "vnp_CurrCode"   => "USD",
             "vnp_IpAddr"     => $ipAddr,
             "vnp_Locale"     => "vn",
             "vnp_OrderInfo"  => $vnp_OrderInfo,

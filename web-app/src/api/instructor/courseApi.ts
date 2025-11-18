@@ -6,44 +6,43 @@ export const courseApi = {
   async getCourses(params: GetCoursesParams): Promise<PaginationCourse<Course>> {
     return await httpAdmin('/api/instructor/courses', {
       method: 'GET',
-      params
+      params,
     })
   },
 
-async createCourse(data: CoursePayload, thumbnailFile: File | null) {
-  const formData = new FormData()
-  Object.entries(data).forEach(([key, value]) => {
-    formData.append(key, value as any)
-  })
-  if (thumbnailFile) {
-    formData.append('thumbnail', thumbnailFile)
-  }
+  async createCourse(data: CoursePayload, thumbnailFile: File | null) {
+    const formData = new FormData()
+    Object.entries(data).forEach(([key, value]) => {
+      formData.append(key, value as any)
+    })
+    if (thumbnailFile) {
+      formData.append('thumbnail', thumbnailFile)
+    }
 
-  return await httpAdmin('/api/instructor/courses', {
-    method: 'POST',
-    body: formData,
-  })
-},
-
+    return await httpAdmin('/api/instructor/courses', {
+      method: 'POST',
+      body: formData,
+    })
+  },
 
   async getTopicsByCourse(courseId: number): Promise<Topic[]> {
     const response = await httpAdmin(`/api/instructor/courses/${courseId}/topics`, {
       method: 'GET',
-      params: { limit: 999 }
+      params: { limit: 999 },
     })
     return response.data
   },
 
   async deleteCourse(courseId: number): Promise<void> {
     await httpAdmin(`/api/instructor/courses/${courseId}`, {
-      method: 'DELETE'
+      method: 'DELETE',
     })
   },
 
   async updateCourse(
     courseId: number,
     payload: Partial<CoursePayload>,
-    thumbnailFile?: File | null
+    thumbnailFile?: File | null,
   ): Promise<Course> {
     const formData = new FormData()
 
@@ -61,8 +60,14 @@ async createCourse(data: CoursePayload, thumbnailFile: File | null) {
 
     const response = await httpAdmin(`/api/instructor/courses/${courseId}`, {
       method: 'POST',
-      body: formData
+      body: formData,
     })
     return response
-  }
+  },
+  async resubmitCourse(courseId: number): Promise<Course> {
+    const response = await httpAdmin(`/api/instructor/courses/${courseId}/resubmit`, {
+      method: 'POST',
+    })
+    return response
+  },
 }

@@ -151,15 +151,15 @@
               <a-button type="primary" html-type="submit" size="large" block :loading="paymentLoading"
                 :disabled="orderItems.length === 0">
                 <template v-if="paymentForm.paymentMethod === 'momo'">
-                  Pay with MoMo -
+                  Pay with MoMo :
                   <FormatPrice :price="total" />
                 </template>
                 <template v-else-if="paymentForm.paymentMethod === 'vnpay'">
-                  Pay with VNPay -
+                  Pay with VNPay : 
                   <FormatPrice :price="total" />
                 </template>
                 <template v-else>
-                  Confirm Payment -
+                  Confirm Payment :
                   <FormatPrice :price="total" />
                 </template>
               </a-button>
@@ -253,7 +253,7 @@ function formatPriceVN(amount: number | string) {
   const num = parseFloat(String(amount).replace(/[^0-9.-]/g, '')) || 0
   return num.toLocaleString('vi-VN', {
     style: 'currency',
-    currency: 'VND',
+    currency: 'USD',
     minimumFractionDigits: 0
   })
 }

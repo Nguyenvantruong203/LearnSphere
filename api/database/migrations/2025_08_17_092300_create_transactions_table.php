@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('status')->default('pending'); // pending|succeeded|failed
             $table->string('provider')->nullable();       // vnpay|momo|paypal...
             $table->string('transaction_code')->nullable(); // mã nội bộ
-            $table->string('currency', 10)->default('VND');
+            $table->string('currency', 10)->default('USD');
             $table->string('provider_txn_id')->nullable();  // vnp_TransactionNo
             $table->string('provider_order_id')->nullable(); // vnp_TxnRef
             $table->text('signature')->nullable();          // vnp_SecureHash

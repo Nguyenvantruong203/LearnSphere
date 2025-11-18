@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\CourseController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\CouponController;
 
@@ -22,11 +23,17 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::post('/users/{id}/approve', [UserController::class, 'approveUser']);
     Route::post('/users/{id}/reject', [UserController::class, 'rejectUser']);
 
-    // Lấy danh sách tất cả coupon
+    // Coupons management
     Route::get('/coupons', [CouponController::class, 'index'])->name('coupons.index');
     Route::post('/coupons', [CouponController::class, 'store'])->name('coupons.store');
     Route::put('/coupons/{id}', [CouponController::class, 'update'])->name('coupons.update');
     Route::delete('/coupons/{id}', [CouponController::class, 'destroy'])->name('coupons.destroy');
+
+    // Course approval management
+    Route::get('/courses', [CourseController::class, 'index'])->name('courses.index');
+    Route::get('/courses/{id}', [CourseController::class, 'show'])->name('courses.show');
+    Route::post('/courses/{id}/approve', [CourseController::class, 'approve'])->name('courses.approve');
+    Route::post('/courses/{id}/reject', [CourseController::class, 'reject'])->name('courses.reject');
 });
 
 // Đặt lại mật khẩu

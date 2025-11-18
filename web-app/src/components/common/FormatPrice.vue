@@ -33,7 +33,7 @@ const priceNumber = computed(() => {
 const formattedPrice = computed(() => {
   return priceNumber.value.toLocaleString('vi-VN', {
     style: 'currency',
-    currency: 'VND',
+    currency: 'USD',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0
   })

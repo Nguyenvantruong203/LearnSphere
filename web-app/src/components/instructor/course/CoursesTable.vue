@@ -6,16 +6,33 @@
       <div class="flex items-center gap-3">
         <a-input-search placeholder="Search courses..." class="w-64" v-model:value="searchQuery"
           @search="fetchCourses" />
-        <a-button type="primary" @click="openCreateCourse"><span class="flex justify-center items-center"><PlusOutlined /> Course</span></a-button>
+        <a-button type="primary" @click="openCreateCourse"><span class="flex justify-center items-center">
+            <PlusOutlined /> Course
+          </span></a-button>
       </div>
     </div>
 
     <div class="flex flex-col h-[calc(100vh-180px)]">
       <div class="flex-1 overflow-y-auto">
         <a-collapse v-model:activeKey="activeCourseKeys" accordion>
-          <a-collapse-panel v-for="course in filteredCourses" :key="course.id" :header="course.title">
-            <div class="flex items-center justify-between mb-2">
-              <div class="text-gray-500"></div>
+          <a-collapse-panel v-for="course in filteredCourses" :key="course.id">
+            <template #header>
+              <div class="flex items-center justify-between w-full">
+                <!-- LEFT: Title + Status -->
+                <div class="flex items-center gap-3">
+                  <span class="font-semibold text-gray-800">{{ course.title }}</span>
+                </div>
+
+                <!-- RIGHT: Actions -->
+                <div class="flex items-center gap-2">
+                  <a-tag :color="getStatusColor(course.status)">
+                    {{ getStatusLabel(course.status) }}
+                  </a-tag>
+                </div>
+              </div>
+            </template>
+
+            <div class="flex items-center justify-end mb-2">
               <div class="space-x-2">
                 <a-button size="small" @click="openEditCourse(course)">Edit Course</a-button>
                 <a-button size="small" danger @click="confirmRemoveCourse(course)">Delete</a-button>
@@ -78,6 +95,8 @@ import type { Topic } from '@/types/Topic'
 import type { Course } from '@/types/Course'
 import { youtubeApi } from '@/api/instructor/youtubeApi'
 import { quizApi } from '@/api/instructor/quizApi'
+import { ExclamationCircleOutlined, PlusOutlined } from '@ant-design/icons-vue'
+import { getStatusColor, getStatusLabel } from '@/utils/courseStatus'
 
 interface TopicNode extends Topic {
   key: string;

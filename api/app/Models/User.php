@@ -204,4 +204,9 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(Payout::class, 'instructor_id');
     }
+    //lấy danh sách admin để gửi thông báo
+    public static function admins()
+    {
+        return self::where('role', 'admin')->pluck('id')->toArray();
+    }
 }

@@ -23,17 +23,15 @@ class NotificationUser extends Model
         'read_at' => 'datetime',
     ];
 
-    // Quan hệ tới Notification
+    // Pivot belongs to Notification
     public function notification()
     {
         return $this->belongsTo(Notification::class);
     }
 
-    // Quan hệ tới User
-    public function users()
+    // Pivot belongs to User
+    public function user()
     {
-        return $this->belongsToMany(User::class, 'notification_users')
-            ->withPivot('is_read', 'read_at')
-            ->withTimestamps();
+        return $this->belongsTo(User::class);
     }
 }

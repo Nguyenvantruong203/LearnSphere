@@ -20,7 +20,7 @@ class CourseController extends Controller
         return Course::query()
             ->with(['instructor:id,name,email,avatar_url'])
             ->withCount(['topics as total_topics', 'lessons as total_lessons'])
-            ->published(); // chỉ hiển thị khóa học đã publish
+            ->published(); // chỉ hiển thị khóa học đã approved
     }
 
     /**
@@ -272,7 +272,7 @@ class CourseController extends Controller
 
     public function recommended()
     {
-        $courses = Course::where('status', 'published')
+        $courses = Course::where('status', 'approved')
             ->where('is_featured', true)
             ->orderByDesc('publish_at')
             ->take(8)

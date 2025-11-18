@@ -166,10 +166,10 @@ const initialFormState: CoursePayload = {
   short_description: '',
   description: '',
   price: null,
-  status: 'published',
+  status: 'pending',
   level: 'beginner',
   language: 'en',
-  currency: 'VND',
+  currency: 'USD',
   created_by: 0,
 };
 

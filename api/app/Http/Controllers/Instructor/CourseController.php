@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Instructor;
 
 use App\Http\Controllers\Controller;
 use App\Models\Course;
+use App\Models\Notification;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -14,7 +16,7 @@ use App\Models\ChatParticipant;
 class CourseController extends Controller
 {
     use AuthorizesRequests;
-    // GET /admin/courses
+
     public function index(Request $request)
     {
         $this->authorize('viewAny', Course::class);
@@ -40,7 +42,7 @@ class CourseController extends Controller
             'short_description' => ['nullable', 'string'],
             'description'       => ['nullable', 'string'],
             'price'             => ['nullable', 'numeric', 'min:0'],
-            'status'            => ['nullable', 'in:draft,published,archived'],
+            'status'            => ['nullable', 'in:draft,approved,archived'],
             'level'             => ['nullable', 'in:beginner,intermediate,advanced'],
             'language'          => ['nullable', 'string'],
             'currency'          => ['nullable', 'string'],
@@ -48,20 +50,20 @@ class CourseController extends Controller
             'thumbnail'         => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
         ]);
 
-        // 🔹 Upload thumbnail
+        // Upload thumbnail
         if ($request->hasFile('thumbnail')) {
             $path = $request->file('thumbnail')->store('thumbnails', 'public');
             $data['thumbnail_url'] = $path;
         }
         unset($data['thumbnail']);
 
-        // 🔹 Tạo khóa học
+        // Tạo khóa học
         $course = Course::create([
             'created_by' => $request->user()->id,
             ...$data
         ]);
 
-        // 🔹 Tạo group chat cho khóa học (nếu chưa có)
+        // Tạo group chat
         $thread = ChatThread::create([
             'course_id'   => $course->id,
             'is_group'    => true,
@@ -70,14 +72,28 @@ class CourseController extends Controller
             'created_by'  => $request->user()->id,
         ]);
 
-        // 🔹 Thêm instructor (người tạo khóa) vào group chat
         ChatParticipant::create([
             'thread_id' => $thread->id,
             'user_id'   => $request->user()->id,
             'role'      => 'instructor',
         ]);
 
-        // ✅ Trả về kết quả kèm thông tin chat
+        /**
+         * 🔔 GỬI NOTIFICATION CHO ADMIN
+         */
+        $adminIds = User::where('role', 'admin')->pluck('id')->toArray();
+
+        if (!empty($adminIds)) {
+            $noti = Notification::create([
+                'type'    => 'course',
+                'title'   => 'Khóa học mới cần duyệt',
+                'message' => "Giảng viên {$request->user()->name} đã tạo khóa học mới: {$course->title}.",
+                'data'    => json_encode(['course_id' => $course->id]),
+            ]);
+
+            $noti->users()->attach($adminIds);
+        }
+
         return response()->json([
             'course' => $course,
             'chat_thread' => [
@@ -88,19 +104,15 @@ class CourseController extends Controller
         ], 201);
     }
 
-
-    // GET /admin/courses/{course}
     public function show(Course $course)
     {
         $this->authorize('view', $course);
 
-        // Có thể trả kèm counts
         $course->loadCount('topics');
 
         return response()->json($course);
     }
 
-    // PATCH /admin/courses/{course}
     public function update(Request $request, Course $course)
     {
         $this->authorize('update', $course);
@@ -110,7 +122,7 @@ class CourseController extends Controller
             'short_description' => ['nullable', 'string'],
             'description'       => ['nullable', 'string'],
             'price'             => ['nullable', 'numeric', 'min:0'],
-            'status'            => ['nullable', 'in:draft,published,archived'],
+            'status'            => ['nullable', 'in:draft,approved,archived'],
             'level'             => ['nullable', 'in:beginner,intermediate,advanced'],
             'language'          => ['nullable', 'string'],
             'currency'          => ['nullable', 'string'],
@@ -119,24 +131,59 @@ class CourseController extends Controller
         ]);
 
         if ($request->hasFile('thumbnail')) {
-            // Xóa ảnh cũ nếu có
             if ($course->thumbnail_url) {
-                Storage::disk('public')->delete(str_replace('/storage/', '', $course->thumbnail_url));
+                Storage::disk('public')->delete($course->thumbnail_url);
             }
 
-            // Lưu ảnh mới
             $path = $request->file('thumbnail')->store('thumbnails', 'public');
             $data['thumbnail_url'] = $path;
         }
 
-        unset($data['thumbnail']); // bỏ key gốc tránh lỗi fillable
-
+        unset($data['thumbnail']);
         $course->update($data);
 
         return response()->json($course);
     }
 
-    // DELETE /admin/courses/{course}
+    /**
+     * 🔁 GIẢNG VIÊN GỬI LẠI KHÓA HỌC
+     */
+    public function resubmit(Request $request, Course $course)
+    {
+        $this->authorize('update', $course);
+
+        if ($course->status !== 'rejected') {
+            return response()->json([
+                'message' => 'Only rejected courses can be resubmitted.',
+            ], 400);
+        }
+
+        $course->update([
+            'status' => 'pending',
+            'rejection_reason' => null,
+            'rejected_at' => null
+        ]);
+
+        // Gửi thông báo cho admin
+        $adminIds = User::where('role', 'admin')->pluck('id')->toArray();
+
+        if (!empty($adminIds)) {
+            $noti = Notification::create([
+                'type'    => 'course',
+                'title'   => 'Khóa học gửi lại cần duyệt',
+                'message' => "Giảng viên {$request->user()->name} đã gửi lại khóa học: {$course->title}.",
+                'data'    => json_encode(['course_id' => $course->id]),
+            ]);
+
+            $noti->users()->attach($adminIds);
+        }
+
+        return response()->json([
+            'message' => 'Course has been resubmitted for review.',
+            'course'  => $course->fresh()
+        ]);
+    }
+
     public function destroy(Course $course)
     {
         $this->authorize('delete', $course);

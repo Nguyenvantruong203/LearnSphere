@@ -132,7 +132,7 @@ const pagination = reactive({
 const columns = [
   { title: 'Coupon Code', dataIndex: 'code', key: 'code', width: '15%' },
   { title: 'Type', dataIndex: 'type', key: 'type', width: '10%' },
-  { title: 'Value (VND/Percent)', dataIndex: 'value', key: 'value', width: '10%' },
+  { title: 'Value (USD/Percent)', dataIndex: 'value', key: 'value', width: '10%' },
   { title: 'Usage', dataIndex: 'usage', key: 'usage', width: '15%' },
   { title: 'Validity Period', dataIndex: 'valid_period', key: 'valid_period', width: '20%' },
   { title: 'Min Order Amount', dataIndex: 'min_order_amount', key: 'min_order_amount', width: '10%' },
@@ -141,7 +141,7 @@ const columns = [
 ]
 
 const formatMoney = (amount: number) => {
-  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount)
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'USD' }).format(amount)
 }
 
 const fetchCoupons = async () => {
