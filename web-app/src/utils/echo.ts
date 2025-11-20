@@ -3,7 +3,7 @@ import Pusher from 'pusher-js'
 
 window.Pusher = Pusher
 
-// 🧩 Lấy token chính xác theo vai trò hiện có
+// Lấy token chính xác theo vai trò hiện có
 function getToken() {
   const path = window.location.pathname
   const isAdmin = path.startsWith('/admin') || path.startsWith('/instructor')
@@ -20,7 +20,6 @@ function getToken() {
 
 const token = getToken()
 
-// 🧠 Cấu hình Echo
 const echo = new Echo({
   broadcaster: 'pusher',
   key: import.meta.env.VITE_PUSHER_APP_KEY || 'chat_key_123',
@@ -31,11 +30,8 @@ const echo = new Echo({
   disableStats: true,
   enabledTransports: ['ws', 'wss'],
   cluster: 'mt1',
+  authEndpoint: `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/broadcasting/auth`,
 
-  // ✅ Auth endpoint chính xác (Laravel default)
-authEndpoint: `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/broadcasting/auth`,
-
-  // ✅ Gửi kèm token đúng guard
   auth: {
     headers: {
       Authorization: `Bearer ${token}`,

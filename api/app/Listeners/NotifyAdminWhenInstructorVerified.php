@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use App\Mail\NewInstructorAppliedMail;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use App\Models\NotificationUser;
+use App\Events\NotificationCreated;
 
 class NotifyAdminWhenInstructorVerified implements ShouldQueue
 {
@@ -28,7 +30,7 @@ class NotifyAdminWhenInstructorVerified implements ShouldQueue
                 return;
             }
 
-            // 🔹 Kiểm tra xem đã có notification cho user này chưa
+            // 🔹 Kiểm tra đã có notification hay chưa
             $existingNotification = Notification::where('type', 'instructor_apply')
                 ->where('related_id', $user->id)
                 ->first();
@@ -37,7 +39,7 @@ class NotifyAdminWhenInstructorVerified implements ShouldQueue
                 Log::info('Notification already exists for this instructor', [
                     'notification_id' => $existingNotification->id
                 ]);
-                return; // ← Dừng lại, không tạo thêm
+                return;
             }
 
             $admins = User::where('role', 'admin')->get();
@@ -49,6 +51,7 @@ class NotifyAdminWhenInstructorVerified implements ShouldQueue
 
             Log::info('Found admins', ['count' => $admins->count()]);
 
+            // 1️⃣ Tạo Notification gốc
             $notification = Notification::create([
                 'title' => 'New Instructor Application Verified',
                 'message' => "{$user->name} has verified their email and applied to become an instructor.",
@@ -56,9 +59,10 @@ class NotifyAdminWhenInstructorVerified implements ShouldQueue
                 'related_id' => $user->id,
             ]);
 
+            // 2️⃣ Gắn vào các admin
             foreach ($admins as $admin) {
                 $notification->users()->attach($admin->id, [
-                    'is_read' => false,
+                    'is_read'    => false,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
@@ -66,6 +70,17 @@ class NotifyAdminWhenInstructorVerified implements ShouldQueue
 
             Log::info('Notification created', ['notification_id' => $notification->id]);
 
+            // 3️⃣ Lấy tất cả pivot để broadcast
+            $pivotItems = NotificationUser::with('notification')
+                ->where('notification_id', $notification->id)
+                ->get();
+
+            // 4️⃣ Bắn realtime cho từng admin
+            foreach ($pivotItems as $pivot) {
+                broadcast(new \App\Events\NotificationCreated($pivot))->toOthers();
+            }
+
+            // 5️⃣ Gửi email
             Mail::to($admins->first()->email)->send(new NewInstructorAppliedMail($user));
 
             Log::info('Email sent to admin', ['admin_email' => $admins->first()->email]);
@@ -77,6 +92,7 @@ class NotifyAdminWhenInstructorVerified implements ShouldQueue
             throw $e;
         }
     }
+
 
     public function failed(Verified $event, \Throwable $exception): void
     {
