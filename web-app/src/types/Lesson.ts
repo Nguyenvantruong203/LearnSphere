@@ -1,10 +1,6 @@
 import type { Topic } from './Topic';
 import type { Quiz } from './Quiz';
 
-/**
- * Represents a lesson object from the API.
- * Author: Truong
- */
 export interface Lesson {
   id: number;
   topic_id: number;
@@ -30,10 +26,6 @@ export interface Lesson {
  */
 export type LessonPayload = Omit<Lesson, 'id' | 'created_at' | 'updated_at' | 'topic'>;
 
-/**
- * Represents the parameters for fetching lessons.
- * Author: Truong
- */
 export interface GetLessonsParams {
   page?: number;
   limit?: number;
@@ -61,10 +53,6 @@ export interface PaginationLesson<T> {
   total: number
 }
 
-/**
- * Response structure for lesson list by course
- * Author: Truong
- */
 export interface LessonListResponse {
   success: boolean;
   data: {
@@ -76,10 +64,6 @@ export interface LessonListResponse {
   };
 }
 
-/**
- * Response structure for lesson detail
- * Author: Truong
- */
 export interface LessonDetailResponse {
   success: boolean;
   data: {

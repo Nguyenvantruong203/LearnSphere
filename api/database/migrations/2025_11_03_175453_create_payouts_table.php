@@ -11,16 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('payouts', function (Blueprint $t) {
-            $t->id();
-            $t->foreignId('instructor_id')->constrained('users')->cascadeOnDelete();
-            $t->foreignId('order_item_id')->constrained('order_items')->cascadeOnDelete();
-            $t->decimal('total_amount', 12, 2);
-            $t->decimal('platform_fee', 12, 2);
-            $t->decimal('instructor_amount', 12, 2);
-            $t->enum('status', ['pending', 'paid'])->default('pending');
-            $t->timestamp('paid_at')->nullable();
-            $t->timestamps();
+        Schema::create('payouts', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('instructor_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('order_item_id')->constrained('order_items')->cascadeOnDelete();
+            $table->decimal('total_amount', 12, 2);
+            $table->decimal('platform_fee', 12, 2);
+            $table->decimal('instructor_amount', 12, 2);
+            $table->enum('status', ['pending', 'paid'])->default('pending');
+            $table->timestamp('paid_at')->nullable();
+            $table->timestamps();
         });
     }
 

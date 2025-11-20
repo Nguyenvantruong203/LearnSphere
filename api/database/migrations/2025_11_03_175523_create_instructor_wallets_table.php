@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('instructor_wallets', function (Blueprint $t) {
-            $t->id();
-            $t->foreignId('instructor_id')->constrained('users')->cascadeOnDelete();
-            $t->decimal('balance', 12, 2)->default(0);
-            $t->decimal('total_earned', 12, 2)->default(0);
-            $t->decimal('total_withdrawn', 12, 2)->default(0);
-            $t->char('currency', 3)->default('USD');
-            $t->timestamps();
+        Schema::create('instructor_wallets', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('instructor_id')->constrained('users')->cascadeOnDelete();
+            $table->decimal('balance', 12, 2)->default(0);
+            $table->decimal('total_earned', 12, 2)->default(0);
+            $table->decimal('total_withdrawn', 12, 2)->default(0);
+            $table->char('currency', 3)->default('USD');
+            $table->timestamps();
         });
     }
 

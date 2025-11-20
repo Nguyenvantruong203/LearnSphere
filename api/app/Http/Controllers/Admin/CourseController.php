@@ -11,11 +11,8 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Notification;
+use App\Events\NotificationCreated;
 
-/**
- * Author: Truong
- * Course approval controller for admin
- */
 class CourseController extends Controller
 {
     /**
@@ -118,7 +115,7 @@ class CourseController extends Controller
         ]);
 
         // 🔔 Notification cho giảng viên
-        Notification::create([
+        $notification = Notification::create([
             'type'    => 'course',
             'title'   => 'Khóa học đã được phê duyệt',
             'message' => "Khóa học **{$course->title}** của bạn đã được admin phê duyệt.",
@@ -126,7 +123,11 @@ class CourseController extends Controller
                 'course_id' => $course->id,
                 'status'    => 'approved',
             ]),
-        ])->users()->attach([$course->instructor->id]);
+        ]);
+
+        $notification->users()->attach([$course->instructor->id]);
+
+        event(new NotificationCreated($notification, $course->instructor->id));
 
         // Log
         Log::info('Course approved', [
@@ -171,16 +172,22 @@ class CourseController extends Controller
         ]);
 
         // 🔔 Notification cho giảng viên
-        Notification::create([
+        $notification = Notification::create([
             'type'    => 'course',
             'title'   => 'Khóa học bị từ chối',
-            'message' => "Khóa học **{$course->title}** đã bị từ chối.",
-            'data'    => json_encode([
+            'message' => "Khóa học {$course->title} đã bị từ chối.",
+            'data'    => [
                 'course_id' => $course->id,
                 'status'    => 'rejected',
                 'reason'    => $request->rejection_reason,
-            ]),
-        ])->users()->attach([$course->instructor->id]);
+            ],
+        ]);
+
+        // lưu vào bảng pivot
+        $notification->users()->attach([$course->instructor->id]);
+
+        // bắn realtime
+        event(new NotificationCreated($notification, $course->instructor->id));
 
         // Log
         Log::info('Course rejected', [

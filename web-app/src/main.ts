@@ -8,15 +8,31 @@ import './style.css'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { ConfigProvider, theme } from 'ant-design-vue'
 import '@fortawesome/fontawesome-free/css/all.min.css'
+import VueECharts from 'vue-echarts'
+import { use } from 'echarts/core'
+import { CanvasRenderer } from 'echarts/renderers'
+import { LineChart, BarChart, PieChart } from 'echarts/charts'
+import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components'
+
+use([
+  CanvasRenderer,
+  LineChart,
+  BarChart,
+  PieChart,
+  GridComponent,
+  TooltipComponent,
+  LegendComponent
+])
 
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
+
 const app = createApp({
   render: () =>
     h(ConfigProvider, {
       theme: {
         algorithm: theme.defaultAlgorithm,
-        token: { 
+        token: {
           colorPrimary: '#14b8a6',
           borderRadius: 12,
           fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -28,4 +44,5 @@ const app = createApp({
 app.use(pinia)
 app.use(router)
 app.use(Antd)
+app.component('v-chart', VueECharts)
 app.mount('#app')

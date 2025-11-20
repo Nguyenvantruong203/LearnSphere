@@ -8,6 +8,8 @@ use App\Http\Controllers\Student\LessonController;
 use App\Http\Controllers\Student\QuizController;
 use App\Http\Controllers\Student\ProfileController;
 use App\Http\Controllers\Student\InstructorController;
+use App\Http\Controllers\Student\LessonCompletionController;
+use App\Http\Controllers\Student\CertificateController;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,5 +53,17 @@ Route::middleware('auth:sanctum')->prefix('student')->group(function () {
     //history
     Route::get('/quizzes/{quizId}/attempts', [QuizController::class, 'getQuizAttempts']);
 
+    Route::post('/lessons/{lesson_id}/complete', [LessonCompletionController::class, 'complete']);
+    Route::get('/courses/{course_id}/progress', [LessonCompletionController::class, 'getCourseProgress']);
 
+    // Lấy toàn bộ chứng chỉ
+    Route::get('/certificates', [CertificateController::class, 'listByUser']);
+
+    Route::get('/certificates/{id}', [CertificateController::class, 'getCertificationDetail']);
+
+    // Lấy chứng chỉ theo khóa học (GET /student/certificates?course_id=1)
+    Route::get('/certificates/by-course/{courseId}', [CertificateController::class, 'getByCourse']);
+
+    // Tải PDF chứng chỉ
+    Route::get('/certificates/{id}/download', [CertificateController::class, 'download']);
 });

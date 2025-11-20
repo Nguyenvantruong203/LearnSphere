@@ -11,17 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('topics', function (Blueprint $t) {
-            $t->id();
-            $t->foreignId('course_id')->constrained('courses')->cascadeOnDelete();
-            $t->string('title');
-            $t->unsignedInteger('order')->default(1);
-            $t->timestamps();
-            $t->softDeletes(); // khôi phục
+        Schema::create('topics', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('course_id')->constrained('courses')->cascadeOnDelete();
+            $table->string('title');
+            $table->unsignedInteger('order')->default(1);
+            $table->timestamps();
+            $table->softDeletes(); // khôi phục
 
-            $t->unique(['course_id', 'title']);
-            $t->index(['course_id', 'order']);
-            $t->unique(['course_id','order']); // chặn trùng thứ tự
+            $table->unique(['course_id', 'title']);
+            $table->index(['course_id', 'order']);
+            $table->unique(['course_id','order']); // chặn trùng thứ tự
         });
     }
 

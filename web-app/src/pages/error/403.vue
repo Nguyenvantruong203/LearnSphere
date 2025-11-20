@@ -56,12 +56,6 @@ import {
 import { useClientAuthStore } from '@/stores/clientAuth'
 import { useAdminAuthStore } from '@/stores/adminAuth'
 
-/**
- * Author: Truong
- * 403 Forbidden Error Page
- * Displays when user doesn't have permission to access a resource
- */
-
 const router = useRouter()
 const clientAuth = useClientAuthStore()
 const adminAuth = useAdminAuthStore()

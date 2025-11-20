@@ -11,16 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('google_oauth_tokens', function (Blueprint $t) {
-            $t->id();
-            $t->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $t->string('provider', 32)->default('youtube'); // 'youtube', ...
-            $t->longText('access_token');                   // lưu JSON access_token
-            $t->string('refresh_token')->nullable();
-            $t->timestamp('expires_at')->nullable();
-            $t->timestamps();
-
-            $t->unique(['user_id','provider']);
+        Schema::create('google_oauth_tokens', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->string('provider', 32)->default('youtube'); // 'youtube', ...
+            $table->longText('access_token');                   // lưu JSON access_token
+            $table->string('refresh_token')->nullable();
+            $table->timestamp('expires_at')->nullable();
+            $table->timestamps();
+            $table->unique(['user_id','provider']);
         });
     }
 

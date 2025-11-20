@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Models\ChatThread;
 use App\Models\ChatParticipant;
+use App\Models\NotificationUser;
+use App\Events\NotificationCreated;
 
 class CourseController extends Controller
 {
@@ -42,13 +44,14 @@ class CourseController extends Controller
             'short_description' => ['nullable', 'string'],
             'description'       => ['nullable', 'string'],
             'price'             => ['nullable', 'numeric', 'min:0'],
-            'status'            => ['nullable', 'in:draft,approved,archived'],
             'level'             => ['nullable', 'in:beginner,intermediate,advanced'],
             'language'          => ['nullable', 'string'],
             'currency'          => ['nullable', 'string'],
             'subject'           => ['nullable', 'string', 'max:100'],
             'thumbnail'         => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
         ]);
+
+        $data['status'] = 'pending';
 
         // Upload thumbnail
         if ($request->hasFile('thumbnail')) {
@@ -84,14 +87,30 @@ class CourseController extends Controller
         $adminIds = User::where('role', 'admin')->pluck('id')->toArray();
 
         if (!empty($adminIds)) {
+
+            // 1. Tạo notification
             $noti = Notification::create([
                 'type'    => 'course',
                 'title'   => 'Khóa học mới cần duyệt',
                 'message' => "Giảng viên {$request->user()->name} đã tạo khóa học mới: {$course->title}.",
-                'data'    => json_encode(['course_id' => $course->id]),
+                'data'    => [
+                    'course_id' => $course->id,
+                ],
             ]);
 
+            // 2. Attach đến tất cả admin
             $noti->users()->attach($adminIds);
+
+            // 3. Load tất cả bản ghi pivot vừa tạo
+            $pivotRecords = NotificationUser::with('notification')
+                ->where('notification_id', $noti->id)
+                ->whereIn('user_id', $adminIds)
+                ->get();
+
+            // 4. Bắn realtime cho TỪNG admin
+            foreach ($pivotRecords as $pivot) {
+                broadcast(new NotificationCreated($pivot))->toOthers();
+            }
         }
 
         return response()->json([
@@ -122,7 +141,6 @@ class CourseController extends Controller
             'short_description' => ['nullable', 'string'],
             'description'       => ['nullable', 'string'],
             'price'             => ['nullable', 'numeric', 'min:0'],
-            'status'            => ['nullable', 'in:draft,approved,archived'],
             'level'             => ['nullable', 'in:beginner,intermediate,advanced'],
             'language'          => ['nullable', 'string'],
             'currency'          => ['nullable', 'string'],
@@ -176,6 +194,15 @@ class CourseController extends Controller
             ]);
 
             $noti->users()->attach($adminIds);
+
+            $pivotRecords = NotificationUser::with('notification')
+                ->where('notification_id', $noti->id)
+                ->whereIn('user_id', $adminIds)
+                ->get();
+
+            foreach ($pivotRecords as $pivot) {
+                broadcast(new NotificationCreated($pivot))->toOthers();
+            }
         }
 
         return response()->json([

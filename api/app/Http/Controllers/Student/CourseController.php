@@ -9,6 +9,8 @@ use App\Models\UserCourse;
 use App\Models\ChatThread;
 use App\Models\ChatParticipant;
 use App\Models\Notification;
+use App\Models\NotificationUser;
+use App\Events\NotificationCreated;
 
 class CourseController extends Controller
 {
@@ -213,12 +215,31 @@ class CourseController extends Controller
 
         // ✅ 4. Gửi thông báo cho giảng viên
         if ($instructorId) {
-            Notification::create([
+
+            // 1. Tạo notification
+            $noti = Notification::create([
                 'type'    => 'course',
                 'title'   => 'Học viên mới tham gia khóa học',
                 'message' => "{$user->name} vừa ghi danh vào khóa học {$course->title}.",
-                'data'    => json_encode(['course_id' => $course->id, 'user_id' => $user->id]),
-            ])->users()->attach([$instructorId]);
+                'data'    => [
+                    'course_id' => $course->id,
+                    'user_id'   => $user->id,
+                ],
+            ]);
+
+            // 2. Attach đến giảng viên
+            $noti->users()->attach($instructorId);
+
+            // 3. Lấy pivot vừa tạo
+            $pivot = NotificationUser::with('notification')
+                ->where('notification_id', $noti->id)
+                ->where('user_id', $instructorId)
+                ->first();
+
+            // 4. Bắn realtime cho giảng viên
+            if ($pivot) {
+                broadcast(new \App\Events\NotificationCreated($pivot))->toOthers();
+            }
         }
 
         return response()->json([

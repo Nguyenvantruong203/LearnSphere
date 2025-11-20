@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Instructor\GoogleAuthController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChatController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Broadcast;
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -37,4 +37,10 @@ Route::middleware('auth:sanctum')->prefix('chat')->group(function () {
     Route::post('/support/user', [ChatController::class, 'startUserSupport']);
 
     Route::post('/consult/start', [ChatController::class, 'startConsult']);
+});
+
+Route::middleware('auth:sanctum')->prefix('notifications')->group(function () {
+    Route::get('/', [NotificationController::class, 'index']);
+    Route::post('/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::post('/read-all', [NotificationController::class, 'markAllAsRead']);
 });

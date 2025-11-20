@@ -19,6 +19,7 @@ import MyCourses from '@/pages/customer/myCourses/MyCourses.vue'
 import Learning from '@/pages/customer/learning/Learning.vue'
 import QuizReview from '@/pages/customer/quiz/QuizReview.vue'
 import StudentProfile from '@/pages/customer/profile/StudentProfile.vue'
+import MyCertification from '@/pages/customer/myCertification/MyCertification.vue'
 
 /* --- Admin & Instructor Pages --- */
 import ListUsers from '@/pages/admin/user/ListUsers.vue'
@@ -26,11 +27,13 @@ import UserProfile from '@/pages/admin/profile/UserProfile.vue'
 import ListCourses from '@/pages/instructor/course/ListCourses.vue'
 import CouponList from '@/pages/admin/coupon/CouponList.vue'
 import Chat from '@/pages/instructor/chat/Chat.vue'
+import Dashboard from '@/pages/instructor/dashboard/InstructorDashboard.vue'
+import ApproveCourse from '@/pages/admin/course/approveCourse.vue'
+import AdminDashboard from '@/pages/admin/dashboard/AdminDashboard.vue'
 
 /* --- Error pages --- */
 import NotFound from '@/pages/error/404.vue'
 import Forbidden from '@/pages/error/403.vue'
-import ApproveCourse from '@/pages/admin/course/approveCourse.vue'
 
 /* --- meta typing --- */
 declare module 'vue-router' {
@@ -116,6 +119,17 @@ export const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/my-certificates/:id',
+    name: 'MyCertification',
+    component: MyCertification,
+    meta: {
+      layout: 'public',
+      title: 'Chứng chỉ của tôi',
+      requiresAuth: true,
+      roles: ['student'],
+    },
+  },
+  {
     path: '/profile/:id',
     name: 'Profile',
     component: StudentProfile,
@@ -177,6 +191,18 @@ export const routes: RouteRecordRaw[] = [
         meta: { title: 'My Profile', requiresAuth: true, roles: ['admin', 'instructor'] },
       },
       {
+        path: 'instructorDashboard',
+        name: 'instructor-dashboard',
+        component: Dashboard,
+        meta: { title: 'My Profile', requiresAuth: true, roles: ['instructor'] },
+      },
+      {
+        path: 'adminDashboard',
+        name: 'admin-dashboard',
+        component: AdminDashboard,
+        meta: { title: 'My Profile', requiresAuth: true, roles: ['admin'] },
+      },
+      {
         path: 'courses',
         name: 'admin-courses',
         component: ListCourses,
@@ -201,6 +227,16 @@ export const routes: RouteRecordRaw[] = [
         meta: { title: 'Instructor Chat', requiresAuth: true, roles: ['admin', 'instructor'] },
       },
     ],
+  },
+  {
+    path: '/notifications',
+    name: 'Notifications',
+    component: () => import('@/pages/common/notifications/NotificationList.vue'),
+    meta: {
+      title: 'List Notifications',
+      requiresAuth: true,
+      roles: ['student', 'admin', 'instructor'],
+    },
   },
 
   /* --- Errors --- */
@@ -230,37 +266,36 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const clientAuth = useClientAuthStore()
-  const adminAuth = useAdminAuthStore()
+  const clientStore = useClientAuthStore()
+  const adminStore = useAdminAuthStore()
 
-  const isAdminRoute = to.path.startsWith('/admin')
-  const auth = isAdminRoute ? adminAuth : clientAuth
+  let authStore = clientStore
+  let userRole = clientStore.user?.role
 
-  const isAuthenticated = auth.isLoggedIn
-  const userRole = auth.user?.role
+  const storedAdmin = JSON.parse(localStorage.getItem('admin_auth') || '{}')
+  const storedInstructor = JSON.parse(localStorage.getItem('instructor_auth') || '{}')
 
-  /* Set page title */
-  if (to.meta.title) {
-    document.title = `${to.meta.title} — LearnSphere`
+  if (storedAdmin?.user?.role === 'admin') {
+    authStore = adminStore
+    userRole = 'admin'
+  } else if (storedInstructor?.user?.role === 'instructor') {
+    authStore = adminStore
+    userRole = 'instructor'
   }
 
-  /* Requires auth? */
-  if (to.meta.requiresAuth && !isAuthenticated) {
-    return next({ name: isAdminRoute ? 'AdminLogin' : 'CustomerLogin' })
+  // set title
+  if (to.meta.title) document.title = `${to.meta.title} — LearnSphere`
+
+  // requiresAuth
+  if (to.meta.requiresAuth && !authStore.isLoggedIn) {
+    return next({ name: userRole === 'admin' ? 'AdminLogin' : 'CustomerLogin' })
   }
 
-  /* Check roles */
-  if (to.meta.roles && isAuthenticated) {
-    if (!userRole || !to.meta.roles.includes(userRole)) {
-      return next({ name: 'Forbidden' })
-    }
+  // check roles
+  if (to.meta.roles && !to.meta.roles.includes(userRole)) {
+    return next({ name: 'Forbidden' })
   }
 
-  /* Prevent logged-in from accessing login */
-  if (isAuthenticated && (to.name === 'CustomerLogin' || to.name === 'AdminLogin')) {
-    return next({ name: isAdminRoute ? 'admin-users' : 'Homepage' })
-  }
-  router.getRoutes().map((r) => r.path)
   next()
 })
 

@@ -13,6 +13,8 @@ use App\Mail\InstructorApprovedMail;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\InstructorRejectedMail;
+use App\Models\NotificationUser;
+use App\Events\NotificationCreated;
 
 class UserController extends Controller
 {
@@ -221,11 +223,10 @@ class UserController extends Controller
         $userToApprove->status = 'approved';
         $userToApprove->save();
 
-        // ✅ Gửi notification nội bộ (Notification + notification_user)
         $notification = Notification::create([
-            'title' => '🎉 Instructor Application Approved',
-            'message' => "Chúc mừng {$userToApprove->name}, hồ sơ giảng viên của bạn đã được phê duyệt!",
-            'type' => 'instructor_approved',
+            'title'      => '🎉 Instructor Application Approved',
+            'message'    => "Chúc mừng {$userToApprove->name}, hồ sơ giảng viên của bạn đã được phê duyệt!",
+            'type'       => 'instructor_approved',
             'related_id' => $userToApprove->id,
         ]);
 
@@ -234,6 +235,16 @@ class UserController extends Controller
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        // Load bản ghi đầy đủ để broadcast
+        $full = NotificationUser::with('notification')
+            ->where('notification_id', $notification->id)
+            ->where('user_id', $userToApprove->id)
+            ->first();
+
+        // 🔥 Broadcast realtime
+        broadcast(new \App\Events\NotificationCreated($full))->toOthers();
+
 
         // ✅ Gửi email thông báo
         try {
@@ -273,20 +284,31 @@ class UserController extends Controller
         $userToReject->status = 'rejected';
         $userToReject->save();
 
-        // ✅ Gửi notification nội bộ
+        // Tạo bản ghi notification
         $notification = Notification::create([
-            'title' => '⚠️ Instructor Application Rejected',
-            'message' => "Rất tiếc, hồ sơ giảng viên của bạn đã bị từ chối." .
+            'title'      => '⚠️ Instructor Application Rejected',
+            'message'    => "Rất tiếc, hồ sơ giảng viên của bạn đã bị từ chối." .
                 ($request->reason ? " Lý do: {$request->reason}" : ""),
-            'type' => 'instructor_rejected',
+            'type'       => 'instructor_rejected',
             'related_id' => $userToReject->id,
         ]);
 
+        // Tạo bản ghi pivot (notification_user)
         $notification->users()->attach($userToReject->id, [
             'is_read' => false,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        // Load lại pivot để broadcast realtime
+        $pivot = NotificationUser::with('notification')
+            ->where('notification_id', $notification->id)
+            ->where('user_id', $userToReject->id)
+            ->first();
+
+        // Bắn realtime event
+        broadcast(new \App\Events\NotificationCreated($pivot))->toOthers();
+
 
         // ✅ Gửi email thông báo
         try {

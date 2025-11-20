@@ -13,7 +13,7 @@
 
       <div v-if="showProgress"
         class="absolute bottom-3 left-3 bg-white/95 backdrop-blur-md rounded-xl px-4 py-2 shadow-lg">
-        <span class="text-gray-800 text-sm font-semibold">{{ course.progress }}</span>
+        <span class="text-gray-800 text-sm font-semibold">{{ course.progress }} %</span>
       </div>
     </div>
 

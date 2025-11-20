@@ -7,6 +7,6 @@ async getStatus() {
 },
 
   connectUrl(userId: number) {
-    return `${import.meta.env.VITE_API_BASE_URL}/api/google/connect-youtube?state=${userId}`
+    return `${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}/api/google/connect-youtube?state=${userId}`
   },
 }

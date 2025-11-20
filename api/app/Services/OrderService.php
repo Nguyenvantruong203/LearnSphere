@@ -19,6 +19,8 @@ use App\Models\ChatParticipant;
 use App\Models\InstructorWallet;
 use App\Models\Payout;
 use App\Models\WalletTransaction;
+use App\Events\NotificationCreated;
+use App\Models\NotificationUser;
 
 class OrderService
 {
@@ -185,20 +187,52 @@ class OrderService
                     ]);
                 }
 
-                /** Notify */
-                Notification::create([
+                /** Notify giảng viên */
+                $notiInstructor = Notification::create([
                     'type'    => 'order',
                     'title'   => 'Khóa học mới được đăng ký',
                     'message' => "{$student->name} vừa đăng ký khóa học {$course->title}.",
-                    'data'    => json_encode(['order_id' => $order->id, 'course_id' => $course->id]),
-                ])->users()->attach([$instructorId]);
+                    'data'    => json_encode([
+                        'order_id'  => $order->id,
+                        'course_id' => $course->id
+                    ]),
+                ]);
 
-                Notification::create([
+                $notiInstructor->users()->attach([$instructorId], [
+                    'is_read' => false,
+                    'created_at' => now(),
+                ]);
+
+                // 🔥 Realtime cho giảng viên
+                $pivotInstructor = NotificationUser::where('notification_id', $notiInstructor->id)
+                    ->where('user_id', $instructorId)
+                    ->first();
+
+                broadcast(new NotificationCreated($pivotInstructor));
+
+                /** Notify student */
+                $notiStudent = Notification::create([
                     'type'    => 'course',
                     'title'   => 'Thanh toán thành công',
                     'message' => "Bạn đã đăng ký thành công khóa học {$course->title}.",
-                    'data'    => json_encode(['order_id' => $order->id, 'course_id' => $course->id]),
-                ])->users()->attach([$studentId]);
+                    'data'    => json_encode([
+                        'order_id'  => $order->id,
+                        'course_id' => $course->id
+                    ]),
+                ]);
+
+                $notiStudent->users()->attach([$studentId], [
+                    'is_read' => false,
+                    'created_at' => now(),
+                ]);
+
+                // 🔥 Realtime cho học viên
+                $pivotStudent = NotificationUser::where('notification_id', $notiStudent->id)
+                    ->where('user_id', $studentId)
+                    ->first();
+
+                broadcast(new NotificationCreated($pivotStudent));
+
 
                 /** Mail instructor */
                 if ($course->instructor?->email) {
@@ -251,13 +285,29 @@ class OrderService
 
             /** 7. Notify admin */
             $adminIds = User::where('role', 'admin')->pluck('id')->toArray();
-            if ($adminIds) {
-                Notification::create([
+
+            if (!empty($adminIds)) {
+                $notiAdmin = Notification::create([
                     'type'    => 'order',
                     'title'   => 'Đơn hàng mới thành công',
                     'message' => "Đơn hàng #{$order->id} đã được thanh toán thành công.",
-                ])->users()->attach($adminIds);
+                ]);
+
+                $notiAdmin->users()->attach($adminIds, [
+                    'is_read' => false,
+                    'created_at' => now(),
+                ]);
+
+                // 🔥 Realtime từng admin
+                foreach ($adminIds as $adminId) {
+                    $pivotAdmin = NotificationUser::where('notification_id', $notiAdmin->id)
+                        ->where('user_id', $adminId)
+                        ->first();
+
+                    broadcast(new NotificationCreated($pivotAdmin));
+                }
             }
+
 
             Log::info("✅ [PaymentService] markOrderPaid completed for order #{$order->id}");
 
@@ -286,8 +336,13 @@ class OrderService
                 'currency'          => 'USD',
             ]);
         }
-        // ⚠️ Notify student
-        Notification::create([
+
+        /**
+         * ============================================================
+         * 🔴 NOTIFY STUDENT – PAYMENT FAILED
+         * ============================================================
+         */
+        $notiStudent = Notification::create([
             'type'    => 'order',
             'title'   => 'Thanh toán thất bại',
             'message' => "Đơn hàng #{$order->id} của bạn chưa được thanh toán thành công. Vui lòng thử lại.",
@@ -295,12 +350,31 @@ class OrderService
                 'order_id' => $order->id,
                 'user_id'  => $order->user_id,
             ]),
-        ])->users()->attach([$order->user_id]);
+        ]);
 
-        // ⚠️ Notify admin (để theo dõi lỗi)
+        $notiStudent->users()->attach([$order->user_id], [
+            'is_read' => false,
+            'created_at' => now(),
+        ]);
+
+        // 🔥 Realtime cho học viên
+        $pivotStudent = NotificationUser::where('notification_id', $notiStudent->id)
+            ->where('user_id', $order->user_id)
+            ->first();
+
+        broadcast(new NotificationCreated($pivotStudent));
+
+
+        /**
+         * ============================================================
+         * 🔴 NOTIFY ADMIN – LOG FAILED PAYMENT
+         * ============================================================
+         */
         $adminIds = User::where('role', 'admin')->pluck('id')->toArray();
-        if ($adminIds) {
-            Notification::create([
+
+        if (!empty($adminIds)) {
+
+            $notiAdmin = Notification::create([
                 'type'    => 'order',
                 'title'   => 'Thanh toán thất bại',
                 'message' => "Đơn hàng #{$order->id} vừa bị lỗi thanh toán qua VNPAY.",
@@ -308,7 +382,21 @@ class OrderService
                     'order_id' => $order->id,
                     'user_id'  => $order->user_id,
                 ]),
-            ])->users()->attach($adminIds);
+            ]);
+
+            $notiAdmin->users()->attach($adminIds, [
+                'is_read' => false,
+                'created_at' => now(),
+            ]);
+
+            // 🔥 Realtime từng admin
+            foreach ($adminIds as $adminId) {
+                $pivotAdmin = NotificationUser::where('notification_id', $notiAdmin->id)
+                    ->where('user_id', $adminId)
+                    ->first();
+
+                broadcast(new NotificationCreated($pivotAdmin));
+            }
         }
     }
 }

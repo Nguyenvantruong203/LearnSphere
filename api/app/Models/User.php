@@ -209,4 +209,9 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return self::where('role', 'admin')->pluck('id')->toArray();
     }
+
+    public function completedLessons()
+    {
+        return $this->hasMany(LessonCompletion::class);
+    }
 }

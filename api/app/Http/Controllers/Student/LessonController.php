@@ -60,13 +60,6 @@ class LessonController extends Controller
                         'title' => $lesson->quiz->title,
                     ] : null;
 
-                    // (Tùy chọn) kiểm tra tiến độ học
-                    // $lesson->is_completed = $user
-                    //     ? (bool) \App\Models\LessonCompletion::where('user_id', $user->id)
-                    //         ->where('lesson_id', $lesson->id)
-                    //         ->value('is_completed')
-                    //     : false;
-
                     unset($lesson->topic_id, $lesson->duration_seconds);
                     return $lesson;
                 });

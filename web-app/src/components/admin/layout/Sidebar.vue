@@ -52,11 +52,12 @@ const role = computed(() => authStore.user?.role || '')
 
 // === Navigation cấu hình ===
 const mainNavigation = [
-  { icon: HomeOutlined, label: 'Dashboard', path: '/admin', roles: ['admin', 'instructor'] },
+  { icon: HomeOutlined, label: 'Instructor Dashboard', path: '/admin/instructorDashboard', roles: ['instructor'] },
+  { icon: ToolOutlined, label: 'Admin Dashboard', path: '/admin/adminDashboard', roles: ['admin']},
   { icon: BarChartOutlined, label: 'Users Management', path: '/admin/users', roles: ['admin'] },
   { icon: BookOutlined, label: 'Courses', path: '/admin/courses', roles: ['instructor'] },
   { icon: FileTextOutlined, label: 'Coupons', path: '/admin/coupons', roles: ['admin'] },
-  { icon: FileTextOutlined, label: 'Courses', path: '/admin/approveCourses', roles: ['admin'] },
+  { icon: PartitionOutlined, label: 'Courses', path: '/admin/approveCourses', roles: ['admin'] },
   { icon: CreditCardOutlined, label: 'Chat', path: '/admin/chat', roles: ['admin', 'instructor'] },
 ]
 

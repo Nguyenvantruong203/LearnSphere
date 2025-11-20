@@ -7,23 +7,23 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('lessons', function (Blueprint $t) {
-            $t->id();
-            $t->foreignId('topic_id')->constrained('topics')->cascadeOnDelete();
-            $t->string('title');
+        Schema::create('lessons', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('topic_id')->constrained('topics')->cascadeOnDelete();
+            $table->string('title');
 
-            $t->enum('video_provider', ['youtube', 'cloudinary', 'vimeo'])->default('youtube');
-            $t->string('video_id')->nullable();
-            $t->string('video_url')->nullable();
+            $table->enum('video_provider', ['youtube', 'cloudinary', 'vimeo'])->default('youtube');
+            $table->string('video_id')->nullable();
+            $table->string('video_url')->nullable();
 
-            $t->text('content')->nullable();
-            $t->unsignedInteger('order')->default(1);
-            $t->unsignedInteger('duration_seconds')->nullable();
-            $t->json('player_params')->nullable(); 
-            $t->timestamps();
+            $table->text('content')->nullable();
+            $table->unsignedInteger('order')->default(1);
+            $table->unsignedInteger('duration_seconds')->nullable();
+            $table->json('player_params')->nullable();
+            $table->timestamps();
 
-            $t->unique(['topic_id', 'title']);
-            $t->index(['topic_id', 'order']);
+            $table->unique(['topic_id', 'title']);
+            $table->index(['topic_id', 'order']);
         });
     }
 

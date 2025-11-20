@@ -8,6 +8,7 @@ use App\Http\Controllers\Instructor\GoogleAuthController;
 use App\Http\Controllers\Instructor\QuizController;
 use App\Http\Controllers\Instructor\LessonQuestionController;
 use App\Http\Controllers\Instructor\TopicQuestionController;
+use App\Http\Controllers\Instructor\InstructorDashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,7 +27,7 @@ Route::middleware('auth:sanctum')->prefix('instructor')->group(function () {
     Route::get('/courses/{course}', [CourseController::class, 'show'])->name('courses.show');  // Chi tiết course
     Route::put('/courses/{course}', [CourseController::class, 'update'])->name('courses.update');  // Update course
     Route::delete('/courses/{course}', [CourseController::class, 'destroy'])->name('courses.destroy');
-    Route::post('/courses/{course}/resubmit',[CourseController::class, 'resubmit']);
+    Route::post('/courses/{course}/resubmit', [CourseController::class, 'resubmit']);
 
     // Topics
     Route::get('/courses/{course}/topics', [TopicController::class, 'index'])->name('courses.topics.index');
@@ -78,6 +79,22 @@ Route::middleware('auth:sanctum')->prefix('instructor')->group(function () {
     Route::get('quizzes/{quiz}/topic-questions/pool', [TopicQuestionController::class, 'poolForTopic']);
     Route::post('quizzes/{quiz}/topic-questions/publish', [TopicQuestionController::class, 'publishForTopic']);
     Route::put('quizzes/{quiz}/topic-questions/{question}', [TopicQuestionController::class, 'updateForTopic']);
-
     Route::delete('quizzes/{quiz}/questions/{question}', [LessonQuestionController::class, 'destroy']);
+
+    Route::prefix('dashboard')->group(function () {
+        // ===== OVERVIEW =====
+        Route::get('/overview', [InstructorDashboardController::class, 'overview']);
+
+        // ===== REVENUE =====
+        Route::get('/revenue/summary', [InstructorDashboardController::class, 'revenueSummary']);
+        Route::get('/revenue/by-month', [InstructorDashboardController::class, 'revenueByMonth']);
+        Route::get('/revenue/by-course', [InstructorDashboardController::class, 'revenueByCourse']);
+
+        // ===== STUDENTS & LEARNING ACTIVITY =====
+        Route::get('/students/summary', [InstructorDashboardController::class, 'studentSummary']);
+        Route::get('/students/activity', [InstructorDashboardController::class, 'studentActivity']);
+        Route::get('/courses/progress', [InstructorDashboardController::class, 'courseProgress']);
+
+        Route::get('/chat/stats', [InstructorDashboardController::class, 'chatStats']);
+    });
 });

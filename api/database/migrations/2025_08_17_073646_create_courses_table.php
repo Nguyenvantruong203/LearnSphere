@@ -11,41 +11,41 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('courses', function (Blueprint $t) {
-            $t->id();
-            $t->string('title');
-            $t->string('slug')->unique();
-            $t->string('thumbnail_url')->nullable();
-            $t->string('short_description', 255)->nullable();
-            $t->text('description')->nullable();
+        Schema::create('courses', function (Blueprint $table) {
+            $table->id();
+            $table->string('title');
+            $table->string('slug')->unique();
+            $table->string('thumbnail_url')->nullable();
+            $table->string('short_description', 255)->nullable();
+            $table->text('description')->nullable();
 
-            $t->string('status')->default('draft');
-            $t->timestamp('publish_at')->nullable();
-            $t->string('subject')->nullable();
+            $table->string('status')->default('draft');
+            $table->timestamp('publish_at')->nullable();
+            $table->string('subject')->nullable();
 
             // 💲 Giá theo USD
-            $t->decimal('price', 12, 2)->default(0);
-            $t->char('currency', 3)->default('USD'); // ✅ đổi sang USD
+            $table->decimal('price', 12, 2)->default(0);
+            $table->char('currency', 3)->default('USD'); // ✅ đổi sang USD
 
             // 💰 Phần chia doanh thu
-            $t->decimal('instructor_share', 5, 2)->default(70.00);
-            $t->decimal('platform_fee', 5, 2)->default(30.00);
+            $table->decimal('instructor_share', 5, 2)->default(70.00);
+            $table->decimal('platform_fee', 5, 2)->default(30.00);
 
             // 🌍 Ngôn ngữ mặc định là English
-            $t->enum('level', ['beginner', 'intermediate', 'advanced'])->default('beginner');
-            $t->string('language', 5)->default('en'); // ✅ đổi sang en
+            $table->enum('level', ['beginner', 'intermediate', 'advanced'])->default('beginner');
+            $table->string('language', 5)->default('en'); // ✅ đổi sang en
 
-            $t->boolean('is_featured')->default(false);
+            $table->boolean('is_featured')->default(false);
 
-            $t->text('rejection_reason')->nullable();
-            $t->timestamp('rejected_at')->nullable();
+            $table->text('rejection_reason')->nullable();
+            $table->timestamp('rejected_at')->nullable();
 
-            $t->foreignId('created_by')->constrained('users')->cascadeOnDelete();
-            $t->timestamps();
-            $t->softDeletes();
+            $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
+            $table->timestamps();
+            $table->softDeletes();
 
-            $t->index(['status', 'subject', 'publish_at']);
-            $t->fullText(['title', 'short_description', 'description']);
+            $table->index(['status', 'subject', 'publish_at']);
+            $table->fullText(['title', 'short_description', 'description']);
         });
     }
 

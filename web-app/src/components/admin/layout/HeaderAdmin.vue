@@ -11,34 +11,14 @@
         <div class="flex items-center space-x-2 lg:space-x-4">
           <div v-if="authStore.isLoggedIn && user" class="flex items-center space-x-2 lg:space-x-3">
             <!-- Notification Button -->
-            <div class="relative">
-              <a-button
-                type="text"
-                size="large"
-                class="notification-btn flex items-center justify-center hover:bg-gray-50 transition-colors duration-200"
-                @click="handleNotificationClick"
-              >
-                <BellOutlined class="text-lg text-gray-600" />
-              </a-button>
-              <!-- Notification badge -->
-              <span
-                class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium"
-              >
-                3
-              </span>
-            </div>
+            <NotificationDropdown />
 
             <!-- User Dropdown -->
             <a-dropdown :trigger="['click']" placement="bottomRight">
-              <a
-                class="ant-dropdown-link flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition-all duration-200 cursor-pointer group"
-                @click.prevent
-              >
-                <a-avatar
-                  :size="36"
-                  :src="user.avatar_url"
-                  class="border-2 border-gray-200 group-hover:border-blue-300 transition-colors duration-200"
-                >
+              <a class="ant-dropdown-link flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition-all duration-200 cursor-pointer group"
+                @click.prevent>
+                <a-avatar :size="36" :src="user.avatar_url"
+                  class="border-2 border-gray-200 group-hover:border-blue-300 transition-colors duration-200">
                   <template #icon>
                     <UserOutlined class="text-gray-500" />
                   </template>
@@ -48,14 +28,11 @@
                   <div class="text-xs text-gray-500">{{ user.email || 'Administrator' }}</div>
                 </div>
                 <DownOutlined
-                  class="text-xs text-gray-400 ml-1 group-hover:text-gray-600 transition-colors duration-200"
-                />
+                  class="text-xs text-gray-400 ml-1 group-hover:text-gray-600 transition-colors duration-200" />
               </a>
               <template #overlay>
-                <a-menu
-                  @click="handleMenuClick"
-                  class="min-w-48 shadow-lg border border-gray-100 rounded-lg overflow-hidden"
-                >
+                <a-menu @click="handleMenuClick"
+                  class="min-w-48 shadow-lg border border-gray-100 rounded-lg overflow-hidden">
                   <div class="px-4 py-3 bg-gray-50 border-b border-gray-100">
                     <div class="font-medium text-gray-800">{{ user.name }}</div>
                     <div class="text-sm text-gray-500">{{ user.email || 'Administrator' }}</div>
@@ -86,11 +63,8 @@
           <!-- Login button for non-authenticated users -->
           <div v-else>
             <router-link to="/admin/login">
-              <a-button
-                type="primary"
-                size="large"
-                class="font-medium px-6 hover:shadow-md transition-all duration-200"
-              >
+              <a-button type="primary" size="large"
+                class="font-medium px-6 hover:shadow-md transition-all duration-200">
                 <LoginOutlined class="mr-2" />
                 Login
               </a-button>
@@ -104,7 +78,6 @@
 
 <script setup lang="ts">
 import {
-  BellOutlined,
   UserOutlined,
   LogoutOutlined,
   DownOutlined,
@@ -114,6 +87,7 @@ import { useAdminAuthStore } from '@/stores/adminAuth'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import { notification } from 'ant-design-vue'
+import NotificationDropdown from '@/components/common/notification/NotificationDropdown.vue'
 
 const authStore = useAdminAuthStore()
 const { user } = storeToRefs(authStore)

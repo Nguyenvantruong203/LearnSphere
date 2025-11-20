@@ -5,7 +5,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\CourseController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\CouponController;
-
+use App\Http\Controllers\Admin\AdminDashboardController;
 
 Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
@@ -34,6 +34,17 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::get('/courses/{id}', [CourseController::class, 'show'])->name('courses.show');
     Route::post('/courses/{id}/approve', [CourseController::class, 'approve'])->name('courses.approve');
     Route::post('/courses/{id}/reject', [CourseController::class, 'reject'])->name('courses.reject');
+
+    Route::prefix('dashboard')->group(function () {
+        Route::get('/overview', [AdminDashboardController::class, 'overview']);
+        Route::get('/revenue/by-month', [AdminDashboardController::class, 'revenueByMonth']);
+        Route::get('/courses/top', [AdminDashboardController::class, 'topCourses']);
+        Route::get('/users/stats', [AdminDashboardController::class, 'userStats']);
+        Route::get('/orders/recent', [AdminDashboardController::class, 'recentOrders']);
+        Route::get('/users/new-daily', [AdminDashboardController::class, 'newUsersDaily']);
+        Route::get('/chat/stats', [AdminDashboardController::class, 'chatStats']);
+        Route::get('/system/health', [AdminDashboardController::class, 'systemHealth']);
+    });
 });
 
 // Đặt lại mật khẩu

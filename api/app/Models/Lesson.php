@@ -26,6 +26,16 @@ class Lesson extends Model
         'duration_seconds' => 'integer',
         'player_params' => 'array',
     ];
+    protected $appends = ['is_completed'];
+
+    public function getIsCompletedAttribute()
+    {
+        if (!auth()->check()) return false;
+
+        return LessonCompletion::where('user_id', auth()->id())
+            ->where('lesson_id', $this->id)
+            ->exists();
+    }
 
     public function topic()
     {
@@ -54,5 +64,14 @@ class Lesson extends Model
                 $m->order = ($max ?? 0) + 1;
             }
         });
+    }
+    public function completions()
+    {
+        return $this->hasMany(LessonCompletion::class);
+    }
+
+    public function completedByUser($userId)
+    {
+        return $this->completions()->where('user_id', $userId)->exists();
     }
 }

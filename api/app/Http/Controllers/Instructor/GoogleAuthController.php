@@ -10,10 +10,6 @@ use Illuminate\Http\Request;
 
 class GoogleAuthController extends Controller
 {
-    /**
-     * @author Truong
-     */
-
     public function redirect()
     {
         $client = new GoogleClient();

@@ -21,10 +21,6 @@ class Topic extends Model
         'order' => 'integer',
     ];
 
-    /* =========================
-     |  Relationships
-     |=========================*/
-
     public function course()
     {
         return $this->belongsTo(Course::class);

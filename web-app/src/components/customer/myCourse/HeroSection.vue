@@ -22,20 +22,6 @@
               Tiếp tục hành trình học tập của bạn với những khóa học chất lượng cao và cập nhật mới nhất
             </p>
           </div>
-
-          <div class="flex items-center space-x-4">
-            <button
-              class="flex items-center space-x-2 px-6 py-3 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 text-[#2F327D] hover:text-teal-600 group">
-              <i class="fas fa-history group-hover:rotate-12 transition-transform duration-300"></i>
-              <span class="font-semibold">Lịch sử học tập</span>
-            </button>
-
-            <button
-              class="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:from-teal-600 hover:to-cyan-600 transform hover:scale-105">
-              <i class="fas fa-chart-line"></i>
-              <span class="font-semibold">Thống kê tiến độ</span>
-            </button>
-          </div>
         </div>
       </div>
 
@@ -77,17 +63,12 @@
           </button>
         </div>
 
-        <div class="flex items-center space-x-8">
+       <div class="flex items-center space-x-8">
           <div class="text-center">
             <div class="text-2xl font-bold text-[#2F327D] mb-1">{{ courses.length }}</div>
-            <div class="text-sm text-[#696984]">Khóa học đang học</div>
+            <div class="text-sm text-[#696984]">Tổng số khóa học</div>
           </div>
-          <div class="w-px h-12 bg-gray-200"></div>
-          <div class="text-center">
-            <div class="text-2xl font-bold text-teal-600 mb-1">15</div>
-            <div class="text-sm text-[#696984]">Bài học hoàn thành</div>
-          </div>
-        </div>
+        </div> 
       </div>
     </div>
   </section>

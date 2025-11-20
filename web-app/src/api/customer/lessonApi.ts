@@ -21,5 +21,19 @@ export const lessonApi = {
     })
   },
 
-  
+  /** Đánh dấu hoàn thành bài học */
+  async completeLesson(lessonId: number) {
+    return await httpClient(`/api/student/lessons/${lessonId}/complete`, {
+      method: 'POST',
+    })
+  },
+
+  /**
+   * 🟦 Lấy tiến độ học tập theo khóa học
+   */
+  async getCourseProgress(courseId: number) {
+    return await httpClient(`/api/student/courses/${courseId}/progress`, {
+      method: 'GET',
+    })
+  },
 }
