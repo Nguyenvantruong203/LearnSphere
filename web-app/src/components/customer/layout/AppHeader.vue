@@ -48,89 +48,10 @@
         <div class="flex items-center space-x-4">
 
           <!-- Notifications -->
-          <button v-if="authStore.isLoggedIn"
-            class="hidden md:flex items-center justify-center w-10 h-10 text-[#696984] hover:text-teal-600 hover:bg-gray-100 rounded-xl transition-all duration-300 group relative">
-            <i class="fas fa-bell group-hover:scale-110 transition-transform duration-300"></i>
-            <div class="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-orange-500 to-red-500 rounded-full">
-            </div>
-          </button>
+          <NotificationDropdown v-if="authStore.isLoggedIn" role="student" />
 
           <!-- Shopping Cart -->
-          <a-dropdown :trigger="['click']" placement="bottomRight" v-if="authStore.isLoggedIn">
-            <button
-              class="hidden md:flex items-center justify-center w-10 h-10 text-[#696984] hover:text-teal-600 hover:bg-gray-100 rounded-xl transition-all duration-300 group relative">
-              <i class="fas fa-shopping-cart group-hover:scale-110 transition-transform duration-300"></i>
-              <div v-if="cartItemsCount > 0"
-                class="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-xs rounded-full flex items-center justify-center font-semibold">
-                {{ cartItemsCount }}
-              </div>
-            </button>
-
-            <template #overlay>
-              <div class="bg-white rounded-2xl shadow-2xl border-0 overflow-hidden"
-                style="width: 380px; max-height: 500px;">
-                <!-- Cart Header -->
-                <div class="px-6 py-4 bg-gradient-to-r from-teal-50 to-cyan-50 border-b border-gray-100">
-                  <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-semibold text-gray-800">Giỏ hàng</h3>
-                    <span class="text-sm text-gray-600">{{ cartItemsCount }} khóa học</span>
-                  </div>
-                </div>
-
-                <!-- Cart Items -->
-                <div class="max-h-80 overflow-y-auto">
-                  <div v-if="cartItems.length === 0" class="p-8 text-center">
-                    <div class="text-gray-400 mb-3">
-                      <i class="fas fa-shopping-cart text-4xl"></i>
-                    </div>
-                    <p class="text-gray-500 mb-4">Giỏ hàng của bạn đang trống</p>
-                    <router-link to="/courses"
-                      class="inline-flex items-center px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors">
-                      Khám phá khóa học
-                    </router-link>
-                  </div>
-
-                  <div v-else class="py-2">
-                    <div v-for="item in cartItems" :key="item.id"
-                      class="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 transition-colors">
-                      <div class="relative flex-shrink-0">
-                        <img :src="item.thumbnail_url" :alt="item.title" class="w-16 h-12 object-cover rounded-lg" />
-                        <div class="absolute inset-0 flex items-center justify-center">
-                          <div class="w-6 h-6 bg-white bg-opacity-80 rounded-full flex items-center justify-center">
-                            <svg class="w-3 h-3 text-teal-600" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M8 5v10l7-5-7-5z" />
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div class="flex-1 min-w-0">
-                        <h4 class="text-sm font-medium text-gray-900 truncate">{{ item.title }}</h4>
-                        <FormatPrice :price="item.price" class="text-sm text-teal-600 font-semibold mt-1" />
-                      </div>
-
-                      <button @click="removeFromCart(item.id)"
-                        class="flex-shrink-0 p-1 text-gray-400 hover:text-red-500 transition-colors">
-                        <i class="fas fa-times text-sm"></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Cart Footer -->
-                <div v-if="cartItems.length > 0" class="px-6 py-4 bg-gray-50 border-t border-gray-100">
-                  <div class="flex items-center justify-between mb-3">
-                    <span class="text-sm font-medium text-gray-600">Tổng cộng:</span>
-                    <FormatPrice :price="cartTotal" class="text-lg font-bold text-teal-600" />
-                  </div>
-                  <router-link to="/cart"
-                    class="block w-full bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-center font-semibold py-3 rounded-xl hover:from-teal-600 hover:to-cyan-600 transition-all duration-300 transform hover:scale-105">
-                    View Detail giỏ hàng
-                  </router-link>
-                </div>
-              </div>
-            </template>
-          </a-dropdown>
+          <CartDropdown v-if="authStore.isLoggedIn" :userId="authStore.user.id" />
 
           <!-- User Profile / Auth Buttons -->
           <div class="flex items-center">
@@ -169,6 +90,12 @@
                       <div class="flex items-center space-x-3 py-2">
                         <i class="fas fa-graduation-cap text-teal-600"></i>
                         <span>My Courses</span>
+                      </div>
+                    </a-menu-item>
+                    <a-menu-item key="certificates">
+                      <div class="flex items-center space-x-3 py-2">
+                        <i class="fas fa-certificate text-teal-600"></i>
+                        <span>My Certificates</span>
                       </div>
                     </a-menu-item>
                     <a-menu-divider />
@@ -234,13 +161,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useClientAuthStore } from '@/stores/clientAuth'
 import { useRouter, useRoute } from 'vue-router'
 import { notification } from 'ant-design-vue'
 import type { MenuInfo } from 'ant-design-vue/es/menu/src/interface'
 import type { CartItem } from '@/types/Order'
 import { CartStorage } from '@/helpers/cartStorage'
+import NotificationDropdown from '@/components/common/notification/NotificationDropdown.vue'
 
 const authStore = useClientAuthStore()
 const router = useRouter()
@@ -269,26 +197,6 @@ const loadCartItems = () => {
     ...item,
     price: Number(item.price) || 0,
   }))
-}
-
-// Cart computed values
-const cartItemsCount = computed(() => cartItems.value.length)
-
-const cartTotal = computed(() => {
-  return cartItems.value.reduce((sum, item) => sum + (item.price || 0), 0)
-})
-
-// Remove item from cart
-const removeFromCart = (courseId: number) => {
-  const userId = getUserId()
-  if (!userId) return
-
-  CartStorage.removeItem(userId, courseId)
-  loadCartItems()
-
-  notification.success({
-    message: 'Đã xóa khóa học khỏi giỏ hàng'
-  })
 }
 
 // Listen for cart changes
@@ -334,6 +242,8 @@ async function onMenuClick(info: MenuInfo) {
     router.push('/profile/' + (authStore.user?.id || ''))
   } else if (key === 'courses') {
     router.push('/my-courses/' + (authStore.user?.id || ''))
+  } else if (key === 'certificates') {
+    router.push('/my-certificates/' + (authStore.user?.id || ''))
   } else if (key === 'settings') {
     router.push('/settings')
   }

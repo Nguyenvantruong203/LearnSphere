@@ -26,18 +26,6 @@
         </div>
         
         <p class="text-[#696984] leading-relaxed">{{ content }}</p>
-        
-        <!-- Review actions -->
-        <div class="flex items-center space-x-4 mt-4 pt-4 border-t border-gray-100">
-          <button class="flex items-center space-x-2 text-[#696984] hover:text-teal-600 transition-colors duration-300">
-            <i class="far fa-thumbs-up"></i>
-            <span class="text-sm font-medium">Hữu ích (12)</span>
-          </button>
-          <button class="flex items-center space-x-2 text-[#696984] hover:text-teal-600 transition-colors duration-300">
-            <i class="far fa-comment"></i>
-            <span class="text-sm font-medium">Trả lời</span>
-          </button>
-        </div>
       </div>
     </div>
   </div>

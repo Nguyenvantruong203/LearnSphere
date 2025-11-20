@@ -57,15 +57,6 @@
               :rating="review.rating"
             />
           </div>
-
-          <!-- Load more reviews -->
-          <div class="text-center pt-6">
-            <button
-              class="bg-white border border-gray-200 text-[#2F327D] font-semibold px-8 py-3 rounded-3xl hover:bg-gray-50 hover:border-teal-300 transition-all duration-300"
-            >
-              Load More Reviews
-            </button>
-          </div>
         </div>
       </div>
     </div>
@@ -77,7 +68,6 @@ import { ref } from 'vue'
 import RatingBar from './RatingBar.vue'
 import ReviewCard from './ReviewCard.vue'
 
-// Mock data - in real use case, this would come from props or API
 const averageRating = ref(4.5)
 const totalReviews = ref(245)
 
