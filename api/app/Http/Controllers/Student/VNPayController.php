@@ -26,7 +26,7 @@ class VNPayController extends Controller
     public function createPayment(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'amount'   => 'required|numeric|min:10000|max:500000000',
+            'amount'   => 'required|numeric|min:10|max:500000000',
             'user_id'  => 'required|exists:users,id',
             'items'    => 'required|array', // danh sách course_id
             'coupon'   => 'nullable|string'

@@ -10,6 +10,8 @@ use App\Http\Controllers\Student\ProfileController;
 use App\Http\Controllers\Student\InstructorController;
 use App\Http\Controllers\Student\LessonCompletionController;
 use App\Http\Controllers\Student\CertificateController;
+use App\Http\Controllers\Student\ReviewController;
+use App\Http\Controllers\Student\FlashcardLearnController;
 
 /*
 |--------------------------------------------------------------------------
@@ -66,4 +68,16 @@ Route::middleware('auth:sanctum')->prefix('student')->group(function () {
 
     // Tải PDF chứng chỉ
     Route::get('/certificates/{id}/download', [CertificateController::class, 'download']);
+
+    Route::prefix('reviews')->middleware('auth:sanctum')->group(function () {
+        Route::get('/course/{courseId}', [ReviewController::class, 'index']);
+        Route::post('/course/{courseId}', [ReviewController::class, 'store']);
+        Route::put('/{id}', [ReviewController::class, 'update']);
+        Route::delete('/{id}', [ReviewController::class, 'destroy']);
+        Route::get('/summary/{courseId}', [ReviewController::class, 'summary']);
+        Route::get('/course/{courseId}/can-review', [ReviewController::class, 'canReview']);
+    });
+
+    Route::get('/topics/{topicId}/flashcards/learn', [FlashcardLearnController::class, 'getFlashcardsForLearning']);
+    Route::post('/flashcards/{id}/review', [FlashcardLearnController::class, 'saveFlashcardReview']);
 });

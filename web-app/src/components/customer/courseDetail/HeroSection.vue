@@ -66,10 +66,10 @@
                     Pro
                   </div>
                 </div>
-                <p class="text-slate-600 text-sm mb-2">Senior AWS Solutions Architect</p>
+                <p class="text-slate-600 text-sm mb-2">{{ course?.instructor?.expertise }}</p>
                 <div class="flex items-center space-x-4 text-sm text-slate-500">
-                  <span>⭐ 4.9 (2,547 reviews)</span>
-                  <span>👥 12,345 students</span>
+                  <span>⭐ King nghiệm giảng dạy {{ course?.instructor?.teaching_experience }} năm</span>
+                  <span>👥 Tổng số khóa học: {{ course?.total_courses }}</span>
                 </div>
               </div>
             </div>
@@ -94,7 +94,7 @@
             <div
               class="bg-white/90 backdrop-blur-sm rounded-xl p-4 border border-white/50 shadow-sm hover:shadow-md transition-all duration-300 text-center group">
               <div class="text-2xl font-bold text-slate-800 mb-1 group-hover:text-teal-600 transition-colors">
-                4.9
+                {{ Number(course?.average_rating).toFixed(1) }} ⭐
               </div>
               <div class="text-sm text-slate-600">Rating</div>
             </div>

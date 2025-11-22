@@ -63,7 +63,7 @@ class GoogleAuthController extends Controller
             ]
         );
 
-        return redirect(config('app.frontend_url') . '/admin/courses?youtube=connected');
+        return redirect( 'http://localhost:5173/admin/courses?youtube=connected');
     }
 
     public function status(Request $request)

@@ -18,8 +18,10 @@ export interface Course {
   created_at: string;
   updated_at: string;
   instructor?: User; // Quan hệ với người tạo
-  total_topics: number;
-  total_lessons: number;
+  total_topics?: number;
+  total_lessons?: number;
+  total_courses?: number; 
+  average_rating?: number; // avg rating
 }
 
 export type CoursePayload = Omit<Course, 'id' | 'slug' | 'created_at' | 'updated_at' | 'creator'> & {

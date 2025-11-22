@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('user_progress', function (Blueprint $table) {
@@ -19,13 +16,10 @@ return new class extends Migration
             $table->timestamp('last_updated')->useCurrent();
             $table->timestamps();
 
-            $table->primary(['user_id', 'course_id']);
+            $table->unique(['user_id', 'course_id'], 'user_course_unique');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('user_progress');

@@ -24,7 +24,7 @@ return [
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
-        env('FRONTEND_URL', 'http://localhost:5173'),
+        env('APP_FRONTEND_URL', 'http://localhost:5173'),
         'http://127.0.0.1:5173',
         'https://2czx41h7-5173.asse.devtunnels.ms',
         'https://protected-oklahoma-wright-polished.trycloudflare.com',

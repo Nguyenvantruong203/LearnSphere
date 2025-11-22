@@ -82,14 +82,14 @@ class CourseController extends Controller
         ]);
 
         /**
-         * 🔔 GỬI NOTIFICATION CHO ADMIN
+         * 🔔 Gửi thông báo cho admin
          */
         $adminIds = User::where('role', 'admin')->pluck('id')->toArray();
 
         if (!empty($adminIds)) {
 
-            // 1. Tạo notification
-            $noti = Notification::create([
+            // 1. Tạo notification chung
+            $notification = Notification::create([
                 'type'    => 'course',
                 'title'   => 'Khóa học mới cần duyệt',
                 'message' => "Giảng viên {$request->user()->name} đã tạo khóa học mới: {$course->title}.",
@@ -98,16 +98,15 @@ class CourseController extends Controller
                 ],
             ]);
 
-            // 2. Attach đến tất cả admin
-            $noti->users()->attach($adminIds);
+            // 2. Gắn notification cho tất cả admin
+            $notification->users()->attach($adminIds);
 
-            // 3. Load tất cả bản ghi pivot vừa tạo
-            $pivotRecords = NotificationUser::with('notification')
-                ->where('notification_id', $noti->id)
+            // 3. Lấy bản ghi pivot NotificationUser tương ứng từng admin
+            $pivotRecords = NotificationUser::where('notification_id', $notification->id)
                 ->whereIn('user_id', $adminIds)
                 ->get();
 
-            // 4. Bắn realtime cho TỪNG admin
+            // 4. Bắn realtime đúng kiểu NotificationUser
             foreach ($pivotRecords as $pivot) {
                 broadcast(new NotificationCreated($pivot))->toOthers();
             }
@@ -176,30 +175,39 @@ class CourseController extends Controller
             ], 400);
         }
 
+        // Reset trạng thái
         $course->update([
-            'status' => 'pending',
+            'status'           => 'pending',
             'rejection_reason' => null,
-            'rejected_at' => null
+            'rejected_at'      => null
         ]);
 
-        // Gửi thông báo cho admin
+        /**
+         * 🔔 Gửi thông báo cho admin
+         */
         $adminIds = User::where('role', 'admin')->pluck('id')->toArray();
 
         if (!empty($adminIds)) {
-            $noti = Notification::create([
+
+            // 1. Tạo notification tổng
+            $notification = Notification::create([
                 'type'    => 'course',
                 'title'   => 'Khóa học gửi lại cần duyệt',
                 'message' => "Giảng viên {$request->user()->name} đã gửi lại khóa học: {$course->title}.",
-                'data'    => json_encode(['course_id' => $course->id]),
+                'data'    => [
+                    'course_id' => $course->id
+                ],
             ]);
 
-            $noti->users()->attach($adminIds);
+            // 2. Attach thông báo cho từng admin
+            $notification->users()->attach($adminIds);
 
-            $pivotRecords = NotificationUser::with('notification')
-                ->where('notification_id', $noti->id)
+            // 3. Lấy từng bản ghi pivot NotificationUser tương ứng
+            $pivotRecords = NotificationUser::where('notification_id', $notification->id)
                 ->whereIn('user_id', $adminIds)
                 ->get();
 
+            // 4. Bắn realtime bằng NotificationUser để đúng kiểu event
             foreach ($pivotRecords as $pivot) {
                 broadcast(new NotificationCreated($pivot))->toOthers();
             }

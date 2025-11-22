@@ -3,23 +3,22 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
-use App\Models\Course;
 use App\Models\CourseReview;
-use App\Models\UserCourse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ReviewController extends Controller
 {
     /**
-     * Get all reviews of a course
+     * Lấy danh sách review của khóa học
      */
-    public function index($courseId)
+    public function index(Request $request, $courseId)
     {
+        $limit = $request->get('limit', 10); // mặc định 10
         $reviews = CourseReview::where('course_id', $courseId)
             ->with(['user:id,name,avatar_url'])
             ->orderByDesc('created_at')
-            ->get();
+            ->paginate($limit);
 
         return response()->json([
             'success' => true,
@@ -28,20 +27,57 @@ class ReviewController extends Controller
     }
 
 
+    public function canReview($courseId)
+    {
+        $user = Auth::user();
+
+        // 1. Kiểm tra đã học + đã thanh toán
+        $isEnrolled = $user->enrolledCourses()
+            ->where('course_id', $courseId)
+            ->wherePivot('is_paid', true)
+            ->exists();
+
+        if (!$isEnrolled) {
+            return response()->json([
+                'can_review' => false,
+                'reason' => 'not_enrolled'
+            ]);
+        }
+
+        // 2. Kiểm tra đã review chưa
+        $exists = CourseReview::where('course_id', $courseId)
+            ->where('user_id', $user->id)
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'can_review' => false,
+                'reason' => 'already_reviewed'
+            ]);
+        }
+
+        return response()->json([
+            'can_review' => true,
+            'reason' => null
+        ]);
+    }
+
+
     /**
-     * Create a review by student
+     * Tạo review
      */
     public function store(Request $request, $courseId)
     {
         $request->validate([
-            'rating'   => 'required|integer|min:1|max:5',
-            'comment'  => 'nullable|string|max:2000',
+            'rating'  => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string|max:2000',
         ]);
 
         $user = Auth::user();
 
-        // Check enrollment
-        $isEnrolled = UserCourse::where('user_id', $user->id)
+        // Kiểm tra học viên đã đăng ký khóa học chưa
+        $isEnrolled = $user->enrolledCourses()
+            ->wherePivot('is_paid', true)
             ->where('course_id', $courseId)
             ->exists();
 
@@ -52,7 +88,7 @@ class ReviewController extends Controller
             ], 403);
         }
 
-        // Check if already reviewed
+        // Kiểm tra đã review chưa
         $existing = CourseReview::where('user_id', $user->id)
             ->where('course_id', $courseId)
             ->first();
@@ -64,11 +100,12 @@ class ReviewController extends Controller
             ], 409);
         }
 
+        // Tạo review
         $review = CourseReview::create([
-            'course_id' => $courseId,
-            'user_id'   => $user->id,
-            'rating'    => $request->rating,
-            'comment'   => $request->comment,
+            'course_id'  => $courseId,
+            'user_id'    => $user->id,
+            'rating'     => $request->rating,
+            'comment'    => $request->comment,
             'created_at' => now(),
         ]);
 
@@ -86,11 +123,12 @@ class ReviewController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'rating'   => 'required|integer|min:1|max:5',
-            'comment'  => 'nullable|string|max:2000',
+            'rating'  => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string|max:2000',
         ]);
 
         $user = Auth::user();
+
         $review = CourseReview::where('id', $id)
             ->where('user_id', $user->id)
             ->first();
@@ -103,8 +141,8 @@ class ReviewController extends Controller
         }
 
         $review->update([
-            'rating' => $request->rating,
-            'comment' => $request->comment
+            'rating'  => $request->rating,
+            'comment' => $request->comment,
         ]);
 
         return response()->json([
@@ -120,6 +158,7 @@ class ReviewController extends Controller
     public function destroy($id)
     {
         $user = Auth::user();
+
         $review = CourseReview::where('id', $id)
             ->where('user_id', $user->id)
             ->first();
@@ -139,18 +178,17 @@ class ReviewController extends Controller
         ]);
     }
 
-
     /**
-     * Summary rating for a course
+     * Tổng hợp rating của khóa học
      */
     public function summary($courseId)
     {
         $reviews = CourseReview::where('course_id', $courseId);
 
         $count = $reviews->count();
-        $avg = round($reviews->avg('rating'), 2);
+        $avg   = round($reviews->avg('rating'), 2);
 
-        // count by star
+        // Thống kê số lượng theo từng sao
         $starCounts = [];
         for ($i = 1; $i <= 5; $i++) {
             $starCounts[$i] = CourseReview::where('course_id', $courseId)
@@ -161,11 +199,10 @@ class ReviewController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'total_reviews' => $count,
-                'average_rating' => $avg,
-                'stars' => $starCounts
+                'total_reviews'   => $count,
+                'average_rating'  => $avg,
+                'stars'           => $starCounts,
             ]
         ]);
     }
-
 }

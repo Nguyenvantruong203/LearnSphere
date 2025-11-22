@@ -20,9 +20,19 @@ class CourseController extends Controller
     protected function baseQuery()
     {
         return Course::query()
-            ->with(['instructor:id,name,email,avatar_url'])
-            ->withCount(['topics as total_topics', 'lessons as total_lessons'])
-            ->published(); // chỉ hiển thị khóa học đã approved
+            ->with([
+                'instructor:id,name,email,avatar_url,expertise,teaching_experience',
+            ])
+            ->withCount([
+                'topics as total_topics',
+                'lessons as total_lessons',
+            ])
+            ->withAvg('reviews as average_rating', 'rating')
+            ->addSelect([
+                'total_courses' => Course::selectRaw('COUNT(*)')
+                    ->whereColumn('created_by', 'courses.created_by')
+                    ->where('status', 'approved')
+            ]);
     }
 
     /**

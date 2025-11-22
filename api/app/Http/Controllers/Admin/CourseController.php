@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Notification;
 use App\Events\NotificationCreated;
+use App\Models\NotificationUser;
 
 class CourseController extends Controller
 {
@@ -100,7 +101,6 @@ class CourseController extends Controller
     {
         $course = Course::with('instructor')->findOrFail($id);
 
-        // Chỉ được duyệt khi đang pending
         if ($course->status !== 'pending') {
             return response()->json([
                 'error' => 'COURSE_NOT_PENDING',
@@ -114,7 +114,7 @@ class CourseController extends Controller
             'publish_at' => now()
         ]);
 
-        // 🔔 Notification cho giảng viên
+        // 1. Tạo notification
         $notification = Notification::create([
             'type'    => 'course',
             'title'   => 'Khóa học đã được phê duyệt',
@@ -125,9 +125,17 @@ class CourseController extends Controller
             ]),
         ]);
 
+        // 2. Gắn notification vào user
         $notification->users()->attach([$course->instructor->id]);
 
-        event(new NotificationCreated($notification, $course->instructor->id));
+        // 3. Lấy bản ghi pivot NotificationUser chính xác
+        $pivot = NotificationUser::where('notification_id', $notification->id)
+            ->where('user_id', $course->instructor->id)
+            ->first();
+
+        // 4. Gửi realtime đúng kiểu
+        $pivot->load('notification');
+        event(new NotificationCreated($pivot));
 
         // Log
         Log::info('Course approved', [
@@ -144,7 +152,6 @@ class CourseController extends Controller
             'course'  => $course->fresh(),
         ]);
     }
-
 
     /**
      * Từ chối khóa học
@@ -164,14 +171,13 @@ class CourseController extends Controller
             ], 400);
         }
 
-        // Cập nhật trạng thái + lý do
         $course->update([
             'status'           => 'rejected',
-            'rejection_reason' => $request->rejection_reason,
+            'rejection_reason' => $request->reason,
             'rejected_at'      => now()
         ]);
 
-        // 🔔 Notification cho giảng viên
+        // 1. Tạo notification
         $notification = Notification::create([
             'type'    => 'course',
             'title'   => 'Khóa học bị từ chối',
@@ -179,15 +185,20 @@ class CourseController extends Controller
             'data'    => [
                 'course_id' => $course->id,
                 'status'    => 'rejected',
-                'reason'    => $request->rejection_reason,
+                'reason'    => $request->reason,
             ],
         ]);
 
-        // lưu vào bảng pivot
+        // 2. Attach vào pivot
         $notification->users()->attach([$course->instructor->id]);
 
-        // bắn realtime
-        event(new NotificationCreated($notification, $course->instructor->id));
+        // 3. Lấy bản ghi pivot NotificationUser
+        $pivot = NotificationUser::where('notification_id', $notification->id)
+            ->where('user_id', $course->instructor->id)
+            ->first();
+
+        // 4. Bắn realtime ĐÚNG KIỂU
+        event(new NotificationCreated($pivot));
 
         // Log
         Log::info('Course rejected', [
@@ -195,7 +206,7 @@ class CourseController extends Controller
             'course_title'     => $course->title,
             'instructor_id'    => $course->instructor->id,
             'instructor_name'  => $course->instructor->name,
-            'reason'           => $request->rejection_reason,
+            'reason'           => $request->reason,
             'rejected_by'      => Auth::id(),
             'rejected_by_name' => Auth::user()->name
         ]);

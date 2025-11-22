@@ -253,11 +253,10 @@ function formatPriceVN(amount: number | string) {
   const num = parseFloat(String(amount).replace(/[^0-9.-]/g, '')) || 0
   return num.toLocaleString('vi-VN', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'VND',
     minimumFractionDigits: 0
   })
 }
-
 
 const applyCoupon = async () => {
   if (!couponCode.value.trim()) {

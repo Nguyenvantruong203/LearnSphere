@@ -57,7 +57,7 @@ class Course extends Model
     protected $attributes = [
         'status'          => 'draft',
         'price'           => 0,
-        'currency'        => 'USD',    // ✅ đổi sang USD
+        'currency'        => 'VND',    // ✅ đổi sang USD
         'level'           => 'beginner',
         'language'        => 'en',     // ✅ đổi sang en
         'is_featured'     => false,
@@ -127,11 +127,10 @@ class Course extends Model
     // Danh sách học viên đã ghi danh
     public function students()
     {
-        return $this->belongsToMany(User::class, 'user_courses')
-            ->using(UserCourse::class)
-            ->withPivot(['enrolled_at', 'is_paid', 'access_expires_at'])
-            ->withTimestamps();
+        return $this->belongsToMany(User::class, 'user_courses', 'course_id', 'user_id')
+            ->withPivot(['enrolled_at', 'is_paid', 'access_expires_at']);
     }
+
 
     public function instructor()
     {
@@ -191,5 +190,11 @@ class Course extends Model
             'id',             // local key on courses
             'id'              // local key on order_items
         );
+    }
+
+    // Review của khóa học
+    public function reviews()
+    {
+        return $this->hasMany(CourseReview::class, 'course_id');
     }
 }

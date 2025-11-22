@@ -18,7 +18,7 @@
         </div>
         <div v-else-if="course">
             <HeroSection :course="course" />
-            <RatingSection />
+            <RatingSection :courseId="course.id"/>
             <FeatureSection />
         </div>
     </LayoutHomepage>

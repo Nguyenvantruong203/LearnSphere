@@ -70,6 +70,12 @@
       :scope="createQuiz.scope" @finish="onCreatedQuiz" />
     <EditQuizModal v-model:open="editQuiz.open" :quiz="editQuiz.quiz" @finish="onEditedQuiz" />
     <QuizDrawer v-model:open="quizDrawer.open" :quiz="quizDrawer.quiz" />
+
+    <FlashcardDrawer
+  v-model:open="flashcardDrawer.open"
+  :topic="flashcardDrawer.topic"
+/>
+
   </div>
 </template>
 
@@ -90,6 +96,7 @@ import EditLessonModal from '@/components/instructor/lesson/actions/EditLessonMo
 import CreateQuizModal from '@/components/instructor/quiz/actions/CreateQuizModal.vue'
 import EditQuizModal from '@/components/instructor/quiz/actions/EditQuizModal.vue'
 import QuizDrawer from '@/components/instructor/quiz/QuizDrawer.vue'
+import FlashcardDrawer from '@/components/instructor/flashcard/FlashcardDrawer.vue'
 
 import type { Topic } from '@/types/Topic'
 import type { Course } from '@/types/Course'
@@ -199,6 +206,35 @@ const columns = [
           record.title
         )
       }
+      if (record.type === 'topic') {
+        return h('div', { class: 'flex items-center gap-3' }, [
+          // topic title
+          h('span', { class: 'font-medium' }, record.title),
+
+          // icon flashcard
+          h(
+            'button',
+            {
+              class: 'flex items-center gap-1 px-2 py-1 rounded-md hover:bg-gray-100 transition',
+              onClick: () => openFlashcardDrawer(record)
+            },
+            [
+              h('i', {
+                class: 'fas fa-clone text-blue-600'
+              }),
+              // badge
+              h(
+                'span',
+                {
+                  class:
+                    'bg-blue-600 text-white text-xs rounded-full px-2 py-0.5'
+                },
+                record.flashcards_count ?? 0
+              )
+            ]
+          )
+        ])
+      }
       return record.title
     }
   },
@@ -250,6 +286,19 @@ const quizDrawer = ref<{ open: boolean; quiz: any | null }>({ open: false, quiz:
 const openQuizDrawer = (quizRow: any) => {
   quizDrawer.value = { open: true, quiz: quizRow }
 }
+
+const flashcardDrawer = ref({
+  open: false,
+  topic: null
+})
+
+const openFlashcardDrawer = (topic: any) => {
+  flashcardDrawer.value = {
+    open: true,
+    topic
+  }
+}
+
 
 // ====== Lifecycle ======
 onMounted(async () => {
@@ -307,6 +356,7 @@ const fetchTopics = async (courseId: number) => {
     const topics = res.map((t: Topic) => {
       const topicNode = {
         ...t,
+        flashcards_count: t.flashcards_count ?? 0,
         key: `topic-${t.id}`,
         type: "topic" as const,
         children: [{

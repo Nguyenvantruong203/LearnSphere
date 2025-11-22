@@ -2,14 +2,10 @@
   <div class="bg-white rounded-3xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
     <div class="flex items-start space-x-4">
       <div class="relative flex-shrink-0">
-        <img 
-          :src="avatar" 
-          :alt="name"
-          class="w-14 h-14 rounded-full object-cover shadow-md"
-        />
+        <img :src="avatar" :alt="name" class="w-14 h-14 rounded-full object-cover shadow-md" />
         <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
       </div>
-      
+
       <div class="flex-1 min-w-0">
         <div class="flex items-center justify-between mb-3">
           <div>
@@ -21,10 +17,10 @@
           </div>
           <div class="flex items-center space-x-2 text-[#696984]">
             <ClockCircleOutlined class="text-gray-400" />
-            <span class="text-sm font-medium">{{ time }}</span>
+            <span class="text-sm font-medium">{{ formattedDate }}</span>
           </div>
         </div>
-        
+
         <p class="text-[#696984] leading-relaxed">{{ content }}</p>
       </div>
     </div>
@@ -32,17 +28,22 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { ClockCircleOutlined } from '@ant-design/icons-vue'
+import { formatReviewDate } from '@/utils/formatDate'
 
 interface Props {
   avatar: string
   name: string
-  time: string
+  created_at: string
   content: string
   rating?: number
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   rating: 5
 })
+
+const formattedDate = computed(() => formatReviewDate(props.created_at))
 </script>
+

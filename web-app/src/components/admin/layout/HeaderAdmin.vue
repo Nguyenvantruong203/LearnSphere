@@ -106,14 +106,6 @@ const handleMenuClick = (info: { key: string | number }) => {
   }
 }
 
-const handleNotificationClick = () => {
-  notification.info({
-    message: 'Notifications',
-    description: 'You have 3 new notifications.',
-    placement: 'topRight',
-  })
-}
-
 const handleLogout = async () => {
   try {
     await authStore.logout()

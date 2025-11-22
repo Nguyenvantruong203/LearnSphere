@@ -18,7 +18,7 @@ return new class extends Migration
             $table->timestamp('reviewed_at')->useCurrent();
             $table->timestamps();
 
-            $table->unique(['user_id', 'flashcard_id', 'reviewed_at']);
+            $table->index(['user_id', 'flashcard_id']);
         });
     }
 

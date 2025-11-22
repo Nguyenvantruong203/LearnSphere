@@ -9,6 +9,7 @@ use App\Http\Controllers\Instructor\QuizController;
 use App\Http\Controllers\Instructor\LessonQuestionController;
 use App\Http\Controllers\Instructor\TopicQuestionController;
 use App\Http\Controllers\Instructor\InstructorDashboardController;
+use App\Http\Controllers\Instructor\FlashcardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -97,4 +98,8 @@ Route::middleware('auth:sanctum')->prefix('instructor')->group(function () {
 
         Route::get('/chat/stats', [InstructorDashboardController::class, 'chatStats']);
     });
+    Route::get('/topics/{topicId}/flashcards', [FlashcardController::class, 'getFlashcardsByTopic']);
+    Route::post('/topics/{topicId}/flashcards', [FlashcardController::class, 'createFlashcard']);
+    Route::put('/flashcards/{id}', [FlashcardController::class, 'updateFlashcard']);
+    Route::delete('/flashcards/{id}', [FlashcardController::class, 'deleteFlashcard']);
 });
