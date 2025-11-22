@@ -71,10 +71,7 @@
     <EditQuizModal v-model:open="editQuiz.open" :quiz="editQuiz.quiz" @finish="onEditedQuiz" />
     <QuizDrawer v-model:open="quizDrawer.open" :quiz="quizDrawer.quiz" />
 
-    <FlashcardDrawer
-  v-model:open="flashcardDrawer.open"
-  :topic="flashcardDrawer.topic"
-/>
+    <FlashcardSetDrawer v-model:open="flashcardDrawer.open" :topic="flashcardDrawer.topic" />
 
   </div>
 </template>
@@ -96,7 +93,7 @@ import EditLessonModal from '@/components/instructor/lesson/actions/EditLessonMo
 import CreateQuizModal from '@/components/instructor/quiz/actions/CreateQuizModal.vue'
 import EditQuizModal from '@/components/instructor/quiz/actions/EditQuizModal.vue'
 import QuizDrawer from '@/components/instructor/quiz/QuizDrawer.vue'
-import FlashcardDrawer from '@/components/instructor/flashcard/FlashcardDrawer.vue'
+import FlashcardSetDrawer from '@/components/instructor/flashcard/FlashcardSetDrawer.vue'
 
 import type { Topic } from '@/types/Topic'
 import type { Course } from '@/types/Course'
@@ -356,7 +353,7 @@ const fetchTopics = async (courseId: number) => {
     const topics = res.map((t: Topic) => {
       const topicNode = {
         ...t,
-        flashcards_count: t.flashcards_count ?? 0,
+        flashcards_count: t.flashcard_sets_count ?? 0,
         key: `topic-${t.id}`,
         type: "topic" as const,
         children: [{

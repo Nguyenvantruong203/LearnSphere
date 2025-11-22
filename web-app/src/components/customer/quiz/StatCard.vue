@@ -1,25 +1,14 @@
 <template>
-  <div
-    class="group rounded-2xl p-6 border hover:shadow-lg hover:-translate-y-1 transition-all duration-300 text-center"
-    :class="bgClass"
-  >
-    <!-- Icon -->
-<!-- Icon -->
-<div
-  class="relative w-10 h-10 mx-auto mb-3 rounded-2xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300"
-  :class="iconClass"
->
-  <component
-    :is="iconComponent"
-    class="text-white text-[18px] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-  />
-</div>
-
-
-    <!-- Title -->
+  <div class="group rounded-2xl p-6 border hover:shadow-lg hover:-translate-y-1 transition-all duration-300 text-center"
+    :class="bgClass">
+    <div
+      class="relative w-10 h-10 mx-auto mb-3 rounded-2xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300"
+      :class="iconClass">
+      <component :is="iconComponent"
+        class="text-white text-[18px] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+    </div>
     <p class="text-sm text-gray-500 font-medium mb-1">{{ title }}</p>
 
-    <!-- Value -->
     <p :class="valueClass">{{ value }}</p>
   </div>
 </template>

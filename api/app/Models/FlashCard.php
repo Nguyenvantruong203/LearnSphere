@@ -12,22 +12,20 @@ class Flashcard extends Model
     protected $table = 'flashcards';
 
     protected $fillable = [
-        'topic_id',
+        'flashcard_set_id',
         'front',
         'back',
         'image_url',
         'audio_url',
     ];
 
-    /* ==========================
-     |  Relationships
-     ==========================*/
-
-    public function topic()
+    // Thuộc về Flashcard Set
+    public function set()
     {
-        return $this->belongsTo(Topic::class, 'topic_id');
+        return $this->belongsTo(FlashcardSet::class, 'flashcard_set_id');
     }
 
+    // Có nhiều logs review của user
     public function logs()
     {
         return $this->hasMany(FlashcardLog::class, 'flashcard_id');
@@ -37,9 +35,7 @@ class Flashcard extends Model
      |  Helpers
      ==========================*/
 
-    /**
-     * Lấy lần review gần nhất của user
-     */
+    // Lần review gần nhất của user
     public function lastReviewForUser($userId)
     {
         return $this->logs()
@@ -48,9 +44,7 @@ class Flashcard extends Model
             ->first();
     }
 
-    /**
-     * Kiểm tra user đã từng review flashcard này chưa
-     */
+    // Kiểm tra user đã từng review flashcard này chưa
     public function hasReviewed($userId): bool
     {
         return $this->logs()

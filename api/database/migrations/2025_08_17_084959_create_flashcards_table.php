@@ -6,14 +6,15 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('flashcards', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('topic_id')->constrained('topics')->cascadeOnDelete();
+
+            $table->foreignId('flashcard_set_id')
+                ->constrained('flashcard_sets')
+                ->cascadeOnDelete();
+
             $table->text('front');
             $table->text('back');
             $table->string('image_url')->nullable();
@@ -22,9 +23,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('flashcards');

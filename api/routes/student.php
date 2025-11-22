@@ -78,6 +78,6 @@ Route::middleware('auth:sanctum')->prefix('student')->group(function () {
         Route::get('/course/{courseId}/can-review', [ReviewController::class, 'canReview']);
     });
 
-    Route::get('/topics/{topicId}/flashcards/learn', [FlashcardLearnController::class, 'getFlashcardsForLearning']);
-    Route::post('/flashcards/{id}/review', [FlashcardLearnController::class, 'saveFlashcardReview']);
+    Route::get('/flashcard-sets/{setId}/flashcards', [FlashcardLearnController::class, 'getFlashcardsBySet']);
+    Route::post('/flashcards/{flashcardId}/review', [FlashcardLearnController::class, 'logReview']);
 });

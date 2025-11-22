@@ -4,17 +4,15 @@ namespace App\Http\Controllers\Instructor;
 
 use App\Http\Controllers\Controller;
 use App\Models\Flashcard;
-use App\Models\Topic;
+use App\Models\FlashcardSet;
 use Illuminate\Http\Request;
 
 class FlashcardController extends Controller
 {
-    /**
-     * Lấy danh sách flashcard thuộc một topic
-     */
-    public function getFlashcardsByTopic($topicId)
+    /** Lấy danh sách flashcard thuộc set */
+    public function index($setId)
     {
-        $flashcards = Flashcard::where('topic_id', $topicId)
+        $flashcards = Flashcard::where('flashcard_set_id', $setId)
             ->orderBy('created_at', 'asc')
             ->get();
 
@@ -24,11 +22,11 @@ class FlashcardController extends Controller
         ]);
     }
 
-    /**
-     * Tạo mới flashcard
-     */
-    public function createFlashcard(Request $request, $topicId)
+    /** Tạo flashcard */
+    public function store(Request $request, $setId)
     {
+        FlashcardSet::findOrFail($setId);
+
         $request->validate([
             'front' => 'required|string',
             'back' => 'required|string',
@@ -36,10 +34,8 @@ class FlashcardController extends Controller
             'audio_url' => 'nullable|string',
         ]);
 
-        Topic::findOrFail($topicId);
-
         $flashcard = Flashcard::create([
-            'topic_id' => $topicId,
+            'flashcard_set_id' => $setId,
             'front' => $request->front,
             'back' => $request->back,
             'image_url' => $request->image_url,
@@ -53,10 +49,8 @@ class FlashcardController extends Controller
         ]);
     }
 
-    /**
-     * Cập nhật flashcard
-     */
-    public function updateFlashcard(Request $request, $id)
+    /** Cập nhật flashcard */
+    public function update(Request $request, $id)
     {
         $flashcard = Flashcard::findOrFail($id);
 
@@ -68,7 +62,10 @@ class FlashcardController extends Controller
         ]);
 
         $flashcard->update($request->only([
-            'front', 'back', 'image_url', 'audio_url'
+            'front',
+            'back',
+            'image_url',
+            'audio_url',
         ]));
 
         return response()->json([
@@ -78,13 +75,10 @@ class FlashcardController extends Controller
         ]);
     }
 
-    /**
-     * Xóa flashcard
-     */
-    public function deleteFlashcard($id)
+    /** Xoá flashcard */
+    public function destroy($id)
     {
-        $flashcard = Flashcard::findOrFail($id);
-        $flashcard->delete();
+        Flashcard::findOrFail($id)->delete();
 
         return response()->json([
             'success' => true,

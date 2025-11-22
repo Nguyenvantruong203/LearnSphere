@@ -76,4 +76,9 @@ class Topic extends Model
     {
         return $this->hasMany(Quiz::class)->orderBy('id');
     }
+
+    public function flashcardSets()
+    {
+        return $this->hasMany(FlashcardSet::class, 'topic_id');
+    }
 }

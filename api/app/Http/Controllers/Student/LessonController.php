@@ -34,26 +34,30 @@ class LessonController extends Controller
                     ->orderBy('order');
             },
             'lessons.quiz:id,lesson_id,topic_id,title',
-            'quiz:id,topic_id,title'
+            'quiz:id,topic_id,title',
+            'flashcardSets:id,topic_id,title'
         ])
             ->where('course_id', $courseId)
             ->orderBy('order')
             ->get(['id', 'title', 'course_id', 'order'])
             ->map(function ($topic) use ($user) {
-                // 🎯 Gắn quiz cho topic (nếu có)
+
+                // Thêm flashcard_set_id vào payload
+                $topic->flashcard_set_id = $topic->flashcardSet->id ?? null;
+
+                // Xử lý quiz topic
                 $topic->quiz = $topic->quiz ? [
                     'id' => $topic->quiz->id,
                     'topic_id' => $topic->quiz->topic_id,
                     'title' => $topic->quiz->title,
                 ] : null;
 
-                // 🎯 Xử lý danh sách bài học
+                // xử lý bài học
                 $topic->lessons = $topic->lessons->map(function ($lesson) use ($user) {
                     $lesson->duration_minutes = $lesson->duration_seconds
                         ? round($lesson->duration_seconds / 60)
                         : null;
 
-                    // Gắn quiz của bài học
                     $lesson->quiz = $lesson->quiz ? [
                         'id' => $lesson->quiz->id,
                         'topic_id' => $lesson->quiz->topic_id,

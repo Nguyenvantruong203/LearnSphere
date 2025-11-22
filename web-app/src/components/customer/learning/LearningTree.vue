@@ -1,29 +1,16 @@
 <template>
-  <div class="space-y-5">
-    <div
-      v-for="topic in topics"
-      :key="topic.id"
-      class="bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-lg transition-all duration-300 overflow-hidden group"
-    >
+  <div class="space-y-4">
+    <div v-for="topic in topics" :key="topic.id"
+      class="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group hover:border-[#49bbbd]/30">
       <!-- 🧩 TOPIC -->
-      <LearningItem
-        :title="topic.title"
-        :expandable="true"
-        :expanded="expandedTopics.includes(topic.id)"
-        @click="toggleTopic(topic.id)"
-      >
+      <LearningItem :title="topic.title" :expandable="true" :expanded="expandedTopics.includes(topic.id)"
+        @click="toggleTopic(topic.id)">
         <template #icon>
           <div
-            class="w-10 h-10 bg-gradient-to-br from-[#49bbbd] to-[#2ea5a8] 
-                   rounded-xl flex items-center justify-center shadow-md"
-          >
-            <svg
-              class="w-5 h-5 text-white"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
+            class="w-11 h-11 bg-gradient-to-br from-[#49bbbd] via-[#3eb3b5] to-[#2ea5a8] 
+                   rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+            <svg class="w-5 h-5 text-white drop-shadow-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
               <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
               <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
             </svg>
@@ -33,21 +20,27 @@
         <template #extra>
           <!-- Số lượng bài học -->
           <span
-            class="text-xs font-medium px-2 py-1 rounded-full bg-[#e8f9f9] text-[#2ea5a8]"
-          >
+            class="text-xs font-semibold px-3 py-1.5 rounded-full bg-gradient-to-r from-[#e8f9f9] to-[#d4f4f4] text-[#2ea5a8] shadow-sm">
             {{ topic.lessons?.length || 0 }} bài học
           </span>
 
+          <button v-if="topic.flashcard_sets && topic.flashcard_sets.length > 0"
+            class="ml-2 flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#f0f9ff] to-[#e3f4ff] text-[#1da1f2] hover:from-[#e3f4ff] hover:to-[#d6efff] transition-all duration-200 shadow-sm hover:shadow"
+            @click.stop="openFlashcard(topic)">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v12m6-6H6" />
+            </svg>
+            Flashcards
+          </button>
+
           <!-- Tick topic hoàn thành -->
-          <svg
-            v-if="isTopicCompleted(topic)"
-            class="w-5 h-5 text-green-500 ml-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-          </svg>
+          <div v-if="isTopicCompleted(topic)"
+            class="ml-2 w-6 h-6 bg-green-50 rounded-full flex items-center justify-center">
+            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
         </template>
       </LearningItem>
 
@@ -57,76 +50,52 @@
 
           <div v-for="lesson in topic.lessons" :key="lesson.id">
             <!-- 🧠 LESSON -->
-            <LearningItem
-              :title="lesson.title"
-              :expandable="!!lesson.quiz"
-              :expanded="expandedLessons.includes(lesson.id)"
-              :is-active="lesson.id === currentLessonId"
-              @click="toggleLesson(lesson.id)"
-            >
+            <LearningItem :title="lesson.title" :expandable="!!lesson.quiz"
+              :expanded="expandedLessons.includes(lesson.id)" :is-active="lesson.id === currentLessonId"
+              @click="toggleLesson(lesson.id)">
               <template #icon>
-                <svg
-                  class="w-6 h-6 text-[#49bbbd] flex-shrink-0"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    fill="currentColor"
-                    d="M5 20V4h2v7l2.5-1.5L12 11V4h5v7.08c.33-.05.66-.08 1-.08s.67.03 1 .08V4c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h7.26c-.42-.6-.75-1.28-.97-2zm13-7c-2.76 0-5 2.24-5 5s2.24 5 5 5s5-2.24 5-5s-2.24-5-5-5m-1.25 7.5v-5l4 2.5z"
-                  />
+                <svg class="w-6 h-6 text-[#49bbbd] flex-shrink-0" viewBox="0 0 24 24">
+                  <path fill="currentColor"
+                    d="M5 20V4h2v7l2.5-1.5L12 11V4h5v7.08c.33-.05.66-.08 1-.08s.67.03 1 .08V4c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h7.26c-.42-.6-.75-1.28-.97-2zm13-7c-2.76 0-5 2.24-5 5s2.24 5 5 5s5-2.24 5-5s-2.24-5-5-5m-1.25 7.5v-5l4 2.5z" />
                 </svg>
               </template>
 
               <template #extra>
                 <!-- Quiz badge -->
-                <span
-                  v-if="lesson.quiz"
-                  class="ml-2 px-2 py-0.5 text-xs font-medium rounded bg-[#e8f9f9] text-[#2ea5a8]"
-                >
+                <span v-if="lesson.quiz"
+                  class="ml-2 px-2 py-0.5 text-xs font-medium rounded bg-[#e8f9f9] text-[#2ea5a8]">
                   Quiz
                 </span>
 
                 <!-- Tick bài học -->
-                <svg
-                  v-if="lesson.is_completed"
-                  class="w-5 h-5 text-green-500 ml-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg v-if="lesson.is_completed" class="w-5 h-5 text-green-500 ml-2" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
                 </svg>
               </template>
             </LearningItem>
 
             <!-- ▼ QUIZ CỦA BÀI -->
-            <div
-              v-if="lesson.quiz && expandedLessons.includes(lesson.id)"
-              class="lesson-quiz cursor-pointer bg-[#e8f9f9] hover:bg-[#d4f4f4]"
-              @click.stop="openLessonQuiz(lesson)"
-            >
-              <div class="flex items-center gap-2 text-[#2ea5a8] font-medium">
+            <div v-if="lesson.quiz && expandedLessons.includes(lesson.id)"
+              class="lesson-quiz cursor-pointer bg-[#e8f9f9] hover:bg-[#d4f4f4]" @click.stop="openLessonQuiz(lesson)">
+              <div class="flex items-center gap-2 text-[#2ea5a8] font-medium h-10">
                 <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
                   <path fill="currentColor" d="M4 6H2v14c..." />
                 </svg>
                 <span class="truncate max-w-[220px]">{{ lesson.quiz.title }}</span>
               </div>
-              <span class="text-xs font-semibold text-[#2ea5a8]">Làm bài</span>
             </div>
           </div>
 
           <!-- 🧩 QUIZ CUỐI TOPIC -->
-          <div
-            v-if="topic.quiz"
-            class="topic-quiz cursor-pointer bg-[#dbf5f5] hover:bg-[#c7eeee]"
-            @click.stop="openTopicQuiz(topic)"
-          >
-            <div class="flex items-center gap-2 text-[#2ea5a8] font-semibold">
+          <div v-if="topic.quiz" class="topic-quiz cursor-pointer bg-[#dbf5f5] hover:bg-[#c7eeee]"
+            @click.stop="openTopicQuiz(topic)">
+            <div class="flex items-center gap-2 text-[#2ea5a8] font-semibold h-10">
               <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
                 <path fill="currentColor" d="M4 6H2v14..." />
               </svg>
               <span class="truncate max-w-[220px]">{{ topic.quiz.title }}</span>
             </div>
-            <span class="text-sm font-medium text-[#2ea5a8]">Làm bài</span>
           </div>
 
         </div>
@@ -144,7 +113,7 @@ const props = defineProps<{
   currentLessonId: number | null
 }>()
 
-const emit = defineEmits(['select-lesson', 'open-quiz'])
+const emit = defineEmits(['select-lesson', 'open-quiz', 'open-flashcards'])
 
 const STORAGE_KEY = 'learning_sidebar_state'
 const expandedTopics = ref<number[]>([])
@@ -157,7 +126,7 @@ onMounted(() => {
       const state = JSON.parse(saved)
       expandedTopics.value = state.expandedTopics || []
       expandedLessons.value = state.expandedLessons || []
-    } catch {}
+    } catch { }
   }
 })
 
@@ -175,6 +144,10 @@ watch(
 /* ============================
    🔥 Logic Tick Complete
 ============================ */
+
+const openFlashcard = (topic: any) => {
+  emit('open-flashcards', topic.flashcard_sets)
+}
 
 // topic hoàn thành = tất cả lessons completed
 const isTopicCompleted = (topic: any) => {
@@ -208,16 +181,3 @@ const openTopicQuiz = (topic: any) => {
   emit('open-quiz', topic.quiz.id)
 }
 </script>
-
-<style scoped>
-.lesson-quiz,
-.topic-quiz {
-  @apply flex items-center justify-between gap-2 h-[48px] rounded-xl px-4 transition;
-  margin-left: 2.5rem;
-}
-
-.lesson-quiz:hover,
-.topic-quiz:hover {
-  @apply shadow-md;
-}
-</style>

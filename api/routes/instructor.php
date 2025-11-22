@@ -10,6 +10,7 @@ use App\Http\Controllers\Instructor\LessonQuestionController;
 use App\Http\Controllers\Instructor\TopicQuestionController;
 use App\Http\Controllers\Instructor\InstructorDashboardController;
 use App\Http\Controllers\Instructor\FlashcardController;
+use App\Http\Controllers\Instructor\FlashcardSetController;
 
 /*
 |--------------------------------------------------------------------------
@@ -98,8 +99,16 @@ Route::middleware('auth:sanctum')->prefix('instructor')->group(function () {
 
         Route::get('/chat/stats', [InstructorDashboardController::class, 'chatStats']);
     });
-    Route::get('/topics/{topicId}/flashcards', [FlashcardController::class, 'getFlashcardsByTopic']);
-    Route::post('/topics/{topicId}/flashcards', [FlashcardController::class, 'createFlashcard']);
-    Route::put('/flashcards/{id}', [FlashcardController::class, 'updateFlashcard']);
-    Route::delete('/flashcards/{id}', [FlashcardController::class, 'deleteFlashcard']);
+
+    Route::get('/topics/{topicId}/flashcard-sets', [FlashcardSetController::class, 'index']);
+    Route::post('/topics/{topicId}/flashcard-sets', [FlashcardSetController::class, 'store']);
+
+    Route::put('/flashcard-sets/{setId}', [FlashcardSetController::class, 'update']);
+    Route::delete('/flashcard-sets/{setId}', [FlashcardSetController::class, 'destroy']);
+
+    Route::get('/flashcard-sets/{setId}/flashcards', [FlashcardController::class, 'index']);
+    Route::post('/flashcard-sets/{setId}/flashcards', [FlashcardController::class, 'store']);
+
+    Route::put('/flashcards/{id}', [FlashcardController::class, 'update']);
+    Route::delete('/flashcards/{id}', [FlashcardController::class, 'destroy']);
 });

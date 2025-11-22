@@ -2,22 +2,22 @@ import { httpAdmin } from '@/helpers/http'
 import type { Flashcard, FlashcardPayload } from '@/types/Flashcard'
 
 export const flashcardApi = {
-  async getFlashcards(topicId: number): Promise<Flashcard[]> {
-    const { data } = await httpAdmin(`/api/instructor/topics/${topicId}/flashcards`, {
+  async getBySet(setId: number): Promise<Flashcard[]> {
+    const res = await httpAdmin(`/api/instructor/flashcard-sets/${setId}/flashcards`, {
       method: 'GET',
     })
-    return data
+    return res.data
   },
 
-  async createFlashcard(topicId: number, payload: FlashcardPayload): Promise<Flashcard> {
-    const res = await httpAdmin(`/api/instructor/topics/${topicId}/flashcards`, {
+  async create(setId: number, payload: FlashcardPayload): Promise<Flashcard> {
+    const res = await httpAdmin(`/api/instructor/flashcard-sets/${setId}/flashcards`, {
       method: 'POST',
       body: payload,
     })
     return res.data
   },
 
-  async updateFlashcard(id: number, payload: Partial<FlashcardPayload>): Promise<Flashcard> {
+  async update(id: number, payload: FlashcardPayload): Promise<Flashcard> {
     const res = await httpAdmin(`/api/instructor/flashcards/${id}`, {
       method: 'PUT',
       body: payload,
@@ -25,7 +25,7 @@ export const flashcardApi = {
     return res.data
   },
 
-  async deleteFlashcard(id: number) {
+  async delete(id: number) {
     return httpAdmin(`/api/instructor/flashcards/${id}`, { method: 'DELETE' })
   },
 }

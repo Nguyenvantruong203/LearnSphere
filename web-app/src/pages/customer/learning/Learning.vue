@@ -5,7 +5,7 @@
       <div class="w-[450px] bg-white border-r overflow-y-auto">
         <LessonList :course="courseData" :topics="topics" :currentLessonId="currentLessonId" :loading="isListLoading"
           :progress="progress" @select-lesson="handleSelectLesson" @open-quiz="handleOpenQuiz"
-          @open-chat="isChatOpen = true" @open-certificate="openCertificate"/>
+          @open-chat="isChatOpen = true" @open-certificate="openCertificate" @open-flashcards="openFlashcards" />
       </div>
 
       <div class="flex-1 bg-info bg-opacity-20 overflow-y-auto">
@@ -38,13 +38,13 @@
         </div>
       </a-drawer>
     </div>
-
+    <FlashcardLearnDrawer v-model:open="flashDrawer.open" :flashcardSets="flashDrawer.sets" />
     <CertificateModal v-model:open="isCertificateModalOpen" :certificate="certificateData" />
   </LayoutLearning>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, reactive } from 'vue'
 import { useRoute } from 'vue-router'
 import { notification } from 'ant-design-vue'
 
@@ -57,7 +57,7 @@ import ChatSidebar from '@/components/common/chat/ChatSidebar.vue'
 import { lessonApi } from '@/api/customer/lessonApi'
 import { certificationApi } from '@/api/customer/certificationApi'
 import CertificateModal from '@/components/customer/certification/CertificateModal.vue'
-
+import FlashcardLearnDrawer from '@/components/customer/flashcard/FlashcardLearnDrawer.vue'
 const route = useRoute()
 const activeView = ref<'lesson' | 'quiz'>('lesson')
 const currentQuizId = ref<number | null>(null)
@@ -82,9 +82,6 @@ const certificateData = ref(null)
 const clientAuth = JSON.parse(localStorage.getItem('client_auth') || '{}')
 const currentUser = ref(clientAuth?.user || null)
 
-/* ============================
-      FETCH LESSON LIST
-=============================== */
 const fetchLessonList = async () => {
   try {
     isListLoading.value = true
@@ -129,9 +126,6 @@ const fetchLessonList = async () => {
   }
 }
 
-/* ============================
-      FETCH PROGRESS
-=============================== */
 const fetchProgress = async () => {
   if (!courseData.value?.id) return
 
@@ -139,9 +133,6 @@ const fetchProgress = async () => {
   progress.value = res.progress || 0
 }
 
-/* ============================
-      FETCH LESSON DETAIL
-=============================== */
 const fetchLessonDetail = async (lessonId: number) => {
   try {
     isLessonLoading.value = true
@@ -180,10 +171,9 @@ const openCertificate = async () => {
   isCertificateModalOpen.value = true
 }
 
-
 const handleLessonCompleted = async () => {
-  await fetchProgress()     
-  await fetchLessonDetail(currentLessonId.value) 
+  await fetchProgress()
+  await fetchLessonDetail(currentLessonId.value)
 }
 
 const handleSelectLesson = (lessonId: number) => fetchLessonDetail(lessonId)
@@ -200,6 +190,16 @@ const openQuiz = (quizId: number) => {
 
 const handleSelectThread = (thread: any) => {
   activeThread.value = thread
+}
+
+const flashDrawer = reactive({
+  open: false,
+  sets: [] as any[]
+})
+
+const openFlashcards = (flashcardSets: any[]) => {
+  flashDrawer.sets = flashcardSets
+  flashDrawer.open = true
 }
 
 const refreshSidebar = () => sidebarRef.value?.fetchThreads()

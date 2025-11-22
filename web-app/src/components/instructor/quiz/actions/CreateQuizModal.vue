@@ -13,7 +13,7 @@
         <a-input v-model:value="form.title" placeholder="Enter quiz title" />
       </a-form-item>
 
-      <a-form-item label="Duration (minutes)" name="duration_minutes">
+      <a-form-item label="Duration (minutes)" name="duration_minutes" required>
         <a-input-number
           v-model:value="form.duration_minutes"
           :min="0"
@@ -30,7 +30,7 @@
         <a-checkbox v-model:checked="form.shuffle_options">Shuffle Options</a-checkbox>
       </a-form-item>
 
-      <a-form-item label="Maximum Attempts (0 = Unlimited)" name="max_attempts">
+      <a-form-item label="Maximum Attempts (0 = Unlimited)" name="max_attempts" required>
         <a-input-number
           v-model:value="form.max_attempts"
           :min="0"

@@ -22,21 +22,26 @@ class TopicController extends Controller
     {
         $this->authorize('view', $course);
 
-        $q = $course->topics()->orderBy('order')->orderBy('id');
+        $q = $course->topics()
+            ->withCount('flashcardSets')   // 👈 chỉ đếm số lượng flashcard sets
+            ->orderBy('order')
+            ->orderBy('id');
 
         if ($request->filled('search')) {
             $kw = (string) $request->string('search');
             $q->where('title', 'like', "%{$kw}%");
         }
 
-        // Có thể không phân trang nếu ít
-        $topics = $q->paginate($request->integer('per_page', 20), ['id', 'title', 'order', 'course_id']);
+        // paginate dữ liệu
+        $topics = $q->paginate(
+            $request->integer('per_page', 20),
+            ['id', 'title', 'order', 'course_id']
+        );
 
         return response()->json($topics);
     }
 
     // POST /admin/courses/{course}/topics
-
     public function store(Request $request, Course $course)
     {
         $this->authorize('update', $course);

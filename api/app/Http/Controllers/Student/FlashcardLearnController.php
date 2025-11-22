@@ -4,31 +4,37 @@ namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
 use App\Models\Flashcard;
+use App\Models\FlashcardSet;
 use App\Models\FlashcardLog;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class FlashcardLearnController extends Controller
 {
     /**
-     * Lấy danh sách flashcard để học
+     * Lấy danh sách flashcards trong set
      */
-    public function getFlashcardsForLearning($topicId)
+    public function getFlashcardsBySet($setId)
     {
-        $flashcards = Flashcard::where('topic_id', $topicId)
-            ->orderBy('id')
+        $set = FlashcardSet::findOrFail($setId);
+
+        $cards = $set->flashcards()
+            ->orderBy('created_at', 'asc')
             ->get();
 
         return response()->json([
             'success' => true,
-            'data' => $flashcards
+            'data' => $cards
         ]);
     }
 
     /**
-     * Lưu lại 1 lượt ôn flashcard
+     * Ghi log khi user review flashcard
      */
-    public function saveFlashcardReview($flashcardId)
+    public function logReview($flashcardId)
     {
+        Flashcard::findOrFail($flashcardId);
+
         FlashcardLog::create([
             'user_id' => Auth::id(),
             'flashcard_id' => $flashcardId,
@@ -37,7 +43,7 @@ class FlashcardLearnController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Flashcard review logged'
+            'message' => 'Review logged'
         ]);
     }
 }
