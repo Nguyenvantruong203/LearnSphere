@@ -10,13 +10,13 @@
                     </svg>
                 </div>
                 <div>
-                    <h2 class="text-lg font-bold">Tin nhắn</h2>
-                    <p class="text-xs text-white/80">{{ threads.length }} cuộc trò chuyện</p>
+                    <h2 class="text-lg font-bold">Messages</h2>
+                    <p class="text-xs text-white/80">{{ threads.length }} conversations</p>
                 </div>
             </div>
             <button @click="fetchThreads" 
                 class="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all duration-200 hover:scale-105"
-                title="Làm mới danh sách">
+                title="Refresh list">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M4 4v5h.582M20 20v-5h-.581M5 9a9 9 0 0114 0M19 15a9 9 0 01-14 0" />
@@ -38,10 +38,10 @@
         <!-- Loading -->
         <div v-if="loading" class="flex-1 flex flex-col items-center justify-center text-gray-400 p-8">
             <div class="animate-spin w-8 h-8 border-2 border-indigo-200 border-t-indigo-500 rounded-full mb-3"></div>
-            <p class="text-sm">Đang tải danh sách...</p>
+            <p class="text-sm">Loading conversations...</p>
         </div>
 
-        <!-- Empty -->
+        <!-- Empty State -->
         <div v-else-if="!threads.length"
             class="flex-1 flex flex-col items-center justify-center gap-4 text-gray-400 p-8">
             <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
@@ -51,12 +51,12 @@
                 </svg>
             </div>
             <div class="text-center">
-                <p class="font-medium text-gray-500 mb-1">Chưa có cuộc trò chuyện</p>
-                <p class="text-xs text-gray-400">Tin nhắn sẽ xuất hiện ở đây</p>
+                <p class="font-medium text-gray-500 mb-1">No conversations yet</p>
+                <p class="text-xs text-gray-400">Your messages will appear here</p>
             </div>
         </div>
 
-        <!-- List -->
+        <!-- Thread List -->
         <div v-else class="flex-1 overflow-y-auto">
             <div class="px-2 pb-2">
                 <div v-for="thread in threads" :key="thread.id" @click="selectThread(thread)"
@@ -102,19 +102,19 @@
                                 :class="activeThread?.id === thread.id ? 'text-indigo-700' : 'group-hover:text-indigo-600'">
                                 {{
                                     thread.thread_type === 'course_group'
-                                        ? (thread.course?.title || 'Thảo luận lớp học')
+                                        ? (thread.course?.title || 'Class Discussion')
                                         : getPartnerName(thread)
                                 }}
                             </p>
                             <div class="text-[10px] text-gray-400 font-medium px-2 py-1 bg-gray-100 rounded-full">
-                                <FormatTime :time="thread.updated_at" short class="text-[10px] text-gray-400 font-medium px-2 py-1 bg-gray-100 rounded-full" />
+                                <FormatTime :time="thread.updated_at" short />
                             </div>
                         </div>
                         <p class="text-xs text-gray-500 truncate flex items-center gap-1">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01" />
                             </svg>
-                            {{ thread.messages?.length ? thread.messages[0]?.message : 'Bắt đầu cuộc trò chuyện' }}
+                            {{ thread.messages?.length ? thread.messages[0]?.message : 'Start the conversation' }}
                         </p>
                     </div>
                 </div>
@@ -140,20 +140,20 @@ const tabs = computed(() => {
     const role = props.currentUser?.role
     if (role === 'student')
         return [
-            { key: 'course_group', label: 'Lớp học' },
-            { key: 'private', label: 'Giảng viên' },
+            { key: 'course_group', label: 'Class' },
+            { key: 'private', label: 'Instructor' },
         ]
     if (role === 'instructor')
         return [
-            { key: 'course_group', label: 'Lớp học tôi phụ trách' },
-            { key: 'private', label: 'Học viên' },
-            { key: 'support', label: 'Hỗ trợ (Admin)' },
-            { key: 'consult', label: 'Tư vấn học tập' },
+            { key: 'course_group', label: 'My Classes' },
+            { key: 'private', label: 'Students' },
+            { key: 'support', label: 'Support (Admin)' },
+            { key: 'consult', label: 'Course Consultation' },
         ]
     if (role === 'admin')
         return [
-            { key: 'user_support', label: 'Người dùng' },
-            { key: 'support', label: 'Hỗ trợ (Instructor)' },
+            { key: 'user_support', label: 'Users' },
+            { key: 'support', label: 'Support (Instructor)' },
         ]
     return []
 })
@@ -171,7 +171,7 @@ const threads = ref<any[]>([])
 const activeThread = ref<any>(null)
 const loading = ref(false)
 
-/** 🔹 Lấy danh sách thread theo tab hiện tại */
+/** Fetch threads based on current tab */
 const fetchThreads = async () => {
     try {
         loading.value = true
@@ -197,17 +197,17 @@ const changeTab = (key: string) => {
     fetchThreads()
 }
 
-/** 🔹 Chọn thread */
+/** Select a thread */
 const selectThread = (thread: any) => {
     activeThread.value = thread
     emit('select-thread', thread)
 }
 
-/** 🔹 Helper functions */
+/** Helper functions */
 const getPartnerName = (thread: any) => {
-    if (!props.currentUser) return 'Cuộc trò chuyện'
+    if (!props.currentUser) return 'Conversation'
     const partner = thread.participants?.find((p: any) => p.id !== props.currentUser.id)
-    return partner?.name || 'Người dùng'
+    return partner?.name || 'User'
 }
 
 const getPartnerAvatar = (thread: any) => {
@@ -215,7 +215,6 @@ const getPartnerAvatar = (thread: any) => {
     const partner = thread.participants?.find((p: any) => p.id !== props.currentUser.id)
     return partner?.avatar_url || '/images/avatar-default.png'
 }
-
 
 const getInitial = (text: string) => text.charAt(0).toUpperCase()
 

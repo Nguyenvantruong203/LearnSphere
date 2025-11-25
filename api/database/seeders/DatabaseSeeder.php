@@ -52,7 +52,7 @@ class DatabaseSeeder extends Seeder
         $thread = ChatThread::create([
             'thread_type' => 'support',
             'is_group' => false,
-            'title' => 'Hỗ trợ giảng viên',
+            'title' => 'Instructor Support',
             'created_by' => $instructor->id,
         ]);
 

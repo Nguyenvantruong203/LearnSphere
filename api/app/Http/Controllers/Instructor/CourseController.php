@@ -71,7 +71,7 @@ class CourseController extends Controller
             'course_id'   => $course->id,
             'is_group'    => true,
             'thread_type' => 'course_group',
-            'title'       => 'Thảo luận khóa học: ' . $course->title,
+            'title'       => 'Course Discussion: ' . $course->title,
             'created_by'  => $request->user()->id,
         ]);
 

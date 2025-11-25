@@ -3,7 +3,6 @@
     <div class="max-w-7xl mx-auto">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
 
-        <!-- Left: Summary -->
         <div class="bg-white rounded-3xl p-8 shadow-lg border border-gray-100">
           <h2 class="text-3xl font-bold text-[#2F327D] mb-8 text-center">Course Ratings</h2>
 
@@ -26,7 +25,6 @@
               :percentage="item.percentage" />
           </div>
 
-          <!-- Write Review -->
           <div class="mt-8 pt-6 border-t border-gray-200" v-if="canReview">
             <button @click="showWriteReview = true"
               class="w-full bg-gradient-to-r from-teal-500 to-cyan-500 text-white font-semibold py-3 rounded-3xl hover:from-teal-600 hover:to-cyan-600 transition-all duration-300 transform hover:scale-105 shadow-lg">
@@ -43,7 +41,6 @@
           </div>
         </div>
 
-        <!-- Right: Recent Reviews -->
         <div class="space-y-6">
           <div class="flex items-center justify-between mb-8">
             <h3 class="text-2xl font-bold text-[#2F327D]">Recent Reviews</h3>

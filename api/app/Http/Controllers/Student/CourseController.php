@@ -192,7 +192,7 @@ class CourseController extends Controller
         if ($consultThread) {
             $consultThread->update([
                 'thread_type' => 'private',
-                'title'       => "Trao đổi với giảng viên {$course->instructor->name}",
+                'title'       => "Talk to the instructor {$course->instructor->name}",
             ]);
 
             // Đảm bảo instructor và student đều tham gia
@@ -211,7 +211,7 @@ class CourseController extends Controller
                     'is_group'    => false,
                 ],
                 [
-                    'title'      => "Trao đổi với giảng viên {$course->instructor->name}",
+                    'title'      => "Talk to the instructor {$course->instructor->name}",
                     'created_by' => $user->id,
                 ]
             );

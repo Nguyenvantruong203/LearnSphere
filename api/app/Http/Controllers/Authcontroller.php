@@ -12,14 +12,8 @@ use Illuminate\Auth\Events\Verified;
 use Laravel\Socialite\Facades\Socialite;
 use Exception;
 
-/**
- * @author Truong
- */
 class AuthController extends Controller
 {
-    /**
-     * Đăng ký người dùng mới.
-     */
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [

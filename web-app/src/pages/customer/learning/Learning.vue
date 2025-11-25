@@ -3,43 +3,85 @@
     <div class="flex h-screen overflow-y-hidden">
 
       <div class="w-[450px] bg-white border-r overflow-y-auto">
-        <LessonList :course="courseData" :topics="topics" :currentLessonId="currentLessonId" :loading="isListLoading"
-          :progress="progress" @select-lesson="handleSelectLesson" @open-quiz="handleOpenQuiz"
-          @open-chat="isChatOpen = true" @open-certificate="openCertificate" @open-flashcards="openFlashcards" />
+        <LessonList 
+          :course="courseData" 
+          :topics="topics" 
+          :currentLessonId="currentLessonId" 
+          :loading="isListLoading"
+          :progress="progress" 
+          @select-lesson="handleSelectLesson" 
+          @open-quiz="handleOpenQuiz"
+          @open-chat="isChatOpen = true" 
+          @open-certificate="openCertificate" 
+          @open-flashcards="openFlashcards" 
+        />
       </div>
 
       <div class="flex-1 bg-info bg-opacity-20 overflow-y-auto">
 
-        <LessonPlayer v-if="activeView === 'lesson'" :lesson="currentLessonData" :lessons="lessons"
-          :loading="isLessonLoading" @open-quiz="openQuiz" @lesson-completed="handleLessonCompleted" />
+        <LessonPlayer 
+          v-if="activeView === 'lesson'" 
+          :lesson="currentLessonData" 
+          :lessons="lessons"
+          :loading="isLessonLoading" 
+          @open-quiz="openQuiz" 
+          @lesson-completed="handleLessonCompleted" 
+        />
 
-        <QuizPlayer v-if="activeView === 'quiz'" :quiz-id="currentQuizId" @exit="activeView = 'lesson'" />
+        <QuizPlayer 
+          v-if="activeView === 'quiz'" 
+          :quiz-id="currentQuizId" 
+          @exit="activeView = 'lesson'" 
+        />
       </div>
 
       <!-- Chat Drawer -->
-      <a-drawer v-model:open="isChatOpen" width="80%" title="Thảo luận khóa học" placement="right" :mask="false"
-        :closable="true">
+      <a-drawer 
+        v-model:open="isChatOpen" 
+        width="80%" 
+        title="Course Discussion" 
+        placement="right" 
+        :mask="false"
+        :closable="true"
+      >
         <div class="flex h-full">
 
           <!-- Sidebar -->
-          <ChatSidebar ref="sidebarRef" :current-user="currentUser" :course-id="courseData?.id" role="student"
-            @select-thread="handleSelectThread" @refresh="refreshSidebar" />
+          <ChatSidebar 
+            ref="sidebarRef" 
+            :current-user="currentUser" 
+            :course-id="courseData?.id" 
+            role="student"
+            @select-thread="handleSelectThread" 
+            @refresh="refreshSidebar" 
+          />
 
           <!-- Chat window -->
           <div class="flex-1">
-            <ChatWindow v-if="activeThread && currentUser" :key="activeThread.id" :thread-id="activeThread.id"
-              :user="currentUser" />
+            <ChatWindow 
+              v-if="activeThread && currentUser" 
+              :key="activeThread.id" 
+              :thread-id="activeThread.id"
+              :user="currentUser" 
+            />
 
             <div v-else class="h-full flex items-center justify-center text-gray-400 text-sm">
-              Chọn một cuộc trò chuyện để bắt đầu
+              Select a conversation to start
             </div>
           </div>
 
         </div>
       </a-drawer>
     </div>
-    <FlashcardLearnDrawer v-model:open="flashDrawer.open" :flashcardSets="flashDrawer.sets" />
-    <CertificateModal v-model:open="isCertificateModalOpen" :certificate="certificateData" />
+
+    <FlashcardLearnDrawer 
+      v-model:open="flashDrawer.open" 
+      :flashcardSets="flashDrawer.sets" 
+    />
+    <CertificateModal 
+      v-model:open="isCertificateModalOpen" 
+      :certificate="certificateData" 
+    />
   </LayoutLearning>
 </template>
 
@@ -58,6 +100,7 @@ import { lessonApi } from '@/api/customer/lessonApi'
 import { certificationApi } from '@/api/customer/certificationApi'
 import CertificateModal from '@/components/customer/certification/CertificateModal.vue'
 import FlashcardLearnDrawer from '@/components/customer/flashcard/FlashcardLearnDrawer.vue'
+
 const route = useRoute()
 const activeView = ref<'lesson' | 'quiz'>('lesson')
 const currentQuizId = ref<number | null>(null)
@@ -87,10 +130,10 @@ const fetchLessonList = async () => {
     isListLoading.value = true
 
     const courseId = Number(route.params.courseId)
-    if (!courseId) throw new Error('Không tìm thấy ID khóa học')
+    if (!courseId) throw new Error('Course ID not found')
 
     const res = await lessonApi.getLessonListByCourseId(courseId)
-    if (!res.success) throw new Error('Không thể tải danh sách bài học')
+    if (!res.success) throw new Error('Failed to load lesson list')
 
     courseData.value = res.data.course
     topics.value = res.data.topics || []
@@ -113,12 +156,12 @@ const fetchLessonList = async () => {
       await fetchLessonDetail(firstLesson.id)
     }
 
-    // fetch realtime progress
+    // Fetch real-time progress
     await fetchProgress()
 
   } catch (err: any) {
     notification.error({
-      message: 'Lỗi tải khóa học',
+      message: 'Error loading course',
       description: err.message,
     })
   } finally {
@@ -138,7 +181,7 @@ const fetchLessonDetail = async (lessonId: number) => {
     isLessonLoading.value = true
 
     const res = await lessonApi.getLessonDetail(lessonId)
-    if (!res.success) throw new Error('Không thể tải chi tiết bài học')
+    if (!res.success) throw new Error('Failed to load lesson details')
 
     const { lesson, course } = res.data
     currentLessonData.value = { ...lesson, course_title: course?.title || '' }
@@ -148,7 +191,7 @@ const fetchLessonDetail = async (lessonId: number) => {
 
   } catch (err: any) {
     notification.error({
-      message: 'Lỗi tải bài học',
+      message: 'Error loading lesson',
       description: err.message,
     })
   } finally {
@@ -161,8 +204,8 @@ const openCertificate = async () => {
 
   if (!res.success || !res.certificate) {
     notification.error({
-      message: "Chưa có chứng chỉ",
-      description: "Bạn cần hoàn thành toàn bộ bài học để nhận chứng chỉ."
+      message: "No certificate yet",
+      description: "You need to complete all lessons to receive a certificate."
     })
     return
   }
@@ -173,7 +216,7 @@ const openCertificate = async () => {
 
 const handleLessonCompleted = async () => {
   await fetchProgress()
-  await fetchLessonDetail(currentLessonId.value)
+  await fetchLessonDetail(currentLessonId.value!)
 }
 
 const handleSelectLesson = (lessonId: number) => fetchLessonDetail(lessonId)

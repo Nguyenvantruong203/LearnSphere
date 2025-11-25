@@ -1,14 +1,14 @@
 <template>
   <div class="fixed bottom-6 right-6 z-50">
-    <!-- 💬 Nút mở/đóng chat -->
+    <!-- Toggle Chat Button -->
     <button
       @click="handleChatClick"
       class="bg-gradient-to-r from-teal-500 to-blue-500 text-white p-4 rounded-full shadow-lg hover:scale-105 transition-transform"
     >
-      💬
+      
     </button>
 
-    <!-- 🪟 Khung chat -->
+    <!-- Chat Window -->
     <transition name="fade">
       <div
         v-if="isOpen"
@@ -25,32 +25,32 @@
           v-else
           class="h-full flex items-center justify-center text-gray-400 text-sm"
         >
-          Đang tải cuộc trò chuyện...
+          Loading conversation...
         </div>
       </div>
     </transition>
 
-    <!-- ⚠️ Popup cảnh báo đăng nhập -->
+    <!-- Login Required Alert -->
     <transition name="fade">
       <div
         v-if="showLoginAlert"
         class="fixed bottom-28 right-6 w-80 bg-white border border-gray-200 rounded-xl shadow-lg p-4 text-sm"
       >
         <p class="text-gray-700 font-medium mb-2">
-          ⚠️ Bạn cần đăng nhập để sử dụng tính năng chat.
+          Warning: You need to log in to use the chat feature.
         </p>
         <div class="flex justify-end gap-2">
           <button
             @click="showLoginAlert = false"
             class="px-3 py-1 text-gray-500 hover:text-gray-700"
           >
-            Đóng
+            Close
           </button>
           <button
             @click="redirectToLogin"
             class="px-3 py-1 bg-gradient-to-r from-teal-500 to-blue-500 text-white rounded-lg shadow-sm hover:opacity-90"
           >
-            Đăng nhập
+            Log In
           </button>
         </div>
       </div>
@@ -66,14 +66,14 @@ import ChatWindow from '@/components/common/chat/ChatWindow.vue'
 import { chatApi } from '@/api/customer/chatApi'
 import echo from '@/utils/echo'
 
-// ⚙️ Props để tái sử dụng cho cả trang home và trang course detail
+// Props to make this component reusable (for homepage or course detail)
 interface Props {
   courseId?: number
   threadType?: 'user_support' | 'consult'
 }
 const props = defineProps<Props>()
 
-// ⚙️ State
+// State
 const router = useRouter()
 const isOpen = ref(false)
 const showLoginAlert = ref(false)
@@ -81,7 +81,7 @@ const threadId = ref<number | null>(null)
 const messages = ref<any[]>([])
 const currentUser = ref(JSON.parse(localStorage.getItem('client_auth') || '{}')?.user || null)
 
-/** 🧠 Mở hoặc yêu cầu đăng nhập */
+/** Toggle chat or prompt login if not authenticated */
 const handleChatClick = async () => {
   if (!currentUser.value) {
     showLoginAlert.value = true
@@ -90,35 +90,35 @@ const handleChatClick = async () => {
   isOpen.value = !isOpen.value
 }
 
-/** 🧭 Điều hướng đăng nhập */
+/** Redirect to login page */
 function redirectToLogin() {
   showLoginAlert.value = false
   router.push('/login')
 }
 
-/** 🚀 Khi user đã đăng nhập → tự động tạo thread phù hợp */
+/** On mount: Auto-create appropriate thread when user is logged in */
 onMounted(async () => {
   if (!currentUser.value) return
 
   try {
     let res
 
-    // Nếu có courseId → tư vấn khóa học
+    // If courseId is provided → course consultation chat
     if (props.threadType === 'consult' && props.courseId) {
       res = await chatApi.startConsult(props.courseId)
     } else {
-      // Mặc định: hỗ trợ người dùng (home)
+      // Default: general user support (homepage)
       res = await chatApi.startUserSupport()
     }
 
     threadId.value = res.thread.id
     initRealtime(res.thread.id)
   } catch (err) {
-    console.error('❌ Chat init error:', err)
+    console.error('Chat initialization error:', err)
   }
 })
 
-/** 🧩 Theo dõi realtime bằng Laravel Echo */
+/** Listen to real-time messages using Laravel Echo */
 function initRealtime(id: number) {
   echo.leave(`chat.thread.${id}`)
 
@@ -134,6 +134,7 @@ function initRealtime(id: number) {
     .error((e: any) => console.error('Echo error:', e))
 }
 
+/** Watch for login state changes */
 watch(
   () => localStorage.getItem('client_auth'),
   (newVal) => {

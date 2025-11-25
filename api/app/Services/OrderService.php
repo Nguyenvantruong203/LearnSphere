@@ -165,7 +165,7 @@ class OrderService
 
                     $consultThread->update([
                         'thread_type' => 'private',
-                        'title'       => "Trao đổi với giảng viên {$course->instructor->name}",
+                        'title'       => "Talk to the instructor {$course->instructor->name}",
                     ]);
 
                     $consultThread->participants()->syncWithoutDetaching([
@@ -181,7 +181,7 @@ class OrderService
                             'is_group'   => false,
                         ],
                         [
-                            'title'      => "Trao đổi với giảng viên {$course->instructor->name}",
+                            'title'      => "Talk to the instructor {$course->instructor->name}",
                             'created_by' => $studentId
                         ]
                     );

@@ -151,7 +151,7 @@ class ChatController extends Controller
             $thread = ChatThread::create([
                 'thread_type' => 'user_support',
                 'is_group'    => false,
-                'title'       => 'Hỗ trợ người dùng',
+                'title'       => 'User support',
                 'created_by'  => $user->id,
             ]);
 
@@ -200,7 +200,7 @@ class ChatController extends Controller
                 'created_by' => $user->id,
             ],
             [
-                'title' => "Tư vấn khóa học: {$course->title}",
+                'title' => "Course Consulting: {$course->title}",
             ]
         );
 

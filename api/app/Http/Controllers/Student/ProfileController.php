@@ -10,9 +10,6 @@ use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
 {
-        /**
-     * Cập nhật profile người dùng đăng nhập
-     */
     public function updateProfile(Request $request)
     {
         $user = $request->user();
@@ -34,9 +31,6 @@ class ProfileController extends Controller
         return response()->json($user);
     }
 
-    /**
-     * Cập nhật avatar
-     */
     public function updateAvatar(Request $request)
     {
         $request->validate([
